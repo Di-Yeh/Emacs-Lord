@@ -1,6 +1,6 @@
 ﻿;; 主题
-(use-package badwolf-theme)
-(load-theme 'badwolf t)
+(use-package ahungry-theme)
+(load-theme 'ahungry t)
 
 ;; 状态栏
 (use-package spaceline)
