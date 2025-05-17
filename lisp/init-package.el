@@ -9,12 +9,13 @@
              :bind (("<M-up>" . drag-stuff-up)
                     ("<M-down>" . drag-stuff-down)))
 
-(ivy-mode 1)
 (use-package ivy :demand
   :config
   (setq ivy-use-virtual-buffers t
         ivy-count-format "%d/%d "))
-		
+
+(ivy-mode 1)
+
 (use-package swiper
   :after ivy
   :bind (("C-s" . swiper)
@@ -57,8 +58,19 @@
 				(t . ivy-posframe-display-at-frame-center)))
                 (ivy-posframe-mode 1))
 
-
 (use-package ace-window 
              :bind (("M-o" . 'ace-window)))
+
+
+(use-package neotree)
+
+(add-to-list 'load-path "/some/path/neotree")
+(require 'neotree)
+(global-set-key [f8] 'neotree-toggle)
+
+
+
+
+
 
 (provide 'init-package)
