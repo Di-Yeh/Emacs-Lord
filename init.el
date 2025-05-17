@@ -9,6 +9,7 @@
 (require 'init-elpa)
 (require 'init-package)
 (require 'init-keymap)
+(require 'init-dashboard)
 (require 'init-ui)
 (require 'init-const)
 (require 'init-lsp)

@@ -7,11 +7,13 @@
 (require 'spaceline-config)
 (spaceline-spacemacs-theme)
 
-(use-package all-the-icons
-  :if (display-graphic-p))
+(use-package nerd-icons
+  :config
+  (if (display-graphic-p)
+      (setq nerd-icons-use-svg t)
+    (setq nerd-icons-use-svg nil)))
 
 (setq display-line-numbers-type 'relative)
 (global-display-line-numbers-mode t)
-
 
 (provide 'init-ui)

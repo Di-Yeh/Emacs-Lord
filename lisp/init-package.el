@@ -69,7 +69,7 @@
 (global-set-key [f8] 'neotree-toggle)
 
 
-
+(use-package  projectile)
 
 
 
