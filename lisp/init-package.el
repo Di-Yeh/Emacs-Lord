@@ -13,7 +13,6 @@
   :config
   (setq ivy-use-virtual-buffers t
         ivy-count-format "%d/%d "))
-
 (ivy-mode 1)
 
 (use-package swiper
@@ -29,19 +28,6 @@
 	 ("C-x C-f" . counsel-find-file)
 	 ("C-c f" . counsel-recentf)
 	 ("C-c g" . counsel-git)))
-
-
-(use-package company
-  :hook (after-init . global-company-mode)
-  :config (setq company-minimum-prefix-length 1
-                company-show-quick-access t))
-
-(use-package flymake
-  :hook (prog-mode . flymake-mode)
-  :config
-  (global-set-key (kbd "M-n") #'flymake-goto-next-error)
-  (global-set-key (kbd "M-p") #'flymake-goto-prev-error))
-
 
 
 (use-package which-key

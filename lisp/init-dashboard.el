@@ -15,19 +15,27 @@
 (setq dashboard-banner-logo-title "Welcome to Emacs!")
 ;; Set the banner
 (setq dashboard-startup-banner 'logo)
-(setq dashboard-center-content t)
-;; vertically center content
-(setq dashboard-vertically-center-content t)
+
 ;; To disable shortcut "jump" indicators for each section, set
 (setq dashboard-show-shortcuts nil)
 
 (setq dashboard-item-shortcuts '((recents   . "r")
-                                 (projects  . "p")))
+                                 (projects  . "p")
+								 (bookmarks  . "b")
+								 (agenda  . "a")
+								 (registers . "e")))
 
 (setq dashboard-items '((projects  . 5)
-                        (recents . 5)))
+                        (recents . 5)
+						(bookmarks . 5)
+						(agenda . 5)
+						(registers . 5)))
 
 (setq dashboard-page-separator "\n\n\n")
+
+(setq dashboard-center-content t)
+;; vertically center content
+(setq dashboard-vertically-center-content t)
 
 (setq dashboard-navigation-cycle t)
 

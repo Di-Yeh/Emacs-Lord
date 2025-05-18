@@ -14,7 +14,7 @@
 (require 'init-const)
 (require 'init-lsp)
 (require 'init-cpp)
-
+(require 'init-python)
 
 (when (file-exists-p custom-file)
   (load-file custom-file))
