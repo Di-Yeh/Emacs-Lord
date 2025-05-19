@@ -41,7 +41,8 @@
   :init (global-flycheck-mode))
 
 
-
+(define-key global-map (kbd "C-c l d") 'lsp-ui-doc-show)
+(define-key global-map (kbd "C-c l l") 'lsp-ui-doc-hide)
 
 
 

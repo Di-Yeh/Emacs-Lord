@@ -12,6 +12,7 @@
 ;; 视窗配置
 (menu-bar-mode -1)
 (tool-bar-mode -1)
+(scroll-bar-mode -1)
 (setq inhibit-startup-screen t)
 
 ;; 全局开启
