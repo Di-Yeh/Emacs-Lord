@@ -1,4 +1,4 @@
-;; Configuring Emacs as a C/C++ IDE
+﻿;; Configuring Emacs as a C/C++ IDE
 (setq package-selected-packages '(lsp-mode yasnippet lsp-treemacs helm-lsp
     projectile hydra flycheck company avy which-key helm-xref))
 
@@ -50,7 +50,7 @@
 (add-hook 'c++-mode-hook 'my-c-c++-mode-hook)
 
 
-;; C/C++编译配置
+;; g++编译配置
 (use-package quickrun
   :ensure t
   :commands (quickrun)
@@ -63,6 +63,8 @@
     :default "c++"))
 
 (global-set-key (kbd "<f5>") 'quickrun)
+
+;Visual Studio编译配置
 
 
 

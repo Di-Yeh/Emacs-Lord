@@ -3,13 +3,16 @@
   :ensure t
   :hook ((c-mode . lsp)
          (c++-mode . lsp)
-         (python-mode . lsp))
+		 		 (lua-ts-mode . lsp)
+         (python-mode . lsp)
+				 (java-mode . lsp))
   :commands lsp
   :init
   (setq lsp-keymap-prefix "C-c l")     ;; 可选：设置 LSP 快捷键前缀
   :config
   (setq lsp-enable-symbol-highlighting t
-        lsp-prefer-flymake nil))       ;; 使用 flycheck 而不是 flymake（推荐）
+        lsp-prefer-flymake nil)       ;; 使用 flycheck 而不是 flymake（推荐）
+)
 
 ;; 可选：lsp-ui 提供更好的 UI（如悬浮文档）
 (use-package lsp-ui
@@ -43,6 +46,11 @@
 
 (define-key global-map (kbd "C-c l d") 'lsp-ui-doc-show)
 (define-key global-map (kbd "C-c l l") 'lsp-ui-doc-hide)
+
+
+
+
+
 
 
 

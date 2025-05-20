@@ -1,5 +1,4 @@
-(setq-default tab-width 4)
-(setq tab-width 4)
+(setq-default tab-width 2)
 
 (global-set-key (kbd "TAB") 'self-insert-command)
 
