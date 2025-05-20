@@ -14,7 +14,19 @@
 (require 'init-const)
 (require 'init-lsp)
 (require 'init-cpp)
+(require 'init-lua)
 (require 'init-python)
+
+
+(require 'rainbow-identifiers)
+(add-hook 'prog-mode-hook 'rainbow-identifiers-mode)
+
+
+;(add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-application-framework/")
+;(require 'eaf)
+
+
+
 
 (when (file-exists-p custom-file)
   (load-file custom-file))
