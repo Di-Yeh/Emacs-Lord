@@ -127,6 +127,67 @@
 	    (indent-bars-mode 1)))
 
 
+(use-package nerd-icons
+  :ensure t)
+
+(use-package nerd-icons-dired
+  :hook (dired-mode . nerd-icons-dired-mode))
+
+(use-package nerd-icons-completion
+  :hook (marginalia-mode . nerd-icons-completion-mode)
+  :config
+  (nerd-icons-completion-mode))
+
+(use-package nerd-icons-ibuffer
+  :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
+
+(use-package marginalia
+  :ensure t
+  :config
+  (marginalia-mode))
+
+(use-package which-key
+  :ensure t
+  :config
+  (which-key-mode))
+
+
+(use-package treemacs
+  :ensure t)
+
+(use-package treemacs-nerd-icons
+  :after treemacs
+  :config
+  (treemacs-load-theme "nerd-icons"))
+
+
+
+(use-package markdown-mode
+  :ensure t
+  :mode ("\\.md\\'" . markdown-mode))
+
+(use-package markdown-preview-mode
+  :ensure t
+  :after markdown-mode
+  :bind (:map markdown-mode-command-map
+              ("p" . markdown-preview-mode)))
+
+;; 记得安装pandoc
+;; Windows: https://github.com/jgm/pandoc
+;; macOS/Linux:
+;; sudo apt install pandoc        # Ubuntu
+;; sudo pacman -S pandoc          # Arch
+;; brew install pandoc            # macOS
+
+
+
+(setq markdown-fontify-code-blocks-natively t)  ;; 高亮代码块
+
+
+
+
+
+
 
 
 

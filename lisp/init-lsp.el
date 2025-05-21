@@ -3,7 +3,7 @@
   :ensure t
   :hook ((c-mode . lsp)
          (c++-mode . lsp)
-		 		 (lua-mode . lsp)
+		 		 (lua-ts-mode . lsp)
 				 (pascal-mode . lsp)
          (python-mode . lsp))
   :commands lsp

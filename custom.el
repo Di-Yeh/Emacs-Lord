@@ -4,12 +4,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(eaf-apps-to-install '(pdf-viewer))
- '(package-selected-packages
-	 '(ahungry-theme company counsel dashboard drag-stuff evil flycheck
-									 helm-lsp helm-xref highlight-parentheses
-									 indent-bars ivy-posframe lsp-treemacs lsp-ui
-									 lua-mode neotree nerd-icons projectile quickrun
-									 restart-emacs spaceline yasnippet)))
+ '(package-selected-packages nil))
 
 
 
