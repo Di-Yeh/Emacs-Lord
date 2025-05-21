@@ -1,5 +1,5 @@
-(use-package lua-mode
-  :ensure t)
+(add-to-list 'load-path "/path/to/lsp-lua")
+(require 'lsp-lua)
 
 ;; 添加 Lua 的quickrun 命令
 (use-package quickrun

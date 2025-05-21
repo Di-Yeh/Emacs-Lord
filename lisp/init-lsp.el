@@ -3,9 +3,9 @@
   :ensure t
   :hook ((c-mode . lsp)
          (c++-mode . lsp)
-		 		 (lua-ts-mode . lsp)
-         (python-mode . lsp)
-				 (java-mode . lsp))
+		 		 (lua-mode . lsp)
+				 (pascal-mode . lsp)
+         (python-mode . lsp))
   :commands lsp
   :init
   (setq lsp-keymap-prefix "C-c l")     ;; 可选：设置 LSP 快捷键前缀
