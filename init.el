@@ -36,13 +36,13 @@
 
 
 
-(add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-application-framework/")
-(require 'eaf)
-(require 'eaf-pdf-viewer)
-(require 'eaf-browser)
-(require 'eaf-music-player)
-(require 'eaf-video-player)
-(require 'eaf-image-viewer)
+;(add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-application-framework/")
+;(require 'eaf)
+;(require 'eaf-pdf-viewer)
+;(require 'eaf-browser)
+;(require 'eaf-music-player)
+;(require 'eaf-video-player)
+;(require 'eaf-image-viewer)
 
 
 (when (file-exists-p custom-file)
