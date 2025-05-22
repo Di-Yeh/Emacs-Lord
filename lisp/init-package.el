@@ -56,9 +56,6 @@
 
 (use-package  projectile)
 
-;; Download Evil
-(unless (package-installed-p 'evil)
-  (package-install 'evil))
 
 (use-package highlight-parentheses
   :ensure t)
@@ -178,13 +175,7 @@
 ;; sudo apt install pandoc        # Ubuntu
 ;; sudo pacman -S pandoc          # Arch
 ;; brew install pandoc            # macOS
-
-
-
 (setq markdown-fontify-code-blocks-natively t)  ;; 高亮代码块
-
-
-
 
 
 

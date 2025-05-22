@@ -1,11 +1,9 @@
 ;; 安装 lsp-mode 和相关插件
 (use-package lsp-mode
   :ensure t
-  :hook ((c-mode . lsp)
-         (c++-mode . lsp)
-		 		 (lua-ts-mode . lsp)
-				 (pascal-mode . lsp)
-         (python-mode . lsp))
+  :hook ((python-mode . lsp)
+				 (c-mode . lsp)
+         (c++-mode . lsp))
   :commands lsp
   :init
   (setq lsp-keymap-prefix "C-c l")     ;; 可选：设置 LSP 快捷键前缀
@@ -24,12 +22,12 @@
   (setq lsp-ui-doc-enable t
         lsp-ui-doc-show-with-cursor t       ;; ← 光标悬浮就显示文档
         lsp-ui-doc-position 'at-point       ;; 文档显示在光标处
-        lsp-ui-doc-delay 0.3                ;; 延迟更短
+        lsp-ui-doc-delay 1                ;; 延迟更短
         lsp-ui-sideline-enable t
         lsp-ui-sideline-show-hover t        ;; ← 行内显示悬浮信息
         lsp-ui-sideline-show-diagnostics t  ;; ← 行内显示诊断
         lsp-ui-sideline-show-code-actions t ;; ← 显示修复建议
-        lsp-ui-sideline-delay 0.1))
+        lsp-ui-sideline-delay 1))
 
 
 (use-package company

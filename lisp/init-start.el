@@ -21,6 +21,8 @@
 ;; 禁用备份文件
 (setq make-backup-files nil)
 
+;; 启用 delete-selection-mode（选区时按键会作用于选区）
+(delete-selection-mode 1)
 
 ;; 字体
 (custom-set-faces
@@ -31,5 +33,19 @@
 '(default ((t (:family "CaskaydiaMono NF" :foundry "outline" :slant normal :weight bold :height 120 :width normal)))))
 
 
+(use-package emacs
+  :ensure t
+    :config 
+    (setq display-line-numbers-type 'relative) 
+    (global-display-line-numbers-mode t)
+)
+
+(setq-default bidi-display-reordering nil)
+(setq bidi-inhibit-bpa t
+      long-line-threshold 1000
+      large-hscroll-threshold 1000
+      syntax-wholeline-max 1000)
+
+(setq-default bidi-paragraph-direction 'left-to-right)
 
 (provide 'init-start)

@@ -12,8 +12,4 @@
 (global-set-key (kbd "C-S-p") 'quickrun)  ;; Python
 
 
-
-
-
-
 (provide 'init-python)
