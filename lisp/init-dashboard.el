@@ -25,11 +25,11 @@
 
 (setq dashboard-item-shortcuts '((recents   . "r")
                                  (projects  . "p")
-								 								 (agenda  . "a")))
+																 (agenda . "a")))
 
-(setq dashboard-items '((projects  . 5)
-                        (recents . 5)
-												(agenda . 5)))
+(setq dashboard-items '((projects  . 10)
+                        (recents . 10)
+												(agenda . 10)))
 
 (setq dashboard-page-separator  "\n\n\f\f\n\n")
 

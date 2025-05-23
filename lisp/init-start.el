@@ -23,6 +23,26 @@
 
 ;; 启用 delete-selection-mode（选区时按键会作用于选区）
 (delete-selection-mode 1)
+(defun my/delete-word-backward (arg)
+  "删除前一个 word，不保存到 kill-ring。"
+  (interactive "p")
+  (delete-region (point) (progn (backward-word arg) (point))))
+
+(defun my/delete-word-forward (arg)
+  "删除下一个 word，不保存到 kill-ring。"
+  (interactive "p")
+  (delete-region (point) (progn (forward-word arg) (point))))
+
+(defun my/delete-line-backward ()
+  "删除当前行光标前的所有内容，不保存到 kill-ring。"
+  (interactive)
+  (delete-region (line-beginning-position) (point)))
+
+(global-set-key (kbd "C-<backspace>") 'my/delete-word-backward)
+(global-set-key (kbd "M-<backspace>") 'my/delete-word-backward)
+(global-set-key (kbd "C-S-<backspace>") 'my/delete-line-backward)
+
+
 
 ;; 字体
 (custom-set-faces

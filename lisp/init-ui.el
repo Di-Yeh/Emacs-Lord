@@ -1,6 +1,7 @@
 ﻿;; ─────────────────────────────────────────────────────────────
 ;; Catppuccin 多主题风格支持：latte、frappe、macchiato、mocha
 ;; 默认加载 mocha，可使用 C-t 依次切换四种风格
+
 ;; ─────────────────────────────────────────────────────────────
 
 ;; 安装主题（确保你已经安装了 catppuccin-theme 包）
@@ -76,7 +77,6 @@
 	(display-time-24hr-format t) ;;格式
 	(doom-modeline-lsp-icon t)
 	(doom-modeline-time-analogue-clock t)
-
 	(doom-modeline-enable-word-count t)
 	(doom-modeline-buffer-name t)
 	(doom-modeline-percent-position '(-3 "%p"))
@@ -86,9 +86,8 @@
 	(doom-modeline-persp-icon t)
 	(doom-modeline-time t)
 	(doom-modeline-gnus-timer 2)
-
 	;; Don’t compact font caches during GC.
-	(setq inhibit-compacting-font-caches t))
+	(inhibit-compacting-font-caches t))
 
 
 

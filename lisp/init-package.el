@@ -180,6 +180,29 @@
 
 
 
+;; 安装 meow
+(use-package meow
+  :ensure t)
+
+
+
+
+;; Org mode 基础配置
+(use-package org
+  :ensure t                     				;; org 是 Emacs 自带的，不用重新安装
+  :hook ((org-mode . visual-line-mode))  ;; 自动换行更美观
+         ;;(org-mode . org-indent-mode))  ;; 缩进模式
+  :config
+  ;; 基本外观设置
+  (setq org-hide-emphasis-markers t     ;; 隐藏加粗/斜体等标记符号
+        org-startup-indented t          ;; 启动时自动缩进
+        org-ellipsis " ▼ "              ;; 折叠符号
+        org-pretty-entities t)          ;; 显示数学符号等更漂亮
+
+  ;; 绑定快捷键（可选）
+  (global-set-key (kbd "C-c c") 'org-capture)
+  (global-set-key (kbd "C-c a") 'org-agenda))
+
 
 
 
