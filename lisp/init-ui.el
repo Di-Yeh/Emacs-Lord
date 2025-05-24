@@ -1,34 +1,50 @@
-﻿;; ─────────────────────────────────────────────────────────────
-;; Catppuccin 多主题风格支持：latte、frappe、macchiato、mocha
-;; 默认加载 mocha，可使用 C-t 依次切换四种风格
-
-;; ─────────────────────────────────────────────────────────────
-
-;; 安装主题（确保你已经安装了 catppuccin-theme 包）
-(use-package catppuccin-theme
+﻿(use-package doom-themes
   :ensure t
   :init
-  (load-theme 'catppuccin t)) ;; 启动时默认风格
+  ;; 在 init 阶段就设置默认主题，确保在其它 UI 插件加载前生效
+  (load-theme 'doom-acario-dark t)
+  :config
+  ;; 保存主题的文件位置
+  (defvar my/theme-save-file (locate-user-emacs-file ".last-theme")
+    "保存最近使用的主题名称。")
 
-;; 定义 catppuccin 可用风格
-(defvar my/catppuccin-flavors '(latte frappe macchiato mocha)
-  "Catppuccin 可用风格列表。")
+  ;; 当前主题
+  (defvar my/current-theme 'doom-acario-dark
+    "当前启用的 Doom 主题。")
 
-;; 当前索引
-(defvar my/catppuccin-index 0
-  "当前 catppuccin 风格索引。")
+  ;; 尝试加载上次保存的主题
+  (when (file-exists-p my/theme-save-file)
+    (let* ((theme-name (string-trim (with-temp-buffer
+                                      (insert-file-contents my/theme-save-file)
+                                      (buffer-string))))
+           (theme-symbol (intern theme-name)))
+      (when (member theme-symbol (custom-available-themes))
+        (setq my/current-theme theme-symbol)
+        (load-theme my/current-theme t))))
 
-;; 切换主题函数
-(defun my/cycle-catppuccin-themes ()
-  "轮换 Catppuccin 主题风格（latte, frappe, macchiato, mocha）。"
+  ;; Doom theme 一些增强功能（可选）
+  (doom-themes-visual-bell-config)
+  (doom-themes-org-config))
+
+;; C-t 切换主题界面（之前定义的）
+(defun my/choose-doom-theme ()
+  "弹出 Doom 主题选择器，立即切换并保存当前主题。"
   (interactive)
-  (setq catppuccin-flavor (nth my/catppuccin-index my/catppuccin-flavors))
-  (catppuccin-reload)
-  (message "Catppuccin 风格切换为：%s" catppuccin-flavor)
-  (setq my/catppuccin-index (mod (1+ my/catppuccin-index) (length my/catppuccin-flavors))))
+  (let* ((themes (cl-remove-if-not
+                  (lambda (sym)
+                    (string-prefix-p "doom-" (symbol-name sym)))
+                  (custom-available-themes)))
+         (theme (intern (completing-read "选择 Doom 主题: " themes nil t))))
+    (mapc #'disable-theme custom-enabled-themes)
+    (load-theme theme t)
+    (setq my/current-theme theme)
+    (with-temp-file my/theme-save-file
+      (insert (symbol-name theme)))
+    (message "✅ 当前主题已切换为: %s" theme)))
 
-;; 绑定快捷键 Ctrl-t 切换风格
-(global-set-key (kbd "C-t") #'my/cycle-catppuccin-themes)
+(global-set-key (kbd "C-t") #'my/choose-doom-theme)
+
+
 
 
 ;; 状态栏

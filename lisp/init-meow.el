@@ -68,7 +68,6 @@
 
 	 ;; 插入模式
 	 '("i" . meow-insert)
-	 '("a" . meow-append)
 
 	 ;; 删除，撤销，复制
 	 '("d" . meow-kill)
