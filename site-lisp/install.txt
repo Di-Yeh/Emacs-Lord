@@ -1,0 +1,11 @@
+git clone --depth=1 -b master https://github.com/emacs-eaf/emacs-application-framework.git
+
+python
+pip3 install PyQt6
+pip3 install pyqt6-webengine 
+pip3 install sexpdata
+pip3 install epc
+pip3 install fitz
+pip3 install frontend
+
+python ./install-eaf.py

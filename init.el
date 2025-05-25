@@ -15,6 +15,7 @@
 (require 'init-meow)
 (require 'init-lsp)
 (require 'init-cpp)
+(require 'init-lua)
 (require 'init-python)
 
 

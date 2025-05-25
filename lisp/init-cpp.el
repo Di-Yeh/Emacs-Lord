@@ -76,9 +76,9 @@
 ;; ───────────────────────────────────────────────────────
 
 (defun my/get-vs-build-options ()
-  "交互式选择 Visual Studio 构建配置和平台。默认 Debug | Win32。"
+  "交互式选择 Visual Studio 构建配置和平台。默认 Debug | x86。"
   (let ((config (completing-read "配置: " '("Debug" "Release") nil t "Debug"))
-        (plat (completing-read "平台: " '("Win32" "x64") nil t "Win32")))
+        (plat (completing-read "平台: " '("x86" "x64") nil t "x86")))
     (list config plat)))
 
 (defun my/compile-project ()
@@ -140,7 +140,7 @@
                (plat (nth 1 opts))
                ;; 项目名（假设与 sln 文件名一致）
                (exe-name (file-name-base sln-file))
-               ;; 假设输出路径为 ./Win32/Debug/ProjectName.exe
+               ;; 假设输出路径为 ./Debug/ProjectName.exe
                (out-dir (expand-file-name (format "%s/%s" plat conf) dir))
                (exe-path (expand-file-name (concat exe-name ".exe") out-dir)))
           (if (file-exists-p exe-path)
