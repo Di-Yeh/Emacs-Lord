@@ -6,12 +6,11 @@
  '(doom-modeline-check-simple-format t nil nil "Customized with use-package doom-modeline")
  '(package-selected-packages
 	 '(company counsel dashboard doom-modeline doom-themes drag-stuff
-						 flycheck helm-lsp helm-xref highlight-parentheses
-						 indent-bars ivy-posframe lsp-treemacs lsp-ui lua-mode
-						 marginalia markdown-preview-mode meow neotree
-						 nerd-icons-completion nerd-icons-dired nerd-icons-ibuffer
-						 page-break-lines projectile quickrun restart-emacs
-						 treemacs-nerd-icons yasnippet)))
+						 flycheck highlight-parentheses indent-bars ivy-posframe
+						 lsp-mode lsp-ui lua-mode marginalia markdown-preview-mode
+						 meow neotree nerd-icons-completion nerd-icons-dired
+						 nerd-icons-ibuffer page-break-lines projectile quickrun
+						 restart-emacs treemacs-nerd-icons)))
 
 
 
