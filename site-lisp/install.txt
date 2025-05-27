@@ -1,6 +1,5 @@
 git clone --depth=1 -b master https://github.com/emacs-eaf/emacs-application-framework.git
 
-python
 pip3 install PyQt6
 pip3 install pyqt6-webengine 
 pip3 install sexpdata
@@ -8,4 +7,15 @@ pip3 install epc
 pip3 install fitz
 pip3 install frontend
 
-python ./install-eaf.py
+chmod +x ./install-eaf.py
+./install-eaf.py
+
+
+git clone https://github.com/blahgeek/emacs-lsp-booster.git
+
+cargo install emacs-lsp-booster
+
+
+git clone https://github.com/manateelazycat/lsp-bridge.git
+
+pip install epc orjson sexpdata six paramiko watchdog
