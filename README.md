@@ -47,7 +47,7 @@ pip install epc orjson sexpdata six paramiko watchdog
 5. 启动后查看lsp-bridge的log查看是否能够正常运行
 
 ### dirvish配置🗂️
-1. 安装fd.exe [fd]([https://www.rust-lang.org/tools/install](https://github.com/sharkdp/fd/releases))（下载对应操作系统的版本）
+1. 安装fd.exe [fd](https://github.com/sharkdp/fd/releases)（下载对应操作系统的版本）
 2. 把下载好的档案移动到"site-lisp"的文件目录，并把名称改为"fd"即可
 
 
