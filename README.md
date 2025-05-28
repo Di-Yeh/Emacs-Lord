@@ -45,3 +45,10 @@ pip install epc orjson sexpdata six paramiko watchdog
 ```
 4. 在启动大型项目或文件时会询问python的安装路径（仅限Windows系统），在cmd执行`where python`指令并把安装路径复制到输入框中
 5. 启动后查看lsp-bridge的log查看是否能够正常运行
+
+### dirvish配置🗂️
+1. 安装fd.exe [fd]([https://www.rust-lang.org/tools/install](https://github.com/sharkdp/fd/releases))（下载对应操作系统的版本）
+2. 把下载好的档案移动到"site-lisp"的文件目录，并把名称改为"fd"即可
+
+
+
