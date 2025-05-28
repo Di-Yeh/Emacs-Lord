@@ -136,8 +136,8 @@
    '("f" . find-file)
    '("b" . switch-to-buffer)
    '("?" . meow-cheatsheet)
-	 '("S" . dirvish-side)
-	 '("D" . dirvish))
+	 '("d" . dirvish)
+	 '("n" . neotree-toggle))
 	
   ;; 缩进相关绑定
   (meow-normal-define-key

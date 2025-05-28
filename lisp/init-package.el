@@ -47,6 +47,10 @@
 (use-package ace-window 
              :bind (("M-o" . 'ace-window)))
 
+(use-package neotree)
+(add-to-list 'load-path "/some/path/neotree")
+(require 'neotree) 
+;(setq neo-theme (if (display-graphic-p) 'icons 'arrow))
 
 ;;; -*- lexical-binding: t -*-
 (use-package dirvish
