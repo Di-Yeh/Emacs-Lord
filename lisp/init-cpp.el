@@ -96,21 +96,25 @@
 ;; F5：运行构建后的可执行文件（仅限 .sln 工程）
 ;; 假设输出路径为 $(Platform)/$(Configuration)/项目名.exe
 ;; ───────────────────────────────
-
 (defun my/run-vs-exe ()
-  "运行 Visual Studio 项目生成的 exe 文件（根据 sln 工程名自动推断）。"
+  "运行 Visual Studio 项目生成的 exe 文件（根据 sln 工程名自动推断）。
+当选择 x86 时，输出路径设为 /Debug/ProjectName.exe 或 /Release/ProjectName.exe；
+x64 输出路径保持为 x64/Debug 或 x64/Release。"
   (interactive)
   (let* ((dir (locate-dominating-file default-directory
-                                      (lambda (f) (directory-files f nil "\\.sln$"))))
+                                      (lambda (f)
+                                        (directory-files f nil "\\.sln$"))))
          (sln-file (car (directory-files dir t "\\.sln$"))))
     (if sln-file
         (let* ((opts (my/get-vs-build-options))
                (conf (nth 0 opts))
                (plat (nth 1 opts))
-               ;; 项目名（假设与 sln 文件名一致）
+               ;; 假设项目名与 sln 文件名一致
                (exe-name (file-name-base sln-file))
-               ;; 假设输出路径为 ./Debug/ProjectName.exe
-               (out-dir (expand-file-name (format "%s/%s" plat conf) dir))
+               ;; 对于 x86，仅使用配置名作为目录；对于 x64，使用 "x64/配置" 目录
+               (out-dir (if (string-equal plat "x86")
+                            (expand-file-name conf dir)
+                          (expand-file-name (format "%s/%s" plat conf) dir)))
                (exe-path (expand-file-name (concat exe-name ".exe") out-dir)))
           (if (file-exists-p exe-path)
               (progn
@@ -118,6 +122,7 @@
                 (start-process "run-vs-exe" "*run*" exe-path))
             (message "可执行文件不存在: %s" exe-path)))
       (message "当前目录未找到 .sln 工程"))))
+
 
 (global-set-key (kbd "<C-f5>") #'my/run-vs-exe)
 

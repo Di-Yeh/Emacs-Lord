@@ -1,13 +1,14 @@
 ;;; init-lsp-booster.el --- LSP booster integration
 
 ;;; Commentary:
-;; 提供 emacs-lsp-booster 支持及 JSON patch
+;; 提供 emacs-lsp-booster 支持及 JSON patch，强制将 JSON 解析为 plist 格式。
 
 ;;; Code:
 
 (defvar lsp-booster-path (expand-file-name "~/.emacs.d/site-lisp/lsp-booster/lsp-booster.exe")
   "Path to emacs-lsp-booster executable.")
 
+;; 启用 plist 支持
 (setenv "LSP_USE_PLISTS" "true")
 (setq lsp-use-plists t)
 

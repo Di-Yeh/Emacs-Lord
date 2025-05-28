@@ -18,7 +18,6 @@
 (require 'init-lua)
 (require 'init-python)
 
-
 (require 'rainbow-identifiers)
 (add-hook 'prog-mode-hook 'rainbow-identifiers-mode)
 
@@ -60,7 +59,6 @@
 
 
 
-
 (add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-application-framework/")
 (require 'eaf)
 (require 'eaf-pdf-viewer)
@@ -68,7 +66,6 @@
 (require 'eaf-music-player)
 (require 'eaf-video-player)
 (require 'eaf-image-viewer)
-
 
 (when (file-exists-p custom-file)
   (load-file custom-file))
