@@ -31,11 +31,6 @@ chmod +x ./install-eaf.py
 ./install-eaf.py
 ```
 
-### lsp-booster配置🛠️
-1. 在"site-lisp"的文件目录运行这行命令`git clone https://github.com/blahgeek/emacs-lsp-booster.git`（前提是要先安装git）
-2. 安装rustup.exe [Rust toolchain](https://www.rust-lang.org/tools/install)
-3. 运行`cargo install emacs-lsp-booster`这段代码即可
-
 ### lsp-bridge配置🌉
 1. 在"site-lisp"的文件目录运行这行命令`git clone https://github.com/manateelazycat/lsp-bridge.git`（前提是要先安装git）
 2. 安装python (这里以python 3.11做演示)
