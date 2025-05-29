@@ -1,17 +1,9 @@
-;;; init-lsp-mode.el --- LSP configuration via lsp-mode (using plist with lsp-booster)
+;;; init-lsp-mode.el --- LSP configuration via lsp-mode
 
 ;;; Commentary:
-;; 此配置会在启动时自动安装 lsp-mode 及相关插件，
-;; 并在 lsp-mode 初始化前由 lsp-booster 强制把 JSON 解析设为 plist。
-;; 为了兼容 lsp-mode 内部可能调用 gethash，我们添加了一个 advice，
-;; 如果传入的是 plist（列表）且 lsp-use-plists 为 t，则返回 plist-get 的值。
-;;
-;; 注意：不再设置 json-object-type 为 hash-table，而是完全依赖 lsp-booster 的设置。
-
+;; 此配置自动安装并初始化 lsp-mode 以及相关插件，
+;; 并借助 lsp-booster 确保 JSON 解析采用 plist 方式。
 ;;; Code:
-
-;; 不要设置 json-object-type 为 hash-table，让 lsp-booster 设置生效
-;; (setq json-object-type 'hash-table)  <-- 这行请删除或注释掉
 
 ;; 定义需要安装的插件列表
 (setq lsp-mode-required-packages
@@ -21,8 +13,6 @@
 (when (cl-find-if-not #'package-installed-p lsp-mode-required-packages)
   (package-refresh-contents)
   (mapc #'package-install lsp-mode-required-packages))
-
-(require 'init-lsp-booster)  ; 加载 lsp-booster，这会设置 plist 模式（见下面的文件）
 
 (use-package lsp-mode
   :ensure t
@@ -44,7 +34,7 @@
         lsp-enable-snippet nil
         lsp-auto-install-server nil)
   (add-hook 'after-save-hook #'flycheck-buffer)
-  ;; 自动设定 roblox lua-language-server 路径（根据系统类型拼接路径）
+  ;; 自动设定 Lua 语言服务器路径
   (let* ((base-path (cond
                      ((eq system-type 'windows-nt)
                       "C:/Users/user/AppData/Roaming/.emacs.d/.cache/lsp/lua-roblox-language-server")
@@ -69,13 +59,21 @@
   :config
   (setq lsp-ui-doc-enable t
         lsp-ui-doc-show-with-cursor t
-        lsp-ui-doc-delay 1
         lsp-ui-doc-position 'at-point
+        lsp-ui-doc-delay 1.5
         lsp-ui-sideline-enable t
         lsp-ui-sideline-show-hover t
         lsp-ui-sideline-show-diagnostics t
         lsp-ui-sideline-show-code-actions t
-        lsp-ui-sideline-delay 1))
+        lsp-ui-sideline-delay 1
+        lsp-ui-peek-enable t
+        lsp-ui-peek-peek-height 20
+        lsp-ui-peek-list-width 50
+        lsp-ui-peek-fontify 'on-demand
+        lsp-ui-imenu-auto-refresh t
+        lsp-ui-imenu-kind-position 'top))
+(define-key global-map (kbd "C-c l d") 'lsp-ui-doc-show)
+(define-key global-map (kbd "C-c l l") 'lsp-ui-doc-hide)
 
 (use-package company
   :ensure t
@@ -83,13 +81,10 @@
   :config
   (setq company-minimum-prefix-length 1
         company-show-quick-access t))
-
+  
 (use-package flycheck
   :ensure t
   :init (global-flycheck-mode))
-
-(define-key global-map (kbd "C-c l d") 'lsp-ui-doc-show)
-(define-key global-map (kbd "C-c l l") 'lsp-ui-doc-hide)
 
 (require 'helm-xref)
 (helm-mode)
@@ -108,15 +103,6 @@
 (with-eval-after-load 'lsp-mode
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
   (yas-global-mode))
-
-;; --- 关键：使得 lsp-mode 内部对 gethash 的调用支持 plist
-
-(defun my-lsp-gethash-advice (orig-fn key table &optional default)
-  "如果 TABLE 是 plist 集合（列表）且 lsp-use-plists 为真，则使用 plist-get；否则调用 ORIG-FN."
-  (if (and lsp-use-plists (listp table))
-      (or (plist-get table key) default)
-    (funcall orig-fn key table default)))
-(advice-add 'gethash :around #'my-lsp-gethash-advice)
 
 (provide 'init-lsp-mode)
 ;;; init-lsp-mode.el ends here

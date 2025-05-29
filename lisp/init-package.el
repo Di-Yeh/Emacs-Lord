@@ -56,10 +56,6 @@
 (use-package dirvish
   :ensure t
   :defer nil  ;; 确保启动时加载
-  :bind (("C-c C-d s" . dirvish-side)    ;; 垂直侧栏窗口（side）
-         ("C-c C-d d" . dirvish)      	 ;; 主窗口打开 Dirvish 文件浏览
-				 ("C-c C-d f" . dirvish-fd)			 ;; fd
-         ("C-c C-d t" . dirvish-toggle)) ;; 切换 Dirvish 布局
   :config
   ;; 指定 fd 的路径（不依赖于系统 PATH），确保 fd.exe 放到 site-lisp/fd 路径下
   (setq dirvish-fd-binary (expand-file-name "site-lisp/fd" user-emacs-directory))
@@ -186,33 +182,9 @@
   (treemacs-load-theme "nerd-icons"))
 
 
-
-(use-package markdown-mode
-  :ensure t
-  :mode ("\\.md\\'" . markdown-mode))
-
-(use-package markdown-preview-mode
-  :ensure t
-  :after markdown-mode
-  :bind (:map markdown-mode-command-map
-              ("p" . markdown-preview-mode)))
-
-;; 记得安装pandoc
-;; Windows: https://github.com/jgm/pandoc
-;; macOS/Linux:
-;; sudo apt install pandoc        # Ubuntu
-;; sudo pacman -S pandoc          # Arch
-;; brew install pandoc            # macOS
-(setq markdown-fontify-code-blocks-natively t)  ;; 高亮代码块
-
-
-
-
 ;; 安装 meow
 (use-package meow
   :ensure t)
-
-
 
 
 ;; Org mode 基础配置

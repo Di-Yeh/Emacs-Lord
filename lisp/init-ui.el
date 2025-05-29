@@ -46,64 +46,29 @@
 
 
 
+;;; -*- lexical-binding: t -*-
 
-;; 状态栏
 (use-package doom-modeline
   :ensure t
-  :init
-  (doom-modeline-mode 1)
+  :hook (after-init . doom-modeline-mode)
   :custom
-	(setq doom-modeline-support-imenu t)
-  ;; 显示图标（确保安装 nerd-font）
-  (doom-modeline-icon t)
-  ;; 显示 buffer 编号（适配 winum, window-numbering, ace-window）
-  (doom-modeline-window-width-limit fill-column)
-  (doom-modeline-window-number t)
-  ;; 显示项目根路径
-  (doom-modeline-project-detection 'auto)
-  ;; 显示 LSP 信息
-  (doom-modeline-lsp t)
-  ;; 显示Python虚拟环境版本
-  (doom-modeline-python-executable "python3")
-  ;; 显示当前行号
-  (doom-modeline-line-number t)
-  ;; flycheck/flymake 错误/警告
-  (doom-modeline-checker-simple-format t)
-  (doom-modeline-checker-icon t)
-  ;; 显示电池信息
-  (display-battery-mode t)
-  (doom-modeline-battery t)
-  ;; 显示匹配计数（anzu/iedit等）
-  (doom-modeline-anzu t)
-  ;; 宏录制提示
-  (doom-modeline-irc t)
-  (doom-modeline-env-version t)
-  (doom-modeline-recording t)
-  ;; 高度调整
-  (doom-modeline-height 30)
-  ;; 文件名样式
+  ;; 不显示各种 minor mode 名称（例如 helm、ivy、compy 等）
+  (doom-modeline-minor-modes nil)
+  ;; 启用内置字数统计（仅在 text-mode 派生的缓冲区中有效）
+  (doom-modeline-enable-word-count t)
+  ;; 文件名采用带项目名称的截断显示形式
   (doom-modeline-buffer-file-name-style 'truncate-with-project)
-  ;; 开启 major-mode 图标
-  (doom-modeline-major-mode-icon t)
-  ;; 显示 Git 信息
-  (doom-modeline-vcs-max-length 12)
-	;(doom-modeline-line-number t)     ;; 显示行号
-	(column-number-mode t)            ;; 显示列号（内建变量
-	(display-time-mode 1) ;; 常显
-	(display-time-24hr-format t) ;;格式
-	(doom-modeline-lsp-icon t)
-	(doom-modeline-time-analogue-clock t)
-	(doom-modeline-enable-word-count t)
-	(doom-modeline-buffer-name t)
-	(doom-modeline-percent-position '(-3 "%p"))
-	(doom-modeline-total-line-number t)
-	(doom-modeline-workspace-name t)
-	(doom-modeline-display-default-persp-name t)
-	(doom-modeline-persp-icon t)
-	(doom-modeline-time t)
-	(doom-modeline-gnus-timer 2)
-	;; Don’t compact font caches during GC.
-	(inhibit-compacting-font-caches t))
+  ;; 设定 buffer-position 的显示格式，显示当前行、列以及百分比
+  (doom-modeline-buffer-position-format '("L %l, C %c (%p)"))
+  :config
+  (column-number-mode 1)
+  (display-line-numbers-mode 1))
+
+
+
+
+
+
 
 
 
