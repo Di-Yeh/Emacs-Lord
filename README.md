@@ -36,7 +36,7 @@ chmod +x ./install-eaf.py
 2. 安装python (这里以python 3.11做演示)
 3. 使用`pip`安装以下依赖库
 ```bash
-pip install epc orjson sexpdata six paramiko watchdog
+pip install epc orjson sexpdata six paramiko watchdog pyright
 ```
 4. 在启动大型项目或文件时会询问python的安装路径（仅限Windows系统），在cmd执行`where python`指令并把安装路径复制到输入框中
 5. 启动后查看lsp-bridge的log查看是否能够正常运行
