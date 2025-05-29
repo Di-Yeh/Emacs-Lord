@@ -11,11 +11,6 @@ chmod +x ./install-eaf.py
 ./install-eaf.py
 
 
-git clone https://github.com/blahgeek/emacs-lsp-booster.git
-
-cargo install emacs-lsp-booster
-
-
 git clone https://github.com/manateelazycat/lsp-bridge.git
 
 pip install epc orjson sexpdata six paramiko watchdog
