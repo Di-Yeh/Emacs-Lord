@@ -79,5 +79,42 @@
 
 (add-hook 'find-file-hook #'my/setup-lsp)
 
+
+
+(defun my/toggle-lsp-backend ()
+  "在当前缓冲区切换 LSP 后端：
+如果已激活 lsp-bridge，则关闭 lsp-bridge 并启用 lsp-mode；
+如果已激活 lsp-mode，则断开 lsp-mode 并启用 lsp-bridge；
+如果均未启用，则默认启动 lsp-mode。
+
+切换时会自动禁用当前后端的功能（如 company、flycheck、lsp-ui 等），以免彼此干扰。"
+  (interactive)
+  ;; 如果 lsp-bridge-mode 尚未定义，则先加载它
+  (unless (fboundp 'lsp-bridge-mode)
+    (require 'init-lsp-bridge))
+  (cond
+   ;; 如果当前 lsp-bridge 已经启动，则先关闭 lsp-bridge 后启动 lsp-mode
+   ((and (fboundp 'lsp-bridge-mode) (bound-and-true-p lsp-bridge-mode))
+    (lsp-bridge-mode -1)
+    ;; 如果 lsp-mode 已在其他地方激活（多数情况下不会同时启用），先做断开处理
+    (when (bound-and-true-p lsp-mode)
+      (lsp-disconnect))
+    (lsp)
+    (message "已切换到 lsp-mode"))
+   ;; 如果当前 lsp-mode 正在使用，则关闭 lsp-mode 并启动 lsp-bridge
+   ((bound-and-true-p lsp-mode)
+    (lsp-disconnect)
+    (lsp-bridge-mode 1)
+    (message "已切换到 lsp-bridge 模式"))
+   ;; 如果当前未启用任何后端，则默认启动 lsp-mode
+   (t
+    (lsp)
+    (message "当前未启用任何 LSP 后端，默认启动 lsp-mode"))))
+
+;; 为该命令绑定全局快捷键 "C-c l t"
+(global-set-key (kbd "C-c l t") #'my/toggle-lsp-backend)
+
+
+
 (provide 'init-lsp)
 ;;; init-lsp.el ends here

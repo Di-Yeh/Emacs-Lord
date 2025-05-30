@@ -148,19 +148,17 @@
 	    (indent-bars-mode 1)))
 
 
-(use-package nerd-icons
-  :ensure t)
-
-(use-package nerd-icons-dired
-  :hook (dired-mode . nerd-icons-dired-mode))
-
-(use-package nerd-icons-completion
-  :hook (marginalia-mode . nerd-icons-completion-mode)
+(use-package all-the-icons
+  :ensure t
   :config
-  (nerd-icons-completion-mode))
+  ;; 注意：安装完成后，请执行命令 M-x all-the-icons-install-fonts，
+  ;; 这将会自动下载并安装 all-the-icons 所需字体，如 Font Awesome、Material Design Icons 等，
+  ;; 否则图标可能显示为乱码或问号。
+  (unless (file-exists-p (expand-file-name "fonts/all-the-icons.ttf" user-emacs-directory))
+    (message "请运行 M-x all-the-icons-install-fonts 安装 all-the-icons 字体。")))
 
-(use-package nerd-icons-ibuffer
-  :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
+
+
 
 (use-package marginalia
   :ensure t

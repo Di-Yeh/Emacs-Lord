@@ -66,6 +66,8 @@
 (require 'eaf-music-player)
 (require 'eaf-video-player)
 (require 'eaf-image-viewer)
+(require 'eaf-markdown-previewer)
+(require 'eaf-org-previewer)
 
 (when (file-exists-p custom-file)
   (load-file custom-file))

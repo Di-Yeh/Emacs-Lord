@@ -81,7 +81,53 @@
   :config
   (setq company-minimum-prefix-length 1
         company-show-quick-access t))
-  
+
+(use-package company-box
+  :ensure t
+  :after company
+  :hook (company-mode . company-box-mode)
+  :config
+  ;; 如果系统是 Windows，则重载获取桌面名称的函数，以防止 wmctrl 的依赖问题
+  (when (eq system-type 'windows-nt)
+    (defun company-box--get-desktop-name ()
+      "在 Windows 上返回一个虚拟桌面名称，绕过 wmctrl 依赖。"
+      "windows-desktop"))
+  ;; 设置 company-box 使用 all-the-icons 来显示图标
+  (when (require 'all-the-icons nil t)
+    (setq company-box-icons-all-the-icons
+          `((Unknown       . ,(all-the-icons-material "find_in_page"             :height 0.8 :v-adjust -0.2))
+            (Text          . ,(all-the-icons-material "text_fields"              :height 0.8 :v-adjust -0.2))
+            (Method        . ,(all-the-icons-material "functions"                :height 0.8 :v-adjust -0.2))
+            (Function      . ,(all-the-icons-material "functions"                :height 0.8 :v-adjust -0.2))
+            (Constructor   . ,(all-the-icons-material "functions"                :height 0.8 :v-adjust -0.2))
+            (Field         . ,(all-the-icons-material "functions"                :height 0.8 :v-adjust -0.2))
+            (Variable      . ,(all-the-icons-material "adjust"                   :height 0.8 :v-adjust -0.2))
+            (Class         . ,(all-the-icons-material "class"                    :height 0.8 :v-adjust -0.2))
+            (Interface     . ,(all-the-icons-material "settings_input_component" :height 0.8 :v-adjust -0.2))
+            (Module        . ,(all-the-icons-material "view_module"              :height 0.8 :v-adjust -0.2))
+            (Property      . ,(all-the-icons-material "settings"                 :height 0.8 :v-adjust -0.2))
+            (Unit          . ,(all-the-icons-material "straighten"               :height 0.8 :v-adjust -0.2))
+            (Value         . ,(all-the-icons-material "filter_1"                 :height 0.8 :v-adjust -0.2))
+            (Enum          . ,(all-the-icons-material "plus_one"                 :height 0.8 :v-adjust -0.2))
+            (Keyword       . ,(all-the-icons-material "filter_center_focus"      :height 0.8 :v-adjust -0.2))
+            (Snippet       . ,(all-the-icons-material "short_text"               :height 0.8 :v-adjust -0.2))
+            (Color         . ,(all-the-icons-material "color_lens"               :height 0.8 :v-adjust -0.2))
+            (File          . ,(all-the-icons-material "insert_drive_file"        :height 0.8 :v-adjust -0.2))
+            (Reference     . ,(all-the-icons-material "collections_bookmark"     :height 0.8 :v-adjust -0.2))
+            (Folder        . ,(all-the-icons-material "folder"                   :height 0.8 :v-adjust -0.2))
+            (EnumMember    . ,(all-the-icons-material "people"                   :height 0.8 :v-adjust -0.2))
+            (Constant      . ,(all-the-icons-material "pause_circle_filled"      :height 0.8 :v-adjust -0.2))
+            (Struct        . ,(all-the-icons-material "streetview"               :height 0.8 :v-adjust -0.2))
+            (Event         . ,(all-the-icons-material "event"                    :height 0.8 :v-adjust -0.2))
+            (Operator      . ,(all-the-icons-material "control_point"            :height 0.8 :v-adjust -0.2))
+            (TypeParameter . ,(all-the-icons-material "class"                    :height 0.8 :v-adjust -0.2))
+            (Template      . ,(all-the-icons-material "short_text"               :height 0.8 :v-adjust -0.2))))
+    ;; 如果需要，你也可以设置 company-box-backends-colors 为 nil 或其它合适的值
+    (setq company-box-backends-colors nil)))
+
+
+
+
 (use-package flycheck
   :ensure t
   :init (global-flycheck-mode))
@@ -91,6 +137,7 @@
 (define-key global-map [remap find-file] #'helm-find-files)
 (define-key global-map [remap execute-extended-command] #'helm-M-x)
 (define-key global-map [remap switch-to-buffer] #'helm-mini)
+
 
 (which-key-mode)
 (setq gc-cons-threshold (* 100 1024 1024)
@@ -103,6 +150,8 @@
 (with-eval-after-load 'lsp-mode
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
   (yas-global-mode))
+
+
 
 (provide 'init-lsp-mode)
 ;;; init-lsp-mode.el ends here

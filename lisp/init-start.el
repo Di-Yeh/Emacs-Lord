@@ -50,7 +50,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
-'(default ((t (:family "CaskaydiaMono NF" :foundry "outline" :slant normal :weight bold :height 120 :width normal)))))
+'(default ((t (:family "Cascadia Code SemiBold" :foundry "outline" :slant normal :weight semi-bold :height 120 :width normal)))))
 
 
 (use-package emacs
