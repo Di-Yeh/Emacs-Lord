@@ -1,15 +1,12 @@
 # 我的 Emacs Lord 配置👑
 
 ## 展示图✨
-![1](https://github.com/user-attachments/assets/65e2afed-52f7-43c2-9c7b-d318b476da72)
+
+![1](https://github.com/user-attachments/assets/6127b3c9-c6f1-4579-804d-c208d25e0b24)
 ****
-![2](https://github.com/user-attachments/assets/c2a86799-34c4-4ba5-9761-dc28863ddad0)
+![2](https://github.com/user-attachments/assets/79ea4ae7-ad33-4dbd-97a7-616ea2b640dd)
 ****
-![3](https://github.com/user-attachments/assets/79ea4ae7-ad33-4dbd-97a7-616ea2b640dd)
-****
-![4](https://github.com/user-attachments/assets/41d4e691-4f50-4d2b-8aa9-6d841d412429)
-****
-![5](https://github.com/user-attachments/assets/8bcfb61a-91a0-4063-8d6d-274172e57af9)
+![3](https://github.com/user-attachments/assets/8bcfb61a-91a0-4063-8d6d-274172e57af9)
 
 
 ## 字体配置✒️
