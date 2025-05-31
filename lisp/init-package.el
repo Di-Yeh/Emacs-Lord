@@ -78,8 +78,6 @@
   )
 
 
-(use-package  projectile)
-
 
 (use-package highlight-parentheses
   :ensure t)
@@ -121,8 +119,6 @@
 		
 		:hook ((prog-mode) . indent-bars-mode))
 
-;(setq-default indent-tabs-mode nil)  ; 使用空格缩进
-;(setq-default tab-width 4)           ; tab = 4 空格
 
 (setq
     indent-bars-no-descend-lists t
@@ -164,20 +160,6 @@
   :ensure t
   :config
   (marginalia-mode))
-
-(use-package which-key
-  :ensure t
-  :config
-  (which-key-mode))
-
-
-(use-package treemacs
-  :ensure t)
-
-(use-package treemacs-nerd-icons
-  :after treemacs
-  :config
-  (treemacs-load-theme "nerd-icons"))
 
 
 ;; 安装 meow
