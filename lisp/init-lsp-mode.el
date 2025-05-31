@@ -20,20 +20,11 @@
   :init
   (setq lsp-keymap-prefix "C-c l")
   :config
-  (setq lsp-clients-clangd-args
-        '("--header-insertion=never"
-          "--background-index"
-          "--pch-storage=memory"
-          "--clang-tidy=false"
-          "--completion-style=detailed"))
   (setq lsp-completion-provider :capf
-        lsp-enable-file-watchers nil
-        lsp-diagnostic-package :none
         lsp-enable-symbol-highlighting t
+				lsp-diagnostic-package :none
         lsp-prefer-flymake nil
-        lsp-enable-snippet nil
         lsp-auto-install-server nil)
-  (add-hook 'after-save-hook #'flycheck-buffer)
   ;; 自动设定 Lua 语言服务器路径
   (let* ((base-path (cond
                      ((eq system-type 'windows-nt)
@@ -73,7 +64,7 @@
         lsp-ui-imenu-auto-refresh t
         lsp-ui-imenu-kind-position 'top))
 (define-key global-map (kbd "C-c l s") 'lsp-ui-doc-show)
-(define-key global-map (kbd "C-c l h") 'lsp-ui-doc-hide)
+(define-key global-map (kbd "C-c l l") 'lsp-ui-doc-hide)
 
 
 
@@ -215,9 +206,16 @@ Windows 下使用 'where gdb'，Linux/Mac 下使用 'which -a gdb'。
     (setq company-box-backends-colors nil)))
 
 
+;;; -*- lexical-binding: t -*-
 (use-package flycheck
   :ensure t
-  :init (global-flycheck-mode))
+  :init
+  (global-flycheck-mode))
+
+
+
+
+
 
 (require 'helm-xref)
 (helm-mode)
