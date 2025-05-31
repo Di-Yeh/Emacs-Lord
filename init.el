@@ -17,6 +17,7 @@
 (require 'init-cpp)
 (require 'init-lua)
 (require 'init-python)
+(require 'init-markdown)
 
 (require 'rainbow-identifiers)
 (add-hook 'prog-mode-hook 'rainbow-identifiers-mode)
@@ -42,7 +43,7 @@
                          (#x2700  . #x27BF)  ; Dingbats
                          (#x1FA70 . #x1FAFF))) ; Extended emoji
           (set-fontset-font t (cons (car range) (cdr range)) emoji-font nil 'prepend))))))
-  
+
 (add-hook 'after-init-hook #'my/setup-emoji-font)
 
 
@@ -66,8 +67,9 @@
 (require 'eaf-music-player)
 (require 'eaf-video-player)
 (require 'eaf-image-viewer)
-(require 'eaf-markdown-previewer)
-(require 'eaf-org-previewer)
+
+
+
 
 (when (file-exists-p custom-file)
   (load-file custom-file))

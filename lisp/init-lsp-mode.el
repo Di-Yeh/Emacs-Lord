@@ -72,8 +72,97 @@
         lsp-ui-peek-fontify 'on-demand
         lsp-ui-imenu-auto-refresh t
         lsp-ui-imenu-kind-position 'top))
-(define-key global-map (kbd "C-c l d") 'lsp-ui-doc-show)
-(define-key global-map (kbd "C-c l l") 'lsp-ui-doc-hide)
+(define-key global-map (kbd "C-c l s") 'lsp-ui-doc-show)
+(define-key global-map (kbd "C-c l h") 'lsp-ui-doc-hide)
+
+
+
+
+
+
+;; =========================
+;; DAP 模式配置示例（交互选择参数，并动态修正尾随点问题）
+;; =========================
+(require 'ht)  ;; 用于构造 hash table
+
+;; 根据操作系统查找 gdb 可执行文件
+(defun my/get-gdb-path ()
+  "返回 gdb 可执行文件路径。
+Windows 下使用 'where gdb'，Linux/Mac 下使用 'which -a gdb'。
+当多于一项时，利用 completing-read 进行选择。"
+  (let* ((cmd (if (eq system-type 'windows-nt)
+                  "where gdb"
+                "which -a gdb"))
+         (output (shell-command-to-string cmd))
+         (lines (split-string output "\n" t)))  ;; 去除空行
+    (if (null lines)
+        (error "未找到 gdb，请确保 gdb 已安装且在 PATH 中")
+      (if (= (length lines) 1)
+          (string-trim (car lines))
+        (string-trim (completing-read "选择 gdb 路径: " lines nil t))))))
+
+(defun my/normalize-path (path)
+  "Normalize PATH for Windows: 将正斜杠替换成反斜杠并转成小写。"
+  (if (eq system-type 'windows-nt)
+      ;; 注意：这里 "\\" 表示实际的反斜杠，replace-regexp-in-string 会转换所有 '/' 为 '\\'
+      (downcase (replace-regexp-in-string "/" "\\\\" path))
+    path))
+
+(defun my/dap-register-c-c++ ()
+  "交互式注册一个 C/C++ 调试模板到 dap-mode。
+使用文件选择器选择目标可执行文件和目录选择器选择调试工作目录，
+并自动生成源映射（将当前文件所在目录映射到本地目录）。
+模板中使用 gdb 及你已经配置好的 gdb 路径。"
+  (interactive)
+  (let* ((gdb-path (my/normalize-path (my/get-gdb-path)))
+         ;; 如果当前 buffer 有文件，则使用其所在目录；否则使用 default-directory
+         (default-dir (if buffer-file-name
+                          (file-name-directory (file-truename buffer-file-name))
+                        default-directory))
+         ;; 用文件选择器选择目标可执行文件，显示完整路径
+         (target (my/normalize-path (read-file-name "请选择目标可执行文件: " default-dir nil t)))
+         ;; 用目录选择器选择调试工作目录
+         (cwd (my/normalize-path (read-directory-name "选择调试工作目录: " default-dir nil t)))
+         (src-map (ht)))
+    ;; 使用目录映射：将当前文件所在目录映射为本地目录
+    (when buffer-file-name
+      (let* ((local (my/normalize-path (file-truename buffer-file-name)))
+             (local-dir (file-name-directory local)))
+        (puthash (downcase local-dir) (downcase local-dir) src-map)
+        (message "注册模板时自动生成源映射：\n键: %s\n值: %s" local-dir local-dir)))
+    (dap-register-debug-template
+     "C/C++ Debug Registered"
+     (list :type "gdb"
+           :request "launch"
+           :name "C/C++ Debug Registered"
+           :gdbpath gdb-path
+           :target target
+           :cwd cwd
+           :sourceFileMap src-map))
+    (message "已注册调试模板：C/C++ Debug Registered")
+    (message "请确保编译时加上了调试符号 (-g) 且关闭了过高的优化，否则断点可能不会生效。")))
+
+;; ------------------------------
+;; 载入并初始化 dap-mode
+;; ------------------------------
+(use-package dap-mode
+  :ensure t
+  :after lsp-mode  ;; 确保 lsp-mode 先加载
+  :config
+  (dap-auto-configure-mode)
+  (require 'dap-gdb-lldb)
+  (dap-gdb-lldb-setup))
+
+;; ------------------------------
+;; 快捷键绑定
+;; ------------------------------
+(define-key global-map (kbd "C-c l d") 'dap-hydra)           ;; 调试操作面板
+(define-key global-map (kbd "C-c l R") 'my/dap-register-c-c++)   ;; 注册调试模板
+(define-key global-map (kbd "C-c l b") 'dap-breakpoint-toggle)   ;; 切换当前行断点
+
+
+
+
 
 (use-package company
   :ensure t
@@ -126,8 +215,6 @@
     (setq company-box-backends-colors nil)))
 
 
-
-
 (use-package flycheck
   :ensure t
   :init (global-flycheck-mode))
@@ -146,6 +233,8 @@
       company-idle-delay 0.0
       company-minimum-prefix-length 1
       lsp-idle-delay 0.1)
+
+
 
 (with-eval-after-load 'lsp-mode
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)

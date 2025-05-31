@@ -29,6 +29,51 @@
 ;; 启用 lsp-bridge 内建诊断功能（用于检查语法错误等）
 (setq lsp-bridge-diagnostic-enable t)
 
+;; --------------------------------------------
+;; 自定义格式化函数，为 LSP-Bridge 的候选项添加图标
+;; --------------------------------------------
+(defun my-lsp-bridge-custom-icon-format (item)
+  "使用 all‑the‑icons 为 LSP-Bridge 补全项 ITEM 添加图标。
+ITEM 是一个 plist，包含至少 :kind 和 :label 字段，:kind 表示候选项的类型。"
+  (let* ((kind (plist-get item :kind))
+         (icon (cond
+                ((string-equal kind "Unknown")       (all-the-icons-material "find_in_page"             :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Text")          (all-the-icons-material "text_fields"              :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Method")        (all-the-icons-material "functions"                :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Function")      (all-the-icons-material "functions"                :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Constructor")   (all-the-icons-material "functions"                :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Field")         (all-the-icons-material "functions"                :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Variable")      (all-the-icons-material "adjust"                   :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Class")         (all-the-icons-material "class"                    :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Interface")     (all-the-icons-material "settings_input_component" :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Module")        (all-the-icons-material "view_module"              :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Property")      (all-the-icons-material "settings"                 :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Unit")          (all-the-icons-material "straighten"               :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Value")         (all-the-icons-material "filter_1"                 :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Enum")          (all-the-icons-material "plus_one"                 :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Keyword")       (all-the-icons-material "filter_center_focus"      :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Snippet")       (all-the-icons-material "short_text"               :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Color")         (all-the-icons-material "color_lens"               :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "File")          (all-the-icons-material "insert_drive_file"        :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Reference")     (all-the-icons-material "collections_bookmark"     :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Folder")        (all-the-icons-material "folder"                   :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "EnumMember")    (all-the-icons-material "people"                   :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Constant")      (all-the-icons-material "pause_circle_filled"      :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Struct")        (all-the-icons-material "streetview"               :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Event")         (all-the-icons-material "event"                    :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Operator")      (all-the-icons-material "control_point"            :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "TypeParameter") (all-the-icons-material "class"                    :height 0.8 :v-adjust -0.2))
+                ((string-equal kind "Template")      (all-the-icons-material "short_text"               :height 0.8 :v-adjust -0.2))
+                (t "")))  ; 如果未匹配到，则不插入任何图标
+         (label (plist-get item :label)))
+    (concat icon " " label)))
+
+;; 将 LSP-Bridge 的候选项格式化函数设为自定义函数
+(setq lsp-bridge-completion-item-format #'my-lsp-bridge-custom-icon-format)
+
+
+
+
 ;; -------------------------
 ;; 请求防抖与预编译节流
 ;; -------------------------
@@ -94,22 +139,10 @@ shell 命令获得候选路径列表，供用户选择后保存。"
 ;; -------------------------
 (global-set-key (kbd "C-c l e") #'lsp-bridge-diagnostic-list)
 
-;; -------------------------
-;; 自动加载补全/模板插件配置：company, company-box, yasnippet
-;; -------------------------
-(defvar lsp-bridge-reload-extra-plugins t
-  "如果为非 nil，则在 lsp-bridge 模式下重新加载 company、company-box 和 yasnippet。")
 
-(when lsp-bridge-reload-extra-plugins
-  (add-hook 'lsp-bridge-mode-hook
-            (lambda ()
-              (require 'company)
-              (company-mode 1)
-              (require 'company-box)
-              (company-box-mode 1)
-              (require 'yasnippet)
-              (yas-minor-mode 1)
-              (message "已重新加载 company、company-box 和 yasnippet (用于补全与 snippet)."))))
+
+
+
 
 (provide 'init-lsp-bridge)
 ;;; init-lsp-bridge.el ends here
