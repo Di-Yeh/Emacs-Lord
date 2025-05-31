@@ -46,4 +46,7 @@ pip install epc orjson sexpdata six paramiko watchdog pyright
 2. 把下载好的档案移动到"site-lisp"的文件目录，并把名称改为"fd"即可
 
 
+### pandoc配置📑
+1. 安装pandoc [下载链接](https://github.com/jgm/pandoc/releases)（下载对应操作系统的版本）
+2. 直接安装即可
 
