@@ -79,10 +79,10 @@
 
 (defun my/toggle-comment-region-or-line ()
   "注释或取消注释当前行或选中区域"
-  (interactive)
-  (if (use-region-p)
-      (comment-or-uncomment-region (region-beginning) (region-end))
-    (comment-line 1)))
+	(interactive)
+	(if (use-region-p)
+			(comment-or-uncomment-region (region-beginning) (region-end))
+		(comment-line 1)))
 
 ;; ---------------------------
 ;; 自定义 “y” 用于复制选取范围内文字
@@ -98,6 +98,20 @@
         (message "区域已复制"))
     (kill-ring-save (line-beginning-position) (line-end-position))
     (message "当前行已复制")))
+
+
+(defun my/meow-change-char ()
+  "如果光标所在处有字符，则提示用户输入新的字符，
+并将该字符替换原字符。例如光标在 'a' 上，按下 'c'
+后，提示(Replace 'a' with: )，输入 'b' 后 'a' 替换成 'b'。"
+  (interactive)
+  (if (null (char-after))
+      (message "光标处没有字符！")
+    (let* ((current (char-after))
+           (prompt (format "Replace '%c' with: " current))
+           (new-char (read-char prompt)))
+      (delete-char 1)
+      (insert-char new-char 1))))
 
 
 ;; ---------------------------
@@ -150,18 +164,94 @@
                                          (message "删除了一个字符")))))))
 
 
-(defun my/meow-change-char ()
-  "如果光标所在处有字符，则提示用户输入新的字符，
-并将该字符替换原字符。例如光标在 'a' 上，按下 'c'
-后，提示(Replace 'a' with: )，输入 'b' 后 'a' 替换成 'b'。"
+
+
+(defun my-vim-w ()
+  "模仿 Vim 中的 `w` 命令，移动到下一个单词开头。"
   (interactive)
-  (if (null (char-after))
-      (message "光标处没有字符！")
-    (let* ((current (char-after))
-           (prompt (format "Replace '%c' with: " current))
-           (new-char (read-char prompt)))
-      (delete-char 1)
-      (insert-char new-char 1))))
+  ;; 如果光标处于字母或数字上，则先跳过当前单词字符，
+  ;; 否则先移动一个字符
+  (if (looking-at "\\sw")
+      (skip-syntax-forward "w")
+    (forward-char))
+  ;; 再跳过非单词字符，直至到达下个单词开头
+  (skip-syntax-forward "^w"))
+
+(defun my-vim-W ()
+  "模仿 Vim 中反向移动到上一个单词开头的命令（使用大写 W）。
+如果光标处于单词内部，则直接跳到该单词的起始处；
+如果光标已经位于单词起始处，则移动到上一个单词的开头。"
+  (interactive)
+  (if (and (not (bobp))
+           (eq (char-syntax (char-before)) ?w))
+      ;; 如果前面是单词字符，就跳过这些字符返回单词开头
+      (skip-syntax-backward "w")
+    (progn
+      ;; 如果本身不在单词中，则先跳过前方所有非单词字符，
+      ;; 再跳过前一个单词的所有单词字符
+      (skip-syntax-backward "^w")
+      (skip-syntax-backward "w"))))
+
+
+
+
+
+(defun my/interactive-query-replace ()
+  "在整个缓冲区内进行交互式替换操作（支持环绕搜索）。
+首先提示输入查找字符串和替换字符串。
+对于每个匹配：
+  - 按 [r] 替换当前匹配后继续查找，
+  - 按 [a] 全部替换整个缓冲区中所有匹配，
+  - 按 [q] 退出替换流程。
+
+本命令会从当前光标位置开始，搜索到缓冲区末尾后自动回到开头，
+直到遇到最初位置为止。"
+  (interactive)
+  (let ((search (read-string "查找: "))
+        (replace (read-string "替换为: "))
+        (count 0)
+        (start (point))
+        (wrapped nil))
+    ;; 如果整个缓冲区内没有匹配项，则直接返回
+    (if (not (save-excursion
+               (goto-char (point-min))
+               (search-forward search nil t)))
+        (message "在整个缓冲区中没有找到匹配项")
+      (catch 'done
+        (while t
+          (if (search-forward search nil t)
+              (let ((match-pos (match-beginning 0)))
+                ;; 如果已经环绕过且遇到的匹配在初始位置及以后，则退出循环
+                (when (and wrapped (>= match-pos start))
+                  (throw 'done nil))
+                (let ((choice (let ((minor-mode-overriding-map-alist nil))
+                                (read-char-choice "选项: [r] 替换当前, [a] 全部替换, [q] 退出: "
+                                                  '(?r ?a ?q)))))
+                  (cond
+                   ((eq choice ?r)
+                    (replace-match replace t t)
+                    (setq count (1+ count)))
+                   ((eq choice ?a)
+                    (replace-match replace t t)
+                    (setq count (1+ count))
+                    (save-excursion
+                      (goto-char (point-min))
+                      (while (search-forward search nil t)
+                        (replace-match replace t t)
+                        (setq count (1+ count))))
+                    (throw 'done nil))
+                   ((eq choice ?q)
+                    (throw 'done nil)))))
+            (if (not wrapped)
+                (progn
+                  (setq wrapped t)
+                  (goto-char (point-min)))
+              (throw 'done nil))))))
+    (message "替换结束，共替换 %d 处" count)))
+
+
+
+
 
 
 ;;	==============================================
@@ -188,7 +278,9 @@
    '("6" . meow-expand-6)
    '("7" . meow-expand-7)
    '("8" . meow-expand-8)
-   '("9" . meow-expand-9)))
+   '("9" . meow-expand-9)
+	 '("w" . my-vim-w)
+	 '("W" . my-vim-W)))
 
 (defun my/meow-setup ()
   "自定义 Meow 配置。"
@@ -210,6 +302,11 @@
    '("y" . my/meow-yank)
    '("p" . meow-clipboard-yank)
    '("u" . undo)
+	 '("c" . my/meow-change-char)
+	 '("F" . lsp-ui-peek-find-definitions)
+   '("f" . lsp-ui-peek-find-references)
+	 '("m" . lsp-ui-imenu)
+	 '("r" . my/interactive-query-replace)
    '("<escape>" . ignore))
   ;; Leader 键绑定（空格为前缀）
   (meow-leader-define-key
@@ -225,11 +322,7 @@
   ;; 缩进相关绑定
   (meow-normal-define-key
    '(">" . my/indent-region-or-tab)
-   '("<" . my/unindent-region)
-	 '("c" . my/meow-change-char)
-	 '("f" . lsp-ui-peek-find-definitions)
-   '("r" . lsp-ui-peek-find-references)
-   '("m" . lsp-ui-imenu)))
+   '("<" . my/unindent-region)))
 
 (my/meow-setup)
 (meow-global-mode 1)

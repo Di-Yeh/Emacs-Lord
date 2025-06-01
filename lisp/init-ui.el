@@ -55,22 +55,28 @@
 
 
 ;;; -*- lexical-binding: t -*-
-
+;; Doom Modeline 基本配置
+;; 基本 Doom Modeline 配置（保留你其他常用设置）
 (use-package doom-modeline
   :ensure t
   :hook (after-init . doom-modeline-mode)
   :custom
-  ;; 不显示各种 minor mode 名称（例如 helm、ivy、compy 等）
+  ;; 保持你原有的其他设置
   (doom-modeline-minor-modes nil)
-  ;; 启用内置字数统计（仅在 text-mode 派生的缓冲区中有效）
-  (doom-modeline-enable-word-count t)
-  ;; 文件名采用带项目名称的截断显示形式
-  (doom-modeline-buffer-file-name-style 'truncate-with-project)
-  ;; 设定 buffer-position 的显示格式，显示当前行、列以及百分比
+  ;; 我们这里关闭内置的字数统计，以便完全使用自定义的段
+  (doom-modeline-enable-word-count nil)
   (doom-modeline-buffer-position-format '("L %l, C %c (%p)"))
+  (doom-modeline-window-number t)
+  (doom-modeline-checker-simple-format t)
+  (doom-modeline-persp-icon t)
+  (doom-modeline-lsp t)
+  (doom-modeline-env-version t)
+  (doom-modeline-env-enable-python t)
+  (doom-modeline-env-python-executable "python")
   :config
   (column-number-mode 1)
   (display-line-numbers-mode 1))
+
 
 
 
