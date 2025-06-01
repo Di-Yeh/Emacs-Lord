@@ -185,6 +185,21 @@
 
 
 
+;; --------------------------------------------
+;; 配置 Projectile：项目管理工具，用于快速在项目间跳转、搜索文件、查找符号等
+;; --------------------------------------------
+(use-package projectile
+  :ensure t
+  :init
+  (projectile-mode +1)  ;; 全局启用 Projectile 模式
+  :config
+  ;; 根据实际情况设置你的项目目录，可以添加多个目录
+  (setq projectile-project-search-path '("~/projects/"))
+  ;; 结合 Ivy 使用更加流畅的补全体验
+  (setq projectile-completion-system 'ivy)
+  ;; 建议绑定 Projectile 的命令前缀，例如 "C-c p"
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+  (message "Projectile 已启动"))
 
 
 

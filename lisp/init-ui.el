@@ -52,33 +52,32 @@
 
 
 
-
-
 ;;; -*- lexical-binding: t -*-
-;; Doom Modeline 基本配置
-;; 基本 Doom Modeline 配置（保留你其他常用设置）
 (use-package doom-modeline
   :ensure t
   :hook (after-init . doom-modeline-mode)
   :custom
-  ;; 保持你原有的其他设置
-  (doom-modeline-minor-modes nil)
-  ;; 我们这里关闭内置的字数统计，以便完全使用自定义的段
-  (doom-modeline-enable-word-count nil)
-  (doom-modeline-buffer-position-format '("L %l, C %c (%p)"))
-  (doom-modeline-window-number t)
-  (doom-modeline-checker-simple-format t)
-  (doom-modeline-persp-icon t)
-  (doom-modeline-lsp t)
-  (doom-modeline-env-version t)
-  (doom-modeline-env-enable-python t)
-  (doom-modeline-env-python-executable "python")
-  :config
-  (column-number-mode 1)
-  (display-line-numbers-mode 1))
-
-
-
+  ;; 重要功能保留，精简不必要的部分
+  (doom-modeline-buffer-file-name-style 'truncate-with-project) ;; 文件名样式
+  (doom-modeline-window-number t)              ;; 显示 buffer 编号
+  (doom-modeline-project-detection 'auto)      ;; 项目检测
+  (doom-modeline-lsp t)                        ;; 显示 LSP 状态
+  (doom-modeline-line-number t)                ;; 显示当前行号
+  (doom-modeline-checker-simple-format t)      ;; flycheck/flymake 错误简化显示
+  (doom-modeline-checker-icon t)               ;; 显示错误图标
+  (doom-modeline-battery t)                    ;; 显示电池信息
+  (doom-modeline-anzu t)                       ;; 显示匹配计数
+  (doom-modeline-recording t)                  ;; 宏录制提示
+  (doom-modeline-height 30)                    ;; modeline 高度
+  (doom-modeline-major-mode-icon t)            ;; 显示 major-mode 图标
+  (doom-modeline-vcs-max-length 12)            ;; 显示 Git 信息
+  (column-number-mode t)                       ;; 显示列号
+  (display-time-mode 1)                        ;; 在 modeline 显示时间
+  (doom-modeline-enable-word-count t)          ;; 启用总字数统计
+  (doom-modeline-buffer-name t)                ;; 显示 buffer 名称
+  (doom-modeline-percent-position '(-3 "%p"))  ;; 显示文件百分比位置
+  (doom-modeline-total-line-number t)          ;; 显示总行数
+  (setq inhibit-compacting-font-caches t))
 
 
 

@@ -285,8 +285,11 @@
    '("f" . find-file)
    '("b" . switch-to-buffer)
    '("?" . meow-cheatsheet)
-	 '("d" . dirvish)
-	 '("n" . neotree-toggle))
+	 '("D" . dirvish)
+	 '("n" . neotree-toggle)
+	 '("p" . projectile-compile-project)
+	 '("e" . eshell)
+	 '("d" . dap-hydra))
 	
   ;; 缩进相关绑定
   (meow-normal-define-key

@@ -91,12 +91,43 @@
 (add-hook 'c++-mode-hook 'my-cpp-buffer-added)
 (add-hook 'kill-buffer-hook 'my-cpp-buffer-removed)
 
-
-
 (electric-pair-mode 1)
 
 
+
+
+
+;; --------------------------------------------
+;; 配置 cmake-mode：为 CMakeLists.txt 和 .cmake 文件提供语法高亮和缩进
+;; --------------------------------------------
+(use-package cmake-mode
+  :ensure t
+  :mode (("CMakeLists.txt\\'" . cmake-mode)
+         ("\\.cmake\\'" . cmake-mode))
+  :config
+  (message "cmake-mode 加载成功！"))
+
+;; --------------------------------------------
+;; 配置 cmake-ide：自动调用 CMake 生成编译配置
+;; 注意：如果你已经利用 CMake 导出 compile_commands.json 配置了 lsp-mode，
+;; 那么 cmake-ide 的作用就可以有限；但如果你希望让 Emacs 自动调用 CMake，
+;; 下面的配置仍然是有用的。
+;; --------------------------------------------
+(use-package cmake-ide
+  :ensure t
+  :config
+  ;; 指定构建目录，确保在该目录中生成编译文件（如 compile_commands.json）
+  (setq cmake-ide-build-dir "build")
+  (cmake-ide-setup)
+  (message "cmake-ide 配置完成"))
+
+
+
+
+
+;; ----------
 ;; g++编译配置
+;; ----------
 (use-package quickrun
   :ensure t
   :commands (quickrun)
