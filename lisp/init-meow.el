@@ -165,37 +165,6 @@
 
 
 
-
-(defun my-vim-w ()
-  "模仿 Vim 中的 `w` 命令，移动到下一个单词开头。"
-  (interactive)
-  ;; 如果光标处于字母或数字上，则先跳过当前单词字符，
-  ;; 否则先移动一个字符
-  (if (looking-at "\\sw")
-      (skip-syntax-forward "w")
-    (forward-char))
-  ;; 再跳过非单词字符，直至到达下个单词开头
-  (skip-syntax-forward "^w"))
-
-(defun my-vim-W ()
-  "模仿 Vim 中反向移动到上一个单词开头的命令（使用大写 W）。
-如果光标处于单词内部，则直接跳到该单词的起始处；
-如果光标已经位于单词起始处，则移动到上一个单词的开头。"
-  (interactive)
-  (if (and (not (bobp))
-           (eq (char-syntax (char-before)) ?w))
-      ;; 如果前面是单词字符，就跳过这些字符返回单词开头
-      (skip-syntax-backward "w")
-    (progn
-      ;; 如果本身不在单词中，则先跳过前方所有非单词字符，
-      ;; 再跳过前一个单词的所有单词字符
-      (skip-syntax-backward "^w")
-      (skip-syntax-backward "w"))))
-
-
-
-
-
 (defun my/interactive-query-replace ()
   "在整个缓冲区内进行交互式替换操作（支持环绕搜索）。
 首先提示输入查找字符串和替换字符串。
@@ -279,8 +248,8 @@
    '("7" . meow-expand-7)
    '("8" . meow-expand-8)
    '("9" . meow-expand-9)
-	 '("w" . my-vim-w)
-	 '("W" . my-vim-W)))
+	 '("w" . forward-word)
+	 '("W" . backward-word)))
 
 (defun my/meow-setup ()
   "自定义 Meow 配置。"
