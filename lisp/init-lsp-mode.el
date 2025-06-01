@@ -206,14 +206,13 @@ Windows 下使用 'where gdb'，Linux/Mac 下使用 'which -a gdb'。
     (setq company-box-backends-colors nil)))
 
 
-;;; -*- lexical-binding: t -*-
 (use-package flycheck
   :ensure t
   :init
-  (global-flycheck-mode))
-
-
-
+  (global-flycheck-mode)
+  :config
+  ;; 只在保存文件时检查，而不在编辑时自动检查
+  (setq flycheck-check-syntax-automatically '(save mode-enabled)))
 
 
 

@@ -61,8 +61,8 @@
       ;; 根据文件大小选择 LSP 后端
       (let ((size (when buffer-file-name
                     (nth 7 (file-attributes buffer-file-name)))))
-        (if (and size (> size (* 200 1024)))
-            (if (yes-or-no-p (format "该文件 (%d KB) 超过200KB，是否使用 lsp-bridge？ " (/ size 1024)))
+        (if (and size (> size (* 500 1024)))
+            (if (yes-or-no-p (format "该文件 (%d KB) 超过500KB，是否使用 lsp-bridge？ " (/ size 1024)))
                 (progn
                   (require 'init-lsp-bridge)
                   (lsp-bridge-mode)
