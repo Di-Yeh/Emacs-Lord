@@ -80,6 +80,9 @@
 	(doom-modeline-workspace-name t)						 										;; 项目名称
 	(doom-modeline-window-width-limit fill-column) 									;; 显示 buffer 编号
   (doom-modeline-window-number t)
+	(doom-modeline-modal t)
+	(doom-modeline-modal-icon nil)
+	(doom-modeline-highlight-modified-buffer-name t)
   (doom-modeline-battery t)                           						;; 显示电池信息
   (doom-modeline-anzu t)                       										;; 显示匹配计数
   (doom-modeline-recording t)                  										;; 宏录制提示
