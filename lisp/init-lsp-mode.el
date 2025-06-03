@@ -213,6 +213,7 @@ Windows 下使用 'where gdb'，Linux/Mac 下使用 'which -a gdb'。
   :config
   ;; 只在保存文件时检查，而不在编辑时自动检查
   (setq flycheck-check-syntax-automatically '(save mode-enabled)))
+ 
 
 
 

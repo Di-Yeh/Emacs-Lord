@@ -17,8 +17,6 @@
   :config
   ;; 加载 lsp-marksman 模块为 Markdown 启用 LSP 支持
   (require 'lsp-marksman)
-  ;; 如果 Marksman 不在系统 PATH 中，请取消下面行的注释并设置其完整路径
-  ;; (setq lsp-marksman-server-path "C:/your/path/to/marksman")
   ;; 避免 keymap 提前加载导致 markdown-mode-map 未定义
   (with-eval-after-load 'markdown-mode
     (define-key markdown-mode-map (kbd "C-c p") #'my-markdown-preview))
@@ -56,6 +54,11 @@
       ;; 将当前缓冲区内容缓存给 impatient-mode 进行预览
       (imp-httpd-make-cached-buffer (current-buffer)))
     (message "Preview available at: http://localhost:8080/imp/")))
+
+(with-eval-after-load 'lsp-mode
+  (add-to-list 'lsp-language-id-configuration
+               '(markdown-view-mode . "markdown")))
+
 
 (setq markdown-fontify-code-blocks-natively t)  ;; 高亮代码块
 

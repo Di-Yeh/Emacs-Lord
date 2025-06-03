@@ -165,58 +165,57 @@
 
 
 
-(defun my/interactive-query-replace ()
-  "在整个缓冲区内进行交互式替换操作（支持环绕搜索）。
-首先提示输入查找字符串和替换字符串。
-对于每个匹配：
-  - 按 [r] 替换当前匹配后继续查找，
-  - 按 [a] 全部替换整个缓冲区中所有匹配，
-  - 按 [q] 退出替换流程。
 
-本命令会从当前光标位置开始，搜索到缓冲区末尾后自动回到开头，
-直到遇到最初位置为止。"
+
+(defun my/interactive-query-replace ()
+  "在整个缓冲区内进行交互式替换操作（先搜索所有匹配，再逐个确认）。
+首先提示输入查找字符串和替换字符串，
+然后收集缓冲区中所有匹配位置，
+依次提示用户：
+  - [n] 替换当前匹配，
+  - [a] 替换所有剩余匹配，
+  - [q] 退出替换流程。"
   (interactive)
-  (let ((search (read-string "查找: "))
-        (replace (read-string "替换为: "))
-        (count 0)
-        (start (point))
-        (wrapped nil))
-    ;; 如果整个缓冲区内没有匹配项，则直接返回
-    (if (not (save-excursion
-               (goto-char (point-min))
-               (search-forward search nil t)))
-        (message "在整个缓冲区中没有找到匹配项")
-      (catch 'done
-        (while t
-          (if (search-forward search nil t)
-              (let ((match-pos (match-beginning 0)))
-                ;; 如果已经环绕过且遇到的匹配在初始位置及以后，则退出循环
-                (when (and wrapped (>= match-pos start))
-                  (throw 'done nil))
-                (let ((choice (let ((minor-mode-overriding-map-alist nil))
-                                (read-char-choice "选项: [r] 替换当前, [a] 全部替换, [q] 退出: "
-                                                  '(?r ?a ?q)))))
-                  (cond
-                   ((eq choice ?r)
-                    (replace-match replace t t)
-                    (setq count (1+ count)))
-                   ((eq choice ?a)
-                    (replace-match replace t t)
-                    (setq count (1+ count))
-                    (save-excursion
-                      (goto-char (point-min))
-                      (while (search-forward search nil t)
-                        (replace-match replace t t)
-                        (setq count (1+ count))))
-                    (throw 'done nil))
-                   ((eq choice ?q)
-                    (throw 'done nil)))))
-            (if (not wrapped)
-                (progn
-                  (setq wrapped t)
-                  (goto-char (point-min)))
-              (throw 'done nil))))))
-    (message "替换结束，共替换 %d 处" count)))
+  (let* ((search (read-string "查找: "))
+         (replace (read-string "替换为: "))
+         (matches '())
+         (count 0))
+    (if (string= search "")
+        (message "查找字符串不能为空")
+      ;; 收集整个缓冲区中所有匹配位置，并使用 copy-marker 保存当前位置
+      (save-excursion
+        (goto-char (point-min))
+        (while (search-forward search nil t)
+          (push (copy-marker (match-beginning 0)) matches)))
+      (if (null matches)
+          (message "在整个缓冲区中没有找到匹配项")
+        (setq matches (nreverse matches))
+        (while matches
+          (goto-char (car matches))
+          ;; 如果当前位置仍匹配（可能因之前的替换已改变内容），则开始交互，否则直接移除 marker。
+          (if (looking-at (regexp-quote search))
+              (let ((choice (let ((minor-mode-overriding-map-alist nil))
+                              (read-char-choice "选项: [n] 替换当前, [a] 替换全部, [q] 退出: " 
+                                                '(?n ?a ?q)))))
+                (cond
+                 ((eq choice ?n)
+                  (replace-match replace t t)
+                  (setq count (1+ count))
+                  (pop matches))
+                 ((eq choice ?a)
+                  (while matches
+                    (goto-char (car matches))
+                    (when (looking-at (regexp-quote search))
+                      (replace-match replace t t)
+                      (setq count (1+ count)))
+                    (pop matches))
+                  (keyboard-quit))  ; 退出所有替换
+                 ((eq choice ?q)
+                  (setq matches nil))))
+            (pop matches)))
+        (message "替换结束，共替换 %d 处" count)))))
+
+
 
 
 

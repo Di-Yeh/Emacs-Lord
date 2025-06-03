@@ -1,4 +1,13 @@
-﻿;; 自定义 C/C++ 缩进风格为 my-c-style
+﻿;;; init-cpp.el --- C/C++ Config
+;;; Commentary:
+;;; Code:
+
+(use-package clang-format+
+	:ensure t)
+(use-package clang-format
+	:ensure t)
+
+;; 自定义 C/C++ 缩进风格为 my-c-style
 (c-add-style "my-c-style"
              '("bsd"                          ;; 基于 BSD 风格（可换成 "k&r", "stroustrup", "java" 等）
                (c-basic-offset . 4)           ;; 设置缩进为 4 空格
@@ -12,11 +21,15 @@
   (setq c-basic-offset 4)
   (setq backward-delete-char-untabify-method 'nil) ;;退格删除
   (electric-indent-local-mode 1)             ;; 保持回车自动缩进开启
-  (add-hook 'before-save-hook 'clang-format-buffer nil t)) ;; 保存时自动格式化代码
+	;; 仅在 clang-format-buffer 存在时才添加 before-save-hook
+  (when (fboundp 'clang-format-buffer)
+    (add-hook 'before-save-hook 'clang-format-buffer nil t)))
 
 ;; 绑定钩子到 C/C++ 模式
 (add-hook 'c-mode-hook 'my-c-c++-mode-hook)
 (add-hook 'c++-mode-hook 'my-c-c++-mode-hook)
+
+(add-hook 'c-mode-common-hook #'clang-format+-mode)
 
 ;; -------------------------------
 ;; 全局哈希表：记录每个目录下打开的 C/C++ 缓冲区数目

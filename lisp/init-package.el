@@ -167,24 +167,6 @@
   :ensure t)
 
 
-;; Org mode 基础配置
-(use-package org
-  :ensure t                     				;; org 是 Emacs 自带的，不用重新安装
-  :hook ((org-mode . visual-line-mode))  ;; 自动换行更美观
-         ;;(org-mode . org-indent-mode))  ;; 缩进模式
-  :config
-  ;; 基本外观设置
-  (setq org-hide-emphasis-markers t     ;; 隐藏加粗/斜体等标记符号
-        org-startup-indented t          ;; 启动时自动缩进
-        org-ellipsis " ▼ "              ;; 折叠符号
-        org-pretty-entities t)          ;; 显示数学符号等更漂亮
-
-  ;; 绑定快捷键（可选）
-  (global-set-key (kbd "C-c c") 'org-capture)
-  (global-set-key (kbd "C-c a") 'org-agenda))
-
-
-
 ;; --------------------------------------------
 ;; 配置 Projectile：项目管理工具，用于快速在项目间跳转、搜索文件、查找符号等
 ;; --------------------------------------------
@@ -200,6 +182,64 @@
   ;; 建议绑定 Projectile 的命令前缀，例如 "C-c p"
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
   (message "Projectile 已启动"))
+
+
+(use-package iedit
+  :ensure t
+  :bind (("C-;" . iedit-mode))  ;; 将 C-; 绑定为 iedit-mode 开关
+  :config
+  ;; 可选配置：如果你不希望 iedit 额外绑定第二个切换键可以设置为 nil
+  (setq iedit-toggle-key-default nil)
+  ;; 为 iedit 模式添加一个退出按键（按 C-c C-c 退出 iedit 模式）
+  (define-key iedit-mode-keymap (kbd "C-c C-c") 'iedit-done))
+
+;; 自定义 iedit-dwim 函数：
+(defun iedit-dwim (arg)
+  "启动 iedit 模式。
+如果传入前缀参数，则在整个缓冲区中匹配，否则仅匹配当前函数内部的内容。"
+  (interactive "P")
+  (if arg
+      (iedit-mode)
+    (save-excursion
+      (save-restriction
+        (widen)
+        (narrow-to-defun)
+        (iedit-mode)))))
+
+(use-package multiple-cursors
+  :ensure t)
+
+
+
+;; 开启 org-mode 自动缩进和视觉折叠效果
+(setq org-startup-indented t)
+(setq org-ellipsis " ▼")  ; 用于折叠部分的视觉提示
+
+;; 使代码块使用 Emacs 本地语法高亮
+(setq org-src-tab-acts-natively t)
+
+;; 启动 org-mode 时默认启动折叠
+(setq org-hide-leading-stars t)
+
+;; 当需要让标题更加醒目时，可以调整标题字号，示例：
+(custom-set-faces
+ '(org-level-1 ((t (:inherit outline-1 :height 1.3))))
+ '(org-level-2 ((t (:inherit outline-2 :height 1.2))))
+ '(org-level-3 ((t (:inherit outline-3 :height 1.1)))))
+
+(use-package org-modern
+  :ensure t
+  :hook (org-mode . org-modern-mode))  ; 当进入 org-mode 时自动启用 org-modern
+
+(use-package org-download
+  :ensure t
+  :after org
+  :config
+  ;; 配置截图方式，例如使用 Windows 自带的 snippingtool，你也可以根据需要替换为其他工具
+  (setq org-download-screenshot-method "snippingtool")
+  ;; 如果需要，将图片保存到特定目录
+  (setq org-download-image-dir (expand-file-name "org-images" user-emacs-directory))
+  (org-download-enable))
 
 
 
