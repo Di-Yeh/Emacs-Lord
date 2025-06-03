@@ -1,4 +1,4 @@
-﻿;;; spaceline-ui.el--- Custom UI configuration 
+;;; init-ui.el--- Custom UI configuration 
 ;;; -*- lexical-binding: t -*-
 ;;; Commentary:
 ;; 这里可以简单描述下你的配置用途
@@ -77,12 +77,12 @@
   (doom-modeline-lsp t)                        										;; 显示 LSP 状态
   (doom-modeline-line-number t)                										;; 显示当前行号
   (doom-modeline-checker-icon t)               										;; 显示错误图标
-	(doom-modeline-workspace-name t)						 										;; 项目名称
-	(doom-modeline-window-width-limit fill-column) 									;; 显示 buffer 编号
+  (doom-modeline-workspace-name t)						 										;; 项目名称
+  (doom-modeline-window-width-limit fill-column) 									;; 显示 buffer 编号
   (doom-modeline-window-number t)
-	(doom-modeline-modal t)
-	(doom-modeline-modal-icon nil)
-	(doom-modeline-highlight-modified-buffer-name t)
+  (doom-modeline-modal t)
+  (doom-modeline-modal-icon nil)
+  (doom-modeline-highlight-modified-buffer-name t)
   (doom-modeline-battery t)                           						;; 显示电池信息
   (doom-modeline-anzu t)                       										;; 显示匹配计数
   (doom-modeline-recording t)                  										;; 宏录制提示
