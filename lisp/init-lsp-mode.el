@@ -152,9 +152,6 @@ Windows 下使用 'where gdb'，Linux/Mac 下使用 'which -a gdb'。
 (define-key global-map (kbd "C-c l b") 'dap-breakpoint-toggle)   ;; 切换当前行断点
 
 
-
-
-
 (use-package company
   :ensure t
   :hook (after-init . global-company-mode)

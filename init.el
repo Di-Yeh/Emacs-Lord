@@ -15,7 +15,6 @@
 (require 'init-ui)
 
 (require 'init-keymap)
-(require 'init-meow)
 
 (require 'init-cpp)
 (require 'init-lua)
@@ -51,7 +50,6 @@
 
 
 
-
 (add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-application-framework/")
 (require 'eaf)
 (require 'eaf-pdf-viewer)
@@ -59,9 +57,6 @@
 (require 'eaf-music-player)
 (require 'eaf-video-player)
 (require 'eaf-image-viewer)
-
-
-
 
 
 

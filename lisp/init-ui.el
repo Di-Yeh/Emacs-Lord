@@ -1,4 +1,4 @@
-;;; init-ui.el--- Custom UI configuration 
+﻿;;; init-ui.el--- Custom UI configuration 
 ;;; -*- lexical-binding: t -*-
 ;;; Commentary:
 ;; 这里可以简单描述下你的配置用途
@@ -48,54 +48,89 @@
           (load-theme 'catppuccin t)
           (message "已切换至 %s" choice))
       (progn
-        ;; 对于其它主题，choice 已经是 custom-available-themes 中的名称
-        (load-theme (intern choice) t)
-        (message "已切换至 %s" choice)))))
+				;; 对于其它主题，choice 已经是 custom-available-themes 中的名称
+				(load-theme (intern choice) t)
+				(message "已切换至 %s" choice)))))
 
 ;; 绑定全局快捷键 C-t 调用主题切换函数
 (global-set-key (kbd "C-t") 'my/switch-theme)
 
-
-
-
 ;; --- winum ---
-(use-package winum)
+(use-package winum
+	:ensure t)
 (require 'winum)
 (winum-mode)
 
-
-;; --- 配置 Doom ModeLine ---
-;;; -*- lexical-binding: t -*-
-(use-package doom-modeline
+;; --- eyebrowse ---
+(use-package eyebrowse
   :ensure t
-  :hook (after-init . doom-modeline-mode)
-  :custom
-  ;; 重要功能保留，精简不必要的部分
-  (doom-modeline-buffer-file-name-style 'truncate-with-project) 	;; 文件名样式
-  (doom-modeline-window-number t)              										;; 显示 buffer 编号
-  (doom-modeline-project-detection 'auto)      										;; 项目检测
-  (doom-modeline-lsp t)                        										;; 显示 LSP 状态
-  (doom-modeline-line-number t)                										;; 显示当前行号
-  (doom-modeline-checker-icon t)               										;; 显示错误图标
-  (doom-modeline-workspace-name t)						 										;; 项目名称
-  (doom-modeline-window-width-limit fill-column) 									;; 显示 buffer 编号
-  (doom-modeline-window-number t)
-  (doom-modeline-modal t)
-  (doom-modeline-modal-icon nil)
-  (doom-modeline-highlight-modified-buffer-name t)
-  (doom-modeline-battery t)                           						;; 显示电池信息
-  (doom-modeline-anzu t)                       										;; 显示匹配计数
-  (doom-modeline-recording t)                  										;; 宏录制提示
-  (doom-modeline-height 30)                    										;; modeline 高度
-  (doom-modeline-major-mode-icon t)            										;; 显示 major-mode 图标
-  (doom-modeline-vcs-max-length 12)            										;; 显示 Git 信息
-  (column-number-mode t)                       										;; 显示列号
-  (display-time-mode 1)                        										;; 在 modeline 显示时间
-  (doom-modeline-enable-word-count t)          										;; 启用总字数统计
-  (doom-modeline-buffer-name t)                										;; 显示 buffer 名称
-  (doom-modeline-percent-position '(-3 "%p"))  										;; 显示文件百分比位置
-  (doom-modeline-total-line-number t)          										;; 显示总行数
-  (setq inhibit-compacting-font-caches t))
+  :init
+  (eyebrowse-mode t))
+
+
+
+;; --- 自动安装所需要的包 ---
+(dolist (pkg '(memoize powerline spaceline))
+  (unless (package-installed-p pkg)
+    (package-install pkg)))
+
+;; -------------------------------
+;; 加载必要的包
+;; -------------------------------
+(require 'powerline)
+(require 'spaceline)
+(require 'spaceline-config)
+
+;; -------------------------------
+;; 使用 spaceline-spacemacs-theme
+;; -------------------------------
+;; 注意：该主题会自动配置 spaceline 的各个 segment，但会依赖 powerline-default-separator
+(use-package powerline
+  :ensure t
+  :config
+  (setq powerline-default-separator 'arrow))  ;; 设置箭头分隔符
+
+(use-package spaceline
+  :ensure t
+  :after powerline
+  :config
+  (require 'spaceline-config)
+  (spaceline-spacemacs-theme)
+  (spaceline-compile))
+
+
+;; -------------------------------
+;; 配置 Catppuccin (Mocha) 颜色
+;; -------------------------------
+;; 以下定义了几个常用的颜色变量，可以根据需要调整
+(setq my-catppuccin-bg      "#1e1e2e")  ;; 主背景色
+(setq my-catppuccin-fg      "#cdd6f4")  ;; 主前景色（文字颜色）
+(setq my-catppuccin-accent  "#f38ba8")  ;; 某些高亮或强调使用的颜色（例如按钮的颜色）
+(setq my-catppuccin-active1 "#252634")  ;; 用于部分区块的背景
+(setq my-catppuccin-active2 "#363646")  ;; 用于另一部分区块的背景
+
+;; 设置 mode-line 的总体外观
+(set-face-attribute 'mode-line nil
+                    :background my-catppuccin-bg
+                    :foreground my-catppuccin-fg
+                    :box nil)
+
+;; 为非激活窗口设置较暗的背景
+(set-face-attribute 'mode-line-inactive nil
+                    :background my-catppuccin-active1
+                    :foreground my-catppuccin-fg
+                    :box nil)
+
+;; 调整 spaceline 的内部分段所用的 face
+(set-face-attribute 'powerline-active1 nil
+                    :background my-catppuccin-active1
+                    :foreground my-catppuccin-fg)
+(set-face-attribute 'powerline-active2 nil
+                    :background my-catppuccin-active2
+                    :foreground my-catppuccin-fg)
+
+
+
 
 
 
