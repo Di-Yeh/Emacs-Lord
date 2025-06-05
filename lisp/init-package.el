@@ -212,21 +212,18 @@
 
 
 ;; --- 检查 site-lisp/fd 目录 ------------
-(when (file-directory-p (expand-file-name "site-lisp/fd" user-emacs-directory))
-  (use-package dirvish
-    :ensure t
-    :defer nil  ;; 确保启动时加载
-    :config
-    ;; 指定 fd 的路径（不依赖于系统 PATH），确保 fd.exe 放到 site-lisp/fd 路径下
-    (setq dirvish-fd-binary (expand-file-name "site-lisp/fd" user-emacs-directory))
-    ;; 使用 Dirvish 内置的 icons 主题，它会显示 Dirvish 自带的图标风格
-    (setq dirvish-theme 'icons)
-    ;; 是否显示隐藏文件；此处设为 nil 表示默认不显示隐藏文件
-    (setq dirvish-show-hidden-files nil)
-    ;; 设置 Dirvish 用于缓存持久数据（例如图片缓存、属性缓存）的目录
-    (setq dirvish-cache-dir (expand-file-name "dirvish-cache" user-emacs-directory))
-    ;; 根据 CUSTOMIZING.org 建议，进一步定制属性显示：
-    (setq dirvish-hide-details nil)))
+(use-package dirvish
+	:ensure t
+	:defer nil  ;; 确保启动时加载
+	:config
+	;; 使用 Dirvish 内置的 icons 主题，它会显示 Dirvish 自带的图标风格
+	(setq dirvish-theme 'icons)
+	;; 是否显示隐藏文件；此处设为 nil 表示默认不显示隐藏文件
+	(setq dirvish-show-hidden-files nil)
+	;; 设置 Dirvish 用于缓存持久数据（例如图片缓存、属性缓存）的目录
+	(setq dirvish-cache-dir (expand-file-name "dirvish-cache" user-emacs-directory))
+	;; 根据 CUSTOMIZING.org 建议，进一步定制属性显示：
+	(setq dirvish-hide-details nil))
 
 
 
