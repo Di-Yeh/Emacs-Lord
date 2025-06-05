@@ -2,12 +2,11 @@
 
 ## 展示图✨
 
-![1](https://github.com/user-attachments/assets/6127b3c9-c6f1-4579-804d-c208d25e0b24)
+![1](https://github.com/user-attachments/assets/c44a12b7-9284-4037-a313-10aa8bddfaa1)
 ****
-![2](https://github.com/user-attachments/assets/79ea4ae7-ad33-4dbd-97a7-616ea2b640dd)
+![2](https://github.com/user-attachments/assets/c8550837-59f5-4b80-b4eb-44fd151fcdcb)
 ****
-![3](https://github.com/user-attachments/assets/8bcfb61a-91a0-4063-8d6d-274172e57af9)
-
+![3](https://github.com/user-attachments/assets/d3956f3a-09bb-4758-9098-1788d82f9b0b)
 
 ## 字体配置✒️
 下载文件之后进入fonts目录里面，把字体下载好再进行配置
