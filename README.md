@@ -33,14 +33,13 @@ chmod +x ./install-eaf.py
 ```
 
 ### lsp-bridge配置🌉
-1. 在"site-lisp"的文件目录运行这行命令`git clone https://github.com/manateelazycat/lsp-bridge.git`（前提是要先安装git）
-2. 安装python (这里以python 3.11做演示)
-3. 使用`pip`安装以下依赖库
+1. 安装python (这里以python 3.11做演示)
+2. 使用`pip`安装以下依赖库
 ```bash
 pip install epc orjson sexpdata six paramiko watchdog pyright
 ```
-4. 在启动大型项目或文件时会询问python的安装路径（仅限Windows系统），在cmd执行`where python`指令并把安装路径复制到输入框中
-5. 启动后查看lsp-bridge的log查看是否能够正常运行
+3. 在启动大型项目或文件时会询问python的安装路径（仅限Windows系统），在cmd执行`where python`指令并把安装路径复制到输入框中
+4. 启动后查看lsp-bridge的log查看是否能够正常运行
 
 ### dirvish配置🗂️
 1. 安装fd.exe [fd](https://github.com/sharkdp/fd/releases)（下载对应操作系统的版本）
