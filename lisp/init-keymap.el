@@ -248,6 +248,8 @@
 ;; neotree
 (global-set-key (kbd "C-c n") 'neotree-toggle)
 
+;; drivish
+(global-set-key (kbd "C-c d") 'dirvish)
 
 
 
