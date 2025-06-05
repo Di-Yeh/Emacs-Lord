@@ -1,4 +1,4 @@
-# 我的 Emacs Lord 配置👑
+# 我的 Emacs Lord 配置🐦‍⬛
 
 ## 展示图✨
 
