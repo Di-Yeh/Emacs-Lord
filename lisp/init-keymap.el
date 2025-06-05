@@ -236,11 +236,17 @@
 ;; 將替換文字函數綁定到 C-c r
 (global-set-key (kbd "C-c r") 'my/interactive-query-replace)
 
-;; eyebrowse
-(global-set-key (kbd "C-c w") 'eyebrowse-create-named-window-config)
+;; lsp-ui-peek-find-definitions
+(global-set-key (kbd "C-c l F") 'lsp-ui-peek-find-definitions)
 
+;; lsp-ui-peek-find-references
+(global-set-key (kbd "C-c l f") 'lsp-ui-peek-find-references)
 
+;; lsp-ui-imenu
+(global-set-key (kbd "C-c l m") 'lsp-ui-imenu)
 
+;; neotree
+(global-set-key (kbd "C-c n") 'neotree-toggle)
 
 
 

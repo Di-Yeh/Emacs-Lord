@@ -9,7 +9,7 @@
   (setq dashboard-startup-banner '"~/.emacs.d/logo/DiYeh.png")
   (setq dashboard-center-content t)
   (setq dashboard-display-icons-p t)     ; display icons on both GUI and terminal
-  (setq dashboard-icon-type 'nerd-icons) ; use `nerd-icons' package
+  (setq dashboard-icon-type 'all-the-icons) ; use 'all-the-icons package
   (setq dashboard-set-heading-icons t)
 	(setq dashboard-set-init-info t)           ;; 显示启动时间信息
   (setq dashboard-set-file-icons t))

@@ -1,5 +1,5 @@
 ;;; init-package.el --- setttings for packages
-
+;;; -*- lexical-binding: t -*-
 ;;; Commentary:
 ;;; Code:
 
@@ -49,34 +49,7 @@
 
 (use-package neotree)
 (add-to-list 'load-path "/some/path/neotree")
-(require 'neotree) 
-;(setq neo-theme (if (display-graphic-p) 'icons 'arrow))
-
-;;; -*- lexical-binding: t -*-
-(use-package dirvish
-  :ensure t
-  :defer nil  ;; 确保启动时加载
-  :config
-  ;; 指定 fd 的路径（不依赖于系统 PATH），确保 fd.exe 放到 site-lisp/fd 路径下
-  (setq dirvish-fd-binary (expand-file-name "site-lisp/fd" user-emacs-directory))
-  ;; 使用 Dirvish 内置的 icons 主题，这里的 'icons 会让 Dirvish 显示它自带的图标和风格，
-  ;; 与当前 Emacs 主题无关（即按 Dirvish 自己的预设样式呈现）
-  (setq dirvish-theme 'icons)
-  ;; 是否显示隐藏文件：根据需要调整；此处设为 nil 表示默认不显示隐藏文件
-  (setq dirvish-show-hidden-files nil)
-  ;; 设置 Dirvish 用于缓存持久数据（例如图片缓存、属性缓存）的目录；
-  ;; 这个目录建议单独分离出来，便于 Dirvish 管理
-  (setq dirvish-cache-dir (expand-file-name "dirvish-cache" user-emacs-directory))
-  ;; 根据 CUSTOMIZING.org 建议，进一步定制属性显示（推荐使用 dirvish-attributes）：
-  ;; 设置文件列表中显示哪些文件详情，可以根据需要开启或关闭细节信息
-  ;; 例如，如果你希望一开始就显示文件的大小、日期等详细信息：
-  (setq dirvish-hide-details nil)
-  ;; 其他可选项：
-  ;; 你可以根据文档配置 dired-listing-switches（推荐使用 GNU ls 的长参数），
-  ;; 或者在 Windows 下保持默认。如需调整, 参考 CUSTOMIZING.org 中关于 ls 选项的说明。
-  ;; (setq insert-directory-program "gls") ; 如果你在 macOS 或 Linux 下使用 GNU ls
-  )
-
+(require 'neotree)
 
 
 (use-package highlight-parentheses
@@ -153,9 +126,6 @@
   (unless (file-exists-p (expand-file-name "fonts/all-the-icons.ttf" user-emacs-directory))
     (message "请运行 M-x all-the-icons-install-fonts 安装 all-the-icons 字体。")))
 
-
-
-
 (use-package marginalia
   :ensure t
   :config
@@ -210,7 +180,6 @@
   :ensure t)
 
 
-
 ;; 开启 org-mode 自动缩进和视觉折叠效果
 (setq org-startup-indented t)
 (setq org-ellipsis " ▼")  ; 用于折叠部分的视觉提示
@@ -240,6 +209,42 @@
   ;; 如果需要，将图片保存到特定目录
   (setq org-download-image-dir (expand-file-name "org-images" user-emacs-directory))
   (org-download-enable))
+
+
+;; --- 检查 site-lisp/fd 目录 ------------
+(when (file-directory-p (expand-file-name "site-lisp/fd" user-emacs-directory))
+  (use-package dirvish
+    :ensure t
+    :defer nil  ;; 确保启动时加载
+    :config
+    ;; 指定 fd 的路径（不依赖于系统 PATH），确保 fd.exe 放到 site-lisp/fd 路径下
+    (setq dirvish-fd-binary (expand-file-name "site-lisp/fd" user-emacs-directory))
+    ;; 使用 Dirvish 内置的 icons 主题，它会显示 Dirvish 自带的图标风格
+    (setq dirvish-theme 'icons)
+    ;; 是否显示隐藏文件；此处设为 nil 表示默认不显示隐藏文件
+    (setq dirvish-show-hidden-files nil)
+    ;; 设置 Dirvish 用于缓存持久数据（例如图片缓存、属性缓存）的目录
+    (setq dirvish-cache-dir (expand-file-name "dirvish-cache" user-emacs-directory))
+    ;; 根据 CUSTOMIZING.org 建议，进一步定制属性显示：
+    (setq dirvish-hide-details nil)))
+
+
+
+(when (file-directory-p "~/.emacs.d/site-lisp/emacs-application-framework/")
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-application-framework/")
+  (require 'eaf)
+  (require 'eaf-pdf-viewer)
+  (require 'eaf-browser)
+  (require 'eaf-music-player)
+  (require 'eaf-video-player)
+  (require 'eaf-image-viewer))
+
+
+(let ((lsp-bridge-dir (expand-file-name "site-lisp/lsp-bridge" user-emacs-directory)))
+  (unless (file-directory-p lsp-bridge-dir)
+    (message "lsp-bridge not found, cloning from GitHub...")
+    (shell-command (format "git clone https://github.com/manateelazycat/lsp-bridge.git %s" lsp-bridge-dir))
+    (message "lsp-bridge cloned successfully.")))
 
 
 
