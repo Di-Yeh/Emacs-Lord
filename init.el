@@ -15,6 +15,7 @@
 (require 'init-ui)
 
 (require 'init-keymap)
+(require 'init-meow)
 
 (require 'init-cpp)
 (require 'init-lua)
