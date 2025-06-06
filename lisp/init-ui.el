@@ -60,13 +60,22 @@
     "Major mode name."
     (format-mode-line mode-name))
 
-  ;; 当前项目路径（project.el）
-  (spaceline-define-segment my-project-dir
-    "Project root directory."
-    (when (fboundp 'project-current)
-      (when-let* ((proj (project-current))
-                  (root (car (project-roots proj))))
-        (abbreviate-file-name root))))
+	(defun my-project-dir-short (path)
+		"返回 PATH 的最后两个目录名称，用于显示项目路径的缩略信息。
+	例如：\"/home/user/projects/myproject\" 将返回 \"projects/myproject\"."
+		(let* ((path (directory-file-name path))  ;; 去掉尾部斜杠
+					 (components (split-string path "/" t)))
+			(if (>= (length components) 2)
+					(concat (nth (- (length components) 2) components) "/" (car (last components)))
+				(car components))))
+
+	;; ----------------- 当前项目路径（project.el） -----------------
+	(spaceline-define-segment my-project-dir
+		"显示项目根目录的缩略路径（仅显示最后两个目录名称）。"
+		(when (fboundp 'project-current)
+			(when-let* ((proj (project-current))
+									(root (car (project-roots proj))))
+				(my-project-dir-short (abbreviate-file-name root)))))
 
 
   (spaceline-define-segment my-flycheck
@@ -82,27 +91,27 @@
        (format " %d" (or .info 0))))))
 
 
-;; ----------------- lsp/dap 状态段 -----------------
-;; 定义一个全局变量来保存 dap-hydra 的状态
-(defvar my-dap-hydra-active nil
-  "非 nil 表示当前 dap-hydra 激活，应显示 DAP-Mode 状态。")
+	;; ----------------- lsp/dap 状态段 -----------------
+	;; 定义一个全局变量来保存 dap-hydra 的状态
+	(defvar my-dap-hydra-active nil
+		"非 nil 表示当前 dap-hydra 激活，应显示 DAP-Mode 状态。")
 
-;; 定义包装函数，将 dap-hydra 激活期间设置 my-dap-hydra-active 为 t，
-;; 当 hydra 退出时复位为 nil
-(defun my-dap-hydra-wrapper (orig-fun &rest args)
-  "包装 dap-hydra 类命令，在执行前设置 my-dap-hydra-active 为 t，退出后复位为 nil。"
-  (setq my-dap-hydra-active t)
-  (force-mode-line-update)
-  (unwind-protect
-      (apply orig-fun args)
-    (setq my-dap-hydra-active nil)
-    (force-mode-line-update)))
+	;; 定义包装函数，将 dap-hydra 激活期间设置 my-dap-hydra-active 为 t，
+	;; 当 hydra 退出时复位为 nil
+	(defun my-dap-hydra-wrapper (orig-fun &rest args)
+		"包装 dap-hydra 类命令，在执行前设置 my-dap-hydra-active 为 t，退出后复位为 nil。"
+		(setq my-dap-hydra-active t)
+		(force-mode-line-update)
+		(unwind-protect
+				(apply orig-fun args)
+			(setq my-dap-hydra-active nil)
+			(force-mode-line-update)))
 
-;; 尝试包装 dap-hydra 入口命令
-(when (fboundp 'dap-hydra)
-  (advice-add 'dap-hydra :around #'my-dap-hydra-wrapper))
-(when (fboundp 'dap-hydra/body)
-  (advice-add 'dap-hydra/body :around #'my-dap-hydra-wrapper))
+	;; 尝试包装 dap-hydra 入口命令
+	(when (fboundp 'dap-hydra)
+		(advice-add 'dap-hydra :around #'my-dap-hydra-wrapper))
+	(when (fboundp 'dap-hydra/body)
+		(advice-add 'dap-hydra/body :around #'my-dap-hydra-wrapper))
 
 	;; ------------------- LSP 状态段 -------------------
 	(spaceline-define-segment my-lsp-status
