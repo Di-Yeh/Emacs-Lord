@@ -180,6 +180,9 @@
    '("f" . lsp-ui-peek-find-references)
 	 '("m" . lsp-ui-imenu)
 	 '("r" . my/interactive-query-replace)
+	 '("t" . ts-fold-toggle)
+	 '("O" . ts-fold-open-all)
+	 '("C" . ts-fold-close-all)
    '("<escape>" . ignore))
   ;; Leader 键绑定（空格为前缀）
   (meow-leader-define-key

@@ -244,5 +244,45 @@
     (message "lsp-bridge cloned successfully.")))
 
 
+;; 确保已安装 tree-sitter 及 tree-sitter-langs（推荐使用 use-package 来管理它们）
+(use-package tree-sitter
+  :ensure t
+  :hook ((c-mode
+          c++-mode
+          lua-mode
+          python-mode)
+         . tree-sitter-mode)
+  :config
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+
+(use-package tree-sitter-langs
+  :ensure t
+  :after tree-sitter)
+
+;; 自动检查并安装 s，如果没有安装
+(unless (package-installed-p 's)
+  (package-refresh-contents)
+  (package-install 's))
+(require 's)
+
+;; 设定 ts-fold 所在目录（site-lisp/ts-fold）
+(let ((ts-fold-dir (expand-file-name "site-lisp/ts-fold" user-emacs-directory)))
+  (unless (file-directory-p ts-fold-dir)
+    (message "ts-fold not found, cloning from GitHub...")
+    (shell-command (format "git clone https://github.com/emacs-tree-sitter/ts-fold.git %s" ts-fold-dir))
+    (message "ts-fold cloned successfully."))
+  ;; 将 ts-fold 目录加入 load-path
+  (add-to-list 'load-path ts-fold-dir)
+  ;; 加载 ts-fold
+  (require 'ts-fold))
+
+;; 针对 C/C++、Lua、Python 等语言启用 ts-fold-mode
+(dolist (mode '(c-mode-hook c++-mode-hook lua-mode-hook python-mode-hook))
+  (add-hook mode #'ts-fold-mode))
+
+
+
+
+
 
 (provide 'init-package)

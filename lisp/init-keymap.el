@@ -248,6 +248,10 @@
 ;; neotree
 (global-set-key (kbd "C-c n") 'neotree-toggle)
 
+;; ts-fold
+(global-set-key (kbd "C-c t t") 'ts-fold-toggle)    ;; 切换当前语法节点的折叠状态
+(global-set-key (kbd "C-c t o") 'ts-fold-open-all)    ;; 展开所有折叠节点
+(global-set-key (kbd "C-c t c") 'ts-fold-close-all)   ;; 折叠所有语法节点
 
 
 
