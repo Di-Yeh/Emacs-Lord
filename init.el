@@ -17,11 +17,6 @@
 (require 'init-keymap)
 (require 'init-meow)
 
-(require 'init-cpp)
-(require 'init-lua)
-(require 'init-python)
-(require 'init-markdown)
-
 (require 'rainbow-identifiers)
 (add-hook 'prog-mode-hook 'rainbow-identifiers-mode)
 

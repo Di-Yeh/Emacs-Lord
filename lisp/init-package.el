@@ -281,6 +281,62 @@
   (add-hook mode #'ts-fold-mode))
 
 
+;; --- Emacs-gdb 调试 C/C++ 调试配置 ---
+;; 使用 use-package 配置内置 GDB 前端（gdb-mi）
+(use-package gdb
+  :ensure nil  ;; gdb 是内置包，不需要下载
+  :config
+  ;; 启用多窗口调试模式：启动 GDB 后自动把调试窗口布局为类似 IDE 的多个窗口，
+  ;; 包括：源代码窗口、GDB 命令窗口、断点及调用栈窗口、变量监视窗口等。
+  (setq gdb-many-windows t)
+  
+  ;; 自动打开主函数所在窗口。注意：这需要调试时 GDB 能正确定位 main 函数。
+  (setq gdb-show-main t))
+  
+
+;; 定义一个交互式函数，启动 GDB 调试 C/C++ 程序。
+;; 这里使用 -i=i / --annotate=3 参数，使 GDB 输出进入 MI 模式，从而让 Emacs 更好解析并显示信息。
+(defun my-gdb-run ()
+  "选择一个可执行文件并启动 GDB 调试会话。
+依次提示输入：
+  1. 程序名前的额外调试参数（例如 -ex \"break main\" 等）；
+  2. 程序名后的额外参数或命令（例如传递给程序的参数），
+如果后置参数不以 \"--args\" 开头，将自动添加该前缀。
+最终构造的命令格式为：
+  gdb [前置参数] -i=mi [可执行文件] [后置参数]"
+  (interactive)
+  (let* ((exe (read-file-name "选择可执行文件: "))  ; 选择待调试的可执行文件
+         (default-prompt (format "gdb %s " exe))
+         ;; 读取在程序名前添加的额外参数
+         (pre-extra (read-string (concat default-prompt "请输入在程序名前添加的额外参数(可选)：")))
+         ;; 若前置参数中包含了 -i=mi，则移除以避免重复
+         (pre-extra (if (string-match-p "-i=mi" pre-extra)
+                        (progn
+                          (message "检测到重复的 -i=mi 参数，已自动移除。")
+                          (replace-regexp-in-string "-i=mi\\s-*" "" pre-extra))
+                      pre-extra))
+         ;; 读取在程序名后添加的额外参数或命令
+         (post-extra (read-string (concat default-prompt "请输入在程序名后添加的额外参数(可选)：")))
+         ;; 如果后置参数不为空且不以 "--args" 开头，则自动添加 "--args " 前缀
+         (post-extra (if (and (not (string-empty-p post-extra))
+                              (not (string-prefix-p "--args" (string-trim-left post-extra))))
+                         (concat "--args " post-extra)
+                       post-extra))
+         ;; 构造最终启动命令：
+         ;; gdb [前置参数] -i=mi [可执行文件] [后置参数]
+         (final-cmd (concat "gdb " pre-extra " -i=mi " exe " " post-extra)))
+    ;; 显示最终命令供确认
+    (if (yes-or-no-p (format "最终启动命令：\n%s\n是否确认启动？" final-cmd))
+        (progn
+          (message "启动命令：%s" final-cmd)
+          (gdb final-cmd))
+      (message "已取消启动 GDB 调试会话."))))
+
+
+
+
+
+
 
 
 

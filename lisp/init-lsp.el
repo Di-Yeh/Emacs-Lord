@@ -38,17 +38,20 @@
 (defun my/setup-lsp ()
   "初始化 LSP 配置：
 - Emacs Lisp 文件跳过 LSP。
-- 对 prog-mode 文件，根据项目检测与文件大小选择后端：
-    * 小文件 (<=200KB)：启动 lsp-mode；
-    * 大文件 (>200KB)：提示使用 lsp-bridge（或 fallback 为 lsp-mode）。
-- 其他类型文件默认加载 lsp-mode。"
+- 对 C/C++、Python、Lua 的编程文件，根据项目检测与文件大小选择后端：
+    * 大文件 (>500KB)：提示使用 lsp-bridge（或 fallback 为 lsp-mode）。
+    * 小文件 (<=500KB)：启动 lsp-mode。
+- 对其他编程文件，不启用 LSP（避免卡顿）。"
   (unless (or (bound-and-true-p my-lsp-setup-done)
               (minibufferp))
     (setq-local my-lsp-setup-done t)
     (cond
+     ;; Emacs Lisp 直接跳过
      ((eq major-mode 'emacs-lisp-mode)
       (message "当前为 Emacs Lisp 文件，不启用 LSP。"))
-     ((derived-mode-p 'prog-mode)
+     ;; 仅对指定的编程语言启用 LSP
+     ((and (derived-mode-p 'prog-mode)
+           (member major-mode '(c-mode c++-mode python-mode lua-mode)))
       ;; 设定默认目录：尝试使用 Projectile 检测项目根目录
       (if (and (fboundp 'projectile-project-p)
                (projectile-project-p))
@@ -73,11 +76,15 @@
           (progn
             (lsp)
             (message "小文件，已激活 lsp-mode。")))))
+     ;; 对其他编程文件，不启用 LSP，给出提示
+     ((derived-mode-p 'prog-mode)
+      (message "当前编程语言（%s）未配置 LSP 支持。" major-mode))
      (t
       (lsp)
       (message "非编程文件，默认加载 lsp-mode。")))))
 
 (add-hook 'find-file-hook #'my/setup-lsp)
+
 
 
 
@@ -114,6 +121,11 @@
 ;; 为该命令绑定全局快捷键 "C-c l t"
 (global-set-key (kbd "C-c l t") #'my/toggle-lsp-backend)
 
+
+(require 'init-cpp)
+(require 'init-lua)
+(require 'init-python)
+(require 'init-markdown)
 
 
 (provide 'init-lsp)

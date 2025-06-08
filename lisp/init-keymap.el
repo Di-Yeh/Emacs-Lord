@@ -230,8 +230,8 @@
 ;; 將注釋函數綁定到 C-c /
 (global-set-key (kbd "C-c /") 'my/toggle-comment-region-or-line)
 
-;; 將替換字符函數綁定到 C-c c
-(global-set-key (kbd "C-c c") 'my/change-char)
+;; 將替換字符函數綁定到 C-c C
+(global-set-key (kbd "C-c C") 'my/change-char)
 
 ;; 將替換文字函數綁定到 C-c r
 (global-set-key (kbd "C-c r") 'my/interactive-query-replace)
@@ -242,8 +242,11 @@
 ;; lsp-ui-peek-find-references
 (global-set-key (kbd "C-c l f") 'lsp-ui-peek-find-references)
 
-;; lsp-ui-imenu
-(global-set-key (kbd "C-c l m") 'lsp-ui-imenu)
+;; lsp-treemacs-symbols
+(global-set-key (kbd "C-c l m") 'lsp-treemacs-symbols)
+
+;; lsp-treemacs-show-
+(global-set-key (kbd "C-c l e") 'lsp-treemacs-errors-list)
 
 ;; neotree
 (global-set-key (kbd "C-c n") 'neotree-toggle)
@@ -252,6 +255,49 @@
 (global-set-key (kbd "C-c t t") 'ts-fold-toggle)    ;; 切换当前语法节点的折叠状态
 (global-set-key (kbd "C-c t o") 'ts-fold-open-all)    ;; 展开所有折叠节点
 (global-set-key (kbd "C-c t c") 'ts-fold-close-all)   ;; 折叠所有语法节点
+
+;; g++配置快捷键
+(global-set-key (kbd "<f5>") 'quickrun)
+
+;; Cmake 构建快捷键
+(global-set-key (kbd "C-c c") 'my/create-cmake-project)
+
+;; Visual Studio 项目编译快捷键
+;; devenv.com
+(global-set-key (kbd "<f7>") #'my/compile-project)
+;; nmake
+(global-set-key (kbd "<C-f7>") #'my/nmake-build)
+;; 运行
+(global-set-key (kbd "<C-f5>") #'my/run-vs-exe)
+
+;; 将调试函数绑定到全局快捷键
+(global-set-key (kbd "C-M-g") 'my-gdb-run)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

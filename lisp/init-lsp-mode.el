@@ -67,8 +67,13 @@
 (define-key global-map (kbd "C-c l l") 'lsp-ui-doc-hide)
 
 
-
-
+(use-package lsp-treemacs
+  :ensure t
+  :after lsp  ;; 确保 lsp-mode 已经加载
+  :commands (lsp-treemacs-errors-list lsp-treemacs-symbols)
+  :config
+  ;; 开启 project 和 LSP workspace 双向同步（可选）
+  (lsp-treemacs-sync-mode 1))
 
 
 ;; =========================

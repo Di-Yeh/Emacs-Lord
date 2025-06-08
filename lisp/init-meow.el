@@ -178,7 +178,7 @@
 	 '("c" . my/change-char)
 	 '("F" . lsp-ui-peek-find-definitions)
    '("f" . lsp-ui-peek-find-references)
-	 '("m" . lsp-ui-imenu)
+	 '("m" . lsp-treemacs-symbols)
 	 '("r" . my/interactive-query-replace)
 	 '("t" . ts-fold-toggle)
 	 '("O" . ts-fold-open-all)

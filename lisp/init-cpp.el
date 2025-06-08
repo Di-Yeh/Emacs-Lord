@@ -152,8 +152,49 @@
       (:remove . ("%e")))
     :default "c++"))
 
-(global-set-key (kbd "<f5>") 'quickrun)
 
+
+
+;; ------------------------
+;; CMake 项目构建
+;; ------------------------
+
+(defun my/create-cmake-project ()
+  "创建一个新的 CMake 项目。依次询问项目目录名称和源文件名称，
+在指定目录下创建项目目录、源文件以及 CMakeLists.txt，并自动打开 CMakeLists.txt 供编辑。
+默认的 CMakeLists.txt 模板包含最低版本要求、项目名称设置（默认为项目目录名称）
+以及一个添加可执行文件的命令。"
+  (interactive)
+  ;; 这里不设默认值，直接使用当前 buffer 所在的目录作为起始目录
+  (let* ((base-dir (read-directory-name "请选择项目存放的父级目录: " default-directory nil nil))
+         (dir (read-string "请输入项目目录名称: "))
+         (src-file (read-string "请输入源文件名称 (例如 main.cpp): "))
+         (project-name (if (string= dir "") "MyProject" dir))
+         (project-dir (expand-file-name dir base-dir))
+         (src-path (expand-file-name src-file project-dir))
+         (cmakelists-path (expand-file-name "CMakeLists.txt" project-dir)))
+    ;; 创建项目目录（如果不存在则递归创建）
+    (unless (file-exists-p project-dir)
+      (make-directory project-dir t))
+    ;; 创建源文件（如果不存在，就创建并写入简单的注释模板）
+    (unless (file-exists-p src-path)
+      (with-temp-buffer
+        (insert "// " src-file " - 源文件\n")
+        (insert "// 这里编写项目 " project-name " 的代码\n")
+        (write-region (point-min) (point-max) src-path)))
+    ;; 创建 CMakeLists.txt 模板
+    (with-temp-buffer
+      (insert "cmake_minimum_required(VERSION 3.10)\n")
+      (insert (format "project(%s)\n\n" project-name))
+      (insert "# 设置 C++ 标准为 C++11\n")
+      (insert "set(CMAKE_CXX_STANDARD 11)\n")
+      (insert "set(CMAKE_CXX_STANDARD_REQUIRED ON)\n\n")
+      (insert (format "# 添加可执行文件 %s，其源文件为 %s\n" project-name src-file))
+      (insert (format "add_executable(%s %s)\n" project-name src-file))
+      (write-region (point-min) (point-max) cmakelists-path))
+    ;; 打开 CMakeLists.txt 供编辑
+    (find-file cmakelists-path)
+    (message "项目 '%s' 已创建于 %s" project-name project-dir)))
 
 
 
@@ -195,7 +236,7 @@
      (t
       (message "当前目录未找到 .sln 或 Makefile，无法编译。")))))
 
-(global-set-key (kbd "<f7>") #'my/compile-project)
+
 
 ;; ───────────────────────────────
 ;; C-F7：强制使用 nmake 构建
@@ -211,7 +252,6 @@
         (compile (format "nmake /f \"%s\"" makefile))
       (message "未找到 Makefile"))))
 
-(global-set-key (kbd "<C-f7>") #'my/nmake-build)
 
 ;; ───────────────────────────────
 ;; F5：运行构建后的可执行文件（仅限 .sln 工程）
@@ -245,7 +285,7 @@ x64 输出路径保持为 x64/Debug 或 x64/Release。"
       (message "当前目录未找到 .sln 工程"))))
 
 
-(global-set-key (kbd "<C-f5>") #'my/run-vs-exe)
+
 
 
 
