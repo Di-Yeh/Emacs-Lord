@@ -1,3 +1,4 @@
+
 (setq-default tab-width 2)
 
 ;; -*- lexical-binding: t; -*-
@@ -117,79 +118,82 @@
       (insert-char new-char 1))))
 
 
+(defun my/query-replace-read-args-advice (orig-fun &rest args)
+  "Advice for `query-replace-read-args'.
+在原始 PROMPT 前面添加自定义选项说明，而不单独调用 `message`。"
+  (let* ((original-prompt (car args))
+         (new-prompt (concat "选项: [y]=替换当前, [n]=跳过当前, [!]=替换全部, [q]=退出: " original-prompt)))
+    (apply orig-fun (cons new-prompt (cdr args)))))
+
+(advice-add 'query-replace-read-args :around #'my/query-replace-read-args-advice)
+(advice-add 'query-replace-regexp-read-args :around #'my/query-replace-read-args-advice)
 
 
-(defun my/interactive-query-replace ()
-  "从光标开始进行交互式替换操作。
-首先提示输入查找字符串和替换字符串，
-然后从光标处开始搜索整个缓冲区（以光标为起点，
-继续到缓冲区末尾，再从缓冲区开头搜索到光标前一个位置）的所有匹配位置，
-依次提示用户:
-  - [n] 替换当前匹配，
-  - [p] 跳过当前匹配，
-  - [a] 替换所有剩余匹配，
-  - [q] 退出替换流程。"
+(defun my/query-replace-from-top ()
+  "自动将光标移至缓冲区顶部并调用 query-replace。"
   (interactive)
-  (let* ((search (read-string "查找: "))
-         (replace (read-string "替换为: "))
-         (matches '())
-         (count 0)
-         (start (point)))
-    (if (string= search "")
-        (message "查找字符串不能为空")
-      ;; 收集匹配位置：先从光标到缓冲区末尾，再从缓冲区起始到光标前.
-      (let ((matches1 '())
-            (matches2 '()))
-        (save-excursion
-          (goto-char start)
-          (while (search-forward search nil t)
-            (push (copy-marker (match-beginning 0)) matches1)))
-        (save-excursion
-          (goto-char (point-min))
-          (while (and (< (point) start)
-                      (search-forward search start t))
-            (push (copy-marker (match-beginning 0)) matches2)))
-        (setq matches (append (nreverse matches1) (nreverse matches2))))
-      (if (null matches)
-          (message "在指定范围内没有找到匹配项")
-        (while matches
-          (goto-char (car matches))
-          ;; 如果当前位置依然匹配（替换可能改变了内容）才进行交互提示
-          (if (looking-at (regexp-quote search))
-              (let ((choice (let ((minor-mode-overriding-map-alist nil))
-                              (read-char-choice "选项: [n] 替换当前, [p] 跳过当前, [a] 替换全部, [q] 退出: " 
-                                                '(?n ?p ?a ?q)))))
-                (cond
-                 ((eq choice ?n)
-                  (replace-match replace t t)
-                  (setq count (1+ count))
-                  (pop matches))
-                 ((eq choice ?p)
-                  ;; 什么也不做，跳过该匹配
-                  (pop matches))
-                 ((eq choice ?a)
-                  (while matches
-                    (goto-char (car matches))
-                    (when (looking-at (regexp-quote search))
-                      (replace-match replace t t)
-                      (setq count (1+ count)))
-                    (pop matches))
-                  (keyboard-quit))  ; 退出替换流程
-                 ((eq choice ?q)
-                  (setq matches nil))))
-            (pop matches)))
-        (message "替换结束，共替换 %d 处" count)))))
+  (goto-char (point-min))
+  (call-interactively 'query-replace))
+
+(defun my/query-replace-regexp-from-top ()
+  "自动将光标移至缓冲区顶部并调用 query-replace-regexp。"
+  (interactive)
+  (goto-char (point-min))
+  (call-interactively 'query-replace-regexp))
 
 
 
+(defun my/list-lsp-diagnostics ()
+  "显示当前诊断信息:
+如果当前启用了 lsp-bridge，则使用 `lsp-bridge-diagnostic-list`；
+否则使用 Flycheck 的 `flycheck-list-errors`。"
+  (interactive)
+  (if (and (bound-and-true-p lsp-bridge-mode)
+           (fboundp 'lsp-bridge-diagnostic-list))
+      (lsp-bridge-diagnostic-list)
+    (if (fboundp 'flycheck-list-errors)
+        (flycheck-list-errors)
+      (message "当前环境中未检测到 lsp-bridge 或 flycheck。"))))
 
 
+;; 调整窗口宽度：通用函数和专门的包装命令
+(defun my/adjust-window-width (delta)
+  "将当前窗口的宽度调整 DELTA 大小（正值增大，负值减小）。
+如果调用后窗口宽度没有变化，则显示提示信息。"
+  (let ((old-width (window-width)))
+    (enlarge-window-horizontally delta)
+    (when (= (window-width) old-width)
+      (message "无法进一步调整窗口宽度！"))))
+
+(defun my/shrink-window-width ()
+  "缩小当前窗口宽度 1 列。"
+  (interactive)
+  (my/adjust-window-width -1))
+
+(defun my/enlarge-window-width ()
+  "增加当前窗口宽度 1 列。"
+  (interactive)
+  (my/adjust-window-width 1))
 
 
+;; 调整窗口高度：通用函数和专门的包装命令
+(defun my/adjust-window-height (delta)
+  "将当前窗口的高度调整 DELTA 大小（正值增大，负值减小）。
+如果调用后窗口高度没有变化，则显示提示信息。"
+  (let ((old-height (window-height)))
+    (enlarge-window delta)
+    (when (= (window-height) old-height)
+      (message "无法进一步调整窗口高度！"))))
 
+(defun my/shrink-window-height ()
+  "缩小当前窗口高度 1 行。"
+  (interactive)
+  (my/adjust-window-height -1))
 
-
-
+(defun my/enlarge-window-height ()
+  "增加当前窗口高度 1 行。"
+  (interactive)
+  (my/adjust-window-height 1))
 
 
 
@@ -199,12 +203,15 @@
 (global-set-key (kbd "M-n") 'my/scroll-window-down)
 (global-set-key (kbd "M-p") 'my/scroll-window-up)
 
-
 (global-set-key (kbd "TAB") 'self-insert-command)
 
 (define-key global-map (kbd "RET") 'default-indent-new-line)
 (define-key global-map (kbd "M-j") 'newline-and-indent)
 
+(global-set-key (kbd "C-{") 'my/shrink-window-width)
+(global-set-key (kbd "C-}") 'my/enlarge-window-width)
+(global-set-key (kbd "M-[") 'my/shrink-window-height)
+(global-set-key (kbd "M-]") 'my/enlarge-window-height)
 
 ;; 绑定快捷键 C-c h 调用该函数
 (global-set-key (kbd "C-c h") 'my/choose-plugin-and-display-functions)
@@ -233,8 +240,9 @@
 ;; 將替換字符函數綁定到 C-c C
 (global-set-key (kbd "C-c C") 'my/change-char)
 
-;; 將替換文字函數綁定到 C-c r
-(global-set-key (kbd "C-c r") 'my/interactive-query-replace)
+;; 替换文字快捷键
+(global-set-key (kbd "M-%") 'my/query-replace-from-top)
+(global-set-key (kbd "C-M-%") 'my/query-replace-regexp-from-top)
 
 ;; lsp-ui-peek-find-definitions
 (global-set-key (kbd "C-c l F") 'lsp-ui-peek-find-definitions)
@@ -251,6 +259,10 @@
 ;; neotree
 (global-set-key (kbd "C-c n") 'neotree-toggle)
 
+;; lsp显示错误
+(global-set-key (kbd "C-c l e") 'my/list-lsp-diagnostics)
+
+
 ;; ts-fold
 (global-set-key (kbd "C-c t t") 'ts-fold-toggle)    ;; 切换当前语法节点的折叠状态
 (global-set-key (kbd "C-c t o") 'ts-fold-open-all)    ;; 展开所有折叠节点
@@ -261,6 +273,7 @@
 
 ;; Cmake 构建快捷键
 (global-set-key (kbd "C-c c") 'my/create-cmake-project)
+(global-set-key (kbd "C-c B") 'my/cmake-configure-and-build)
 
 ;; Visual Studio 项目编译快捷键
 ;; devenv.com

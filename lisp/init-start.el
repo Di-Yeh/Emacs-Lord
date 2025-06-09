@@ -38,9 +38,21 @@
   (interactive)
   (delete-region (line-beginning-position) (point)))
 
+(defun my/kill-line-no-save ()
+  "从当前光标位置删除到行尾，但不将删除的文本保存到 kill-ring 中。
+如果光标位于行尾，则删除该行的换行符。"
+  (interactive)
+  (if (eolp)
+      (when (not (eobp))    ; 如果不是缓冲区最后一行，则删除行尾的换行符
+        (delete-char 1))
+    (delete-region (point) (line-end-position))))
+    
+
 (global-set-key (kbd "C-<backspace>") 'my/delete-word-backward)
 (global-set-key (kbd "M-<backspace>") 'my/delete-word-backward)
 (global-set-key (kbd "C-S-<backspace>") 'my/delete-line-backward)
+;; 绑定 C-k 为我们自定义的不保存删除内容的命令
+(global-set-key (kbd "C-k") 'my/kill-line-no-save)
 
 
 

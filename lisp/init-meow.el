@@ -1,4 +1,4 @@
-;;; -*- lexical-binding: t -*-
+;; -*- lexical-binding: t -*-
 
 ;; ---------------------------
 ;; 定义用于 Shift 选择模式的命令
@@ -179,10 +179,16 @@
 	 '("F" . lsp-ui-peek-find-definitions)
    '("f" . lsp-ui-peek-find-references)
 	 '("m" . lsp-treemacs-symbols)
-	 '("r" . my/interactive-query-replace)
+	 '("r" . my/query-replace-from-top)
+	 '("R" . 'my/query-replace-regexp-from-top)
 	 '("t" . ts-fold-toggle)
 	 '("O" . ts-fold-open-all)
 	 '("C" . ts-fold-close-all)
+	 '("e" . my/list-lsp-diagnostics)
+	 '("{" . my/shrink-window-width)
+	 '("}" . my/enlarge-window-width)
+	 '("[" . my/shrink-window-height)
+	 '("]" . my/enlarge-window-height)
    '("<escape>" . ignore))
   ;; Leader 键绑定（空格为前缀）
   (meow-leader-define-key
@@ -195,6 +201,8 @@
 	 '("D" . dirvish)
 	 '("n" . neotree-toggle)
 	 '("p" . projectile-compile-project)
+	 '("C" . my/create-cmake-project)
+	 '("B" . my/cmake-configure-and-build)
 	 '("e" . eshell)
 	 '("d" . dap-hydra))
 	

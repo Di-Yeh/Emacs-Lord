@@ -197,6 +197,33 @@
     (message "项目 '%s' 已创建于 %s" project-name project-dir)))
 
 
+(defun my/cmake-configure-and-build ()
+  "从当前目录中选择一个目录作为 CMake 的构建目录 (-B)，
+接着询问是否添加额外参数（例如 -DCMAKE_BUILD_TYPE=Debug），
+最后确认后执行 CMake 配置，并提供错误处理功能。
+配置成功后，还可选择立即开始编译构建。"
+  (interactive)
+  (let* ((build-dir (read-directory-name "请选择构建目录 (-B 参数)： " default-directory nil nil))
+         (extra-params (read-string "请输入额外的 CMake 参数（例如 -DCMAKE_BUILD_TYPE=Debug，可留空）： "))
+         (configure-cmd (format "cmake -S . -B \"%s\" %s" build-dir extra-params)))
+    (if (not (yes-or-no-p (format "确定要执行以下命令吗？\n%s\n" configure-cmd)))
+        (message "已取消配置。")
+      (condition-case err
+          (progn
+            (message "执行命令：%s" configure-cmd)
+            (shell-command configure-cmd)
+            ;; 配置完成后判断是否生成了 CMakeCache.txt（成功配置后该文件必然生成）
+            (if (not (file-exists-p (expand-file-name "CMakeCache.txt" build-dir)))
+                (error "CMake 配置失败，请检查输出信息！")
+              (message "CMake 配置成功。"))
+            (when (yes-or-no-p "配置完成，是否立即开始编译构建？")
+              (let ((build-cmd (format "cmake --build \"%s\"" build-dir)))
+                (message "开始构建：%s" build-cmd)
+                (compile build-cmd))))
+        (error (message "错误发生：%s" (error-message-string err)))))))
+
+
+
 
 ;; ───────────────────────────────────────────────────────
 ;; Visual Studio 项目支持：devenv / nmake 构建 & 运行
