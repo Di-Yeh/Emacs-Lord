@@ -57,6 +57,8 @@ pip install epc orjson sexpdata six paramiko watchdog pyright
 ## 其它需求🎁
 clang [下载链接](https://releases.llvm.org/download.html)
 
+sbcl [下载链接](https://www.sbcl.org/platform-table.html)
+
 msys2 [下载链接](https://www.msys2.org/)
 
 python [下载链接](https://www.python.org/downloads/)
