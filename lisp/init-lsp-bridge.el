@@ -23,7 +23,6 @@
 ;; -------------------------
 ;; 加载 lsp-bridge 核心
 ;; -------------------------
-(add-to-list 'load-path (expand-file-name "site-lisp/lsp-bridge" user-emacs-directory))
 (require 'lsp-bridge)
 
 ;; 启用 lsp-bridge 内建诊断功能（用于检查语法错误等）

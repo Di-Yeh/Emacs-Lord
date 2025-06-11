@@ -196,6 +196,14 @@
   (my/adjust-window-height 1))
 
 
+;; 定义 Vim 风格的 open 命令
+(defun my/open-insert-line ()
+  "模仿 Vim 的 'o' 命令：在当前行末尾插入新行（并自动缩进），
+然后进入插入模式。"
+  (interactive)
+  (end-of-line)
+  (newline-and-indent))
+
 
 ;; ------------
 ;; 全局绑定示例：
@@ -207,6 +215,8 @@
 
 (define-key global-map (kbd "RET") 'default-indent-new-line)
 (define-key global-map (kbd "M-j") 'newline-and-indent)
+
+(global-set-key (kbd "C-S-o") 'my/open-insert-line)
 
 (global-set-key (kbd "C-{") 'my/shrink-window-width)
 (global-set-key (kbd "C-}") 'my/enlarge-window-width)

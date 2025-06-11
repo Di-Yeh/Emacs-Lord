@@ -1,36 +1,50 @@
-; 软件源
-(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-     ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-     ("melpa" . "https://melpa.org/packages/")))
+;;; init-elpa.el --- straight.el + use-package 统一管理 -*- lexical-binding: t; -*-
 
-;;个别时候会出现签名检验失败
-(setq package-check-signature nil) 
+;; ====================================================================
+;; 软件源（供 package.el 及其他老插件参考，如果都不再用 package.el 可删）
+;; ====================================================================
+(setq package-archives
+      '(("gnu"   . "https://elpa.gnu.org/packages/")
+        ("nongnu". "https://elpa.nongnu.org/nongnu/")
+        ("melpa" . "https://melpa.org/packages/")))
+(setq package-check-signature nil)  ;; 有时签名验签失败
 
-;; 初始化软件包管理器
-(require 'package)
-(unless (bound-and-true-p package--initialized)
-    (package-initialize))
+;; ====================================================================
+;; 禁用内置 package.el 在 Emacs 启动时自动加载（early-init.el 中也可放）
+;; ====================================================================
+(setq package-enable-at-startup nil)
 
-;; 刷新软件源索引
-(unless package-archive-contents
-    (package-refresh-contents))
+;; ====================================================================
+;; 1. Bootstrap straight.el
+;; ====================================================================
+(defvar bootstrap-version)
+(let* ((bootstrap-file
+        (expand-file-name "straight/repos/straight.el/bootstrap.el"
+                          user-emacs-directory))
+       (bootstrap-version 6))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
-;; 第一个扩展插件：use-package，用来批量统一管理软件包
-(unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
+;; ====================================================================
+;; 2. 让 straight.el 管理 use-package，并默认用它来安装所有包
+;; ====================================================================
+(straight-use-package 'use-package)
+(setq straight-use-package-by-default t)
 
-;; use-package
-(setq use-package-always-ensure t
-      use-package-always-defer t
-      use-package-always-demand nil
-      use-package-expand-minimally t
-      use-package-verbose t)
-
+;; ====================================================================
+;; 3. 原有的 use-package 配置
+;; ====================================================================
 (require 'use-package)
-
-
-
-
+(setq use-package-always-defer    t
+      use-package-always-demand   nil
+      use-package-expand-minimally t
+      use-package-verbose         t)
 
 (provide 'init-elpa)
+;;; init-elpa.el ends here

@@ -19,30 +19,20 @@
   :commands lsp
   :init
   (setq lsp-keymap-prefix "C-c l")
+	:custom
+  (setq lsp-clients-clangd-args
+      '("--background-index"         ;; 后台索引
+        "--clang-tidy"               ;; 打开 clang-tidy
+        "--completion-style=detailed";; 丰富补全格式
+        "--header-insertion=never"   ;; 关掉自动插 include
+        ))
   :config
   (setq lsp-completion-provider :capf
         lsp-enable-symbol-highlighting t
 				lsp-diagnostic-package :none
         lsp-prefer-flymake nil
-        lsp-auto-install-server nil)
-  ;; 自动设定 Lua 语言服务器路径
-  (let* ((base-path (cond
-                     ((eq system-type 'windows-nt)
-                      "C:/Users/user/AppData/Roaming/.emacs.d/.cache/lsp/lua-roblox-language-server")
-                     ((eq system-type 'darwin)
-                      "~/.emacs.d/.cache/lsp/lua-roblox-language-server")
-                     ((eq system-type 'gnu/linux)
-                      "~/.emacs.d/.cache/lsp/lua-roblox-language-server")))
-         (binary-path (cond
-                       ((eq system-type 'windows-nt)
-                        (concat base-path "/extension/server/bin/Windows/lua-language-server.exe"))
-                       ((eq system-type 'darwin)
-                        (concat base-path "/extension/server/bin/macOS/lua-language-server"))
-                       ((eq system-type 'gnu/linux)
-                        (concat base-path "/extension/server/bin/Linux/lua-language-server")))))
-    (when (file-exists-p binary-path)
-      (setq lsp-clients-lua-language-server-bin binary-path
-            lsp-clients-lua-language-server-main-location (file-name-directory binary-path)))))
+        lsp-auto-install-server nil))
+
 
 (use-package lsp-ui
   :ensure t
@@ -156,13 +146,22 @@ Windows 下使用 'where gdb'，Linux/Mac 下使用 'which -a gdb'。
 (define-key global-map (kbd "C-c l R") 'my/dap-register-c-c++)   ;; 注册调试模板
 (define-key global-map (kbd "C-c l b") 'dap-breakpoint-toggle)   ;; 切换当前行断点
 
-
 (use-package company
   :ensure t
   :hook (after-init . global-company-mode)
   :config
   (setq company-minimum-prefix-length 1
         company-show-quick-access t))
+
+;; 让 Emacs completion-at-point 全局不分大小写
+(setq completion-ignore-case               t
+      read-buffer-completion-ignore-case  t
+      read-file-name-completion-ignore-case t)
+
+;; 用 flex 做模糊匹配，basic 保留原生前缀匹配
+(setq completion-styles '(flex basic))
+
+
 
 (use-package company-box
   :ensure t
@@ -216,6 +215,80 @@ Windows 下使用 'where gdb'，Linux/Mac 下使用 'which -a gdb'。
   ;; 只在保存文件时检查，而不在编辑时自动检查
   (setq flycheck-check-syntax-automatically '(save mode-enabled)))
  
+;; 需要 package: projectile, cl-lib
+(require 'projectile)
+(require 'cl-lib)
+
+(defgroup my-flycheck nil
+  "Customized helpers for flycheck include paths."
+  :group 'tools)
+
+(defcustom my-flycheck-db-file
+  (expand-file-name "flycheck-include-db.el" user-emacs-directory)
+  "存储各个项目 include 路径的持久化文件。"
+  :type 'file
+  :group 'my-flycheck)
+
+(defun my--flycheck-read-db ()
+  "读取 `my-flycheck-db-file`，返回 alist: ((proj-key . paths…) …)."
+  (when (file-exists-p my-flycheck-db-file)
+    (with-temp-buffer
+      (insert-file-contents my-flycheck-db-file)
+      (read (current-buffer)))))
+
+(defun my--flycheck-write-db (db)
+  "把 alist DB 写回 `my-flycheck-db-file`。"
+  (with-temp-file my-flycheck-db-file
+    (prin1 db (current-buffer))))
+
+(defun my--flycheck-current-key ()
+  "返回当前项目的 key，用 project name 或者根目录。"
+  (or (projectile-project-name)
+      (file-name-nondirectory
+       (directory-file-name (projectile-project-root)))))
+
+(defun my-flycheck-load-include-paths ()
+  "在 flycheck-mode-hook 里调用：给 `flycheck-clang-args` 追加项目 include 列表。"
+  (when-let* ((proj (my--flycheck-current-key))
+              (db   (my--flycheck-read-db))
+              (paths (cdr (assoc proj db))))
+    (let ((incs (mapcar (lambda (p) (concat "-I" p)) paths)))
+      (setq-local flycheck-clang-args
+                  (append flycheck-clang-args incs)))))
+
+;;; 把加载函数加到 flycheck 启动钩子里
+(add-hook 'flycheck-mode-hook #'my-flycheck-load-include-paths)
+
+;;; Interactive 命令：添加一个 include 目录
+(defun my-flycheck-add-include-path (dir)
+  "给当前项目添加一个 INCLUDE 路径，并持久化存盘。
+DIR 是通过 `read-directory-name` 交互获得。"
+  (interactive
+   (list (read-directory-name "Choose include dir: ")))
+  (let* ((proj (my--flycheck-current-key))
+         (db   (or (my--flycheck-read-db) '()))
+         (entry (assoc proj db)))
+    (if entry
+        (setcdr entry (cl-union (cdr entry) (list dir) :test #'string=))
+      (push (cons proj (list dir)) db))
+    (my--flycheck-write-db db)
+    ;; 立即刷新：重新装载 flycheck-args 并重检
+    (my-flycheck-load-include-paths)
+    (flycheck-buffer)
+    (message "Added include: %s (project %s)" dir proj)))
+
+;; 你可以给它绑定一个全局快捷键，比如：
+(global-set-key (kbd "C-c i a") #'my-flycheck-add-include-path)
+
+
+
+
+
+
+
+
+
+
 
 
 

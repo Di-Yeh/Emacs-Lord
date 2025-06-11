@@ -212,6 +212,6 @@
    '("<" . my/unindent-region)))
 
 (my/meow-setup)
-(meow-global-mode 1)
+;; (meow-global-mode 1)
 
 (provide 'init-meow)

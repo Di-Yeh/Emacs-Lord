@@ -237,12 +237,22 @@
   (require 'eaf-image-viewer))
 
 
-(let ((lsp-bridge-dir (expand-file-name "site-lisp/lsp-bridge" user-emacs-directory)))
-  (unless (file-directory-p lsp-bridge-dir)
-    (message "lsp-bridge not found, cloning from GitHub...")
-    (shell-command (format "git clone https://github.com/manateelazycat/lsp-bridge.git %s" lsp-bridge-dir))
-    (message "lsp-bridge cloned successfully.")))
+;; 安装 lsp-bridge
+(use-package lsp-bridge
+  :straight (lsp-bridge
+             :type git
+             :host github
+             :repo "manateelazycat/lsp-bridge"
+             ;; 把 acm 子目录也加到 load-path
+             :files ("*.el" "acm/*.el"))
+  :defer t                                    ; 不在启动时加载
+  :commands (lsp-bridge-mode global-lsp-bridge-mode))
 
+;; 手动把它加到 load-path —— 
+(add-to-list 'load-path
+             (expand-file-name "straight/repos/lsp-bridge" user-emacs-directory))
+(add-to-list 'load-path
+             (expand-file-name "straight/repos/lsp-bridge/acm" user-emacs-directory))
 
 ;; 确保已安装 tree-sitter 及 tree-sitter-langs（推荐使用 use-package 来管理它们）
 (use-package tree-sitter
@@ -265,16 +275,15 @@
   (package-install 's))
 (require 's)
 
-;; 设定 ts-fold 所在目录（site-lisp/ts-fold）
-(let ((ts-fold-dir (expand-file-name "site-lisp/ts-fold" user-emacs-directory)))
-  (unless (file-directory-p ts-fold-dir)
-    (message "ts-fold not found, cloning from GitHub...")
-    (shell-command (format "git clone https://github.com/emacs-tree-sitter/ts-fold.git %s" ts-fold-dir))
-    (message "ts-fold cloned successfully."))
-  ;; 将 ts-fold 目录加入 load-path
-  (add-to-list 'load-path ts-fold-dir)
-  ;; 加载 ts-fold
-  (require 'ts-fold))
+(use-package ts-fold
+  :straight (ts-fold
+             :type git
+             :host github
+             :repo "emacs-tree-sitter/ts-fold")  ; 指定 GitHub 仓库地址
+  :hook (after-init . global-ts-fold-mode)   ; 启动后全局开启折叠
+  :config
+  ;; 如果你想细调，参考 ts-fold README 中的自定义选项
+  )
 
 ;; 针对 C/C++、Lua、Python 等语言启用 ts-fold-mode
 (dolist (mode '(c-mode-hook c++-mode-hook lua-mode-hook python-mode-hook))
@@ -284,7 +293,7 @@
 ;; --- Emacs-gdb 调试 C/C++ 调试配置 ---
 ;; 使用 use-package 配置内置 GDB 前端（gdb-mi）
 (use-package gdb
-  :ensure nil  ;; gdb 是内置包，不需要下载
+  :straight nil
   :config
   ;; 启用多窗口调试模式：启动 GDB 后自动把调试窗口布局为类似 IDE 的多个窗口，
   ;; 包括：源代码窗口、GDB 命令窗口、断点及调用栈窗口、变量监视窗口等。
