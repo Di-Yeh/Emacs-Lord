@@ -1,50 +1,61 @@
-;;; init-elpa.el --- straight.el + use-package 统一管理 -*- lexical-binding: t; -*-
-
+;;; init-elpa.el --- 混合使用 package.el 和 straight.el -*- lexical-binding: t; -*-
 ;; ====================================================================
-;; 软件源（供 package.el 及其他老插件参考，如果都不再用 package.el 可删）
+;; 一、package.el 初始化（响应 :ensure t）
 ;; ====================================================================
-(setq package-archives
+(setq package-enable-at-startup nil
+      package-archives
       '(("gnu"   . "https://elpa.gnu.org/packages/")
         ("nongnu". "https://elpa.nongnu.org/nongnu/")
-        ("melpa" . "https://melpa.org/packages/")))
-(setq package-check-signature nil)  ;; 有时签名验签失败
+        ("melpa" . "https://melpa.org/packages/"))
+      package-check-signature nil)
+
+(require 'package)
+(unless package--initialized
+  (package-initialize))
+(unless package-archive-contents
+  (package-refresh-contents))
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+
 
 ;; ====================================================================
-;; 禁用内置 package.el 在 Emacs 启动时自动加载（early-init.el 中也可放）
-;; ====================================================================
-(setq package-enable-at-startup nil)
-
-;; ====================================================================
-;; 1. Bootstrap straight.el
+;; 二、bootstrap straight.el（响应 :straight t）
 ;; ====================================================================
 (defvar bootstrap-version)
 (let* ((bootstrap-file
         (expand-file-name "straight/repos/straight.el/bootstrap.el"
                           user-emacs-directory))
-       (bootstrap-version 6))
+       (bootstrap-url
+        "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
+        (url-retrieve-synchronously bootstrap-url 'silent 'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-;; ====================================================================
-;; 2. 让 straight.el 管理 use-package，并默认用它来安装所有包
-;; ====================================================================
+;; 把 use-package 本身交给 straight 管理
 (straight-use-package 'use-package)
-(setq straight-use-package-by-default t)
+;; **不**让 use-package 全局都走 straight
+(setq straight-use-package-by-default nil)
+
 
 ;; ====================================================================
-;; 3. 原有的 use-package 配置
+;; 三、use-package 基础配置
 ;; ====================================================================
 (require 'use-package)
-(setq use-package-always-defer    t
-      use-package-always-demand   nil
+;; 让 “没写 :straight” 的 use-package 都默认 :ensure t
+(setq use-package-always-ensure    t
+      use-package-always-defer     t
       use-package-expand-minimally t
-      use-package-verbose         t)
+      use-package-verbose          t)
+
+;; 例子：
+;; (use-package magit)           ; 会自动用 package.el 安装（等同于 :ensure t）
+;; (use-package some-lib
+;;   :straight t)                ; 会用 straight.el clone & build
+;; (use-package built-in-lib
+;;   :straight nil :ensure nil)  ; 内置包，不安装也不报错
 
 (provide 'init-elpa)
 ;;; init-elpa.el ends here

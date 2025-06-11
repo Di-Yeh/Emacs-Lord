@@ -293,7 +293,7 @@
 ;; --- Emacs-gdb 调试 C/C++ 调试配置 ---
 ;; 使用 use-package 配置内置 GDB 前端（gdb-mi）
 (use-package gdb
-  :straight nil
+  :ensure nil
   :config
   ;; 启用多窗口调试模式：启动 GDB 后自动把调试窗口布局为类似 IDE 的多个窗口，
   ;; 包括：源代码窗口、GDB 命令窗口、断点及调用栈窗口、变量监视窗口等。
