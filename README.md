@@ -61,6 +61,10 @@ sbcl [下载链接](https://www.sbcl.org/platform-table.html)
 
 msys2 [下载链接](https://www.msys2.org/)
 
+masm [下载链接](https://www.masm32.com/download.htm)
+
+nasm [下载链接](https://www.nasm.us/pub/nasm/releasebuilds/?C=M;O=D)
+
 python [下载链接](https://www.python.org/downloads/)
 
 Mingw [下载链接](https://sourceforge.net/projects/mingw/)
