@@ -123,10 +123,10 @@
 
 
 (require 'init-cpp)
+(require 'init-asm)
 (require 'init-lua)
 (require 'init-python)
 (require 'init-markdown)
-
 
 (provide 'init-lsp)
 ;;; init-lsp.el ends here

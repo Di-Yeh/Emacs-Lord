@@ -223,6 +223,9 @@
 (global-set-key (kbd "M-[") 'my/shrink-window-height)
 (global-set-key (kbd "M-]") 'my/enlarge-window-height)
 
+(global-set-key (kbd "C-i") 'forward-char)
+(global-set-key (kbd "M-i") 'forward-word)
+
 ;; 绑定快捷键 C-c h 调用该函数
 (global-set-key (kbd "C-c h") 'my/choose-plugin-and-display-functions)
 

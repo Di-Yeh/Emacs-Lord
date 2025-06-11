@@ -351,6 +351,9 @@
   ;; 默认使用 sly-fancy 提供更完善的扩展功能
   (sly-setup '(sly-fancy)))
 
+
+
+
 (defun my-auto-start-sly-for-common-lisp ()
   "如果当前访问的文件扩展名为 .lisp，并且不是 Emacs Lisp 文件，则自动启动 SLY。
 这样可以确保 Common Lisp 文件自动开启 SLY，而不干扰 .el 文件。"
