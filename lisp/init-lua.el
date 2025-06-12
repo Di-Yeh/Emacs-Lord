@@ -16,6 +16,6 @@
       (:description . "Run lua script"))
     :default "lua"))
 
-(global-set-key (kbd "C-S-l") 'quickrun)  ;; Python
+(global-set-key (kbd "C-S-l") 'quickrun)
 
 (provide 'init-lua)

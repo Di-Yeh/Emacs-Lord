@@ -207,86 +207,171 @@ Windows 下使用 'where gdb'，Linux/Mac 下使用 'which -a gdb'。
     (setq company-box-backends-colors nil)))
 
 
+;; --------------------------------------------------
+;; Flycheck 配置（全局启用，保存时检查）
+;; --------------------------------------------------
 (use-package flycheck
   :ensure t
   :init
   (global-flycheck-mode)
   :config
-  ;; 只在保存文件时检查，而不在编辑时自动检查
+  ;; 只在保存文件和启用时检查，不在编辑时自动检查
   (setq flycheck-check-syntax-automatically '(save mode-enabled)))
  
-;; 需要 package: projectile, cl-lib
+
+;; --------------------------------------------------
+;; 添加 include 路径到 .dir-locals.el（支持合并多个路径）
+;; 快捷键：C-c i a
+;; --------------------------------------------------
 (require 'projectile)
 (require 'cl-lib)
 
-(defgroup my-flycheck nil
-  "Customized helpers for flycheck include paths."
-  :group 'tools)
+(defun my/add-clang-include-to-dir-locals ()
+  "将 include 路径添加到项目的 .dir-locals.el 中的 flycheck-clang-include-path。
+支持合并多个 include 路径，自动避免重复。"
+  (interactive)
+  (let* ((include-dir (read-directory-name "选择要添加的 include 路径: "))
+         (escaped-include (replace-regexp-in-string "\\\\" "/" include-dir)) ;; 替换 Windows 反斜杠
+         (project-root (or (projectile-project-root) default-directory))
+         (save-dir (read-directory-name "选择 .dir-locals.el 保存路径: " project-root))
+         (dir-locals-file (expand-file-name ".dir-locals.el" save-dir))
+         (new-entry `((flycheck-clang-include-path . ("$new$")))) ;; 临时模板
+         (new-path escaped-include)
+         updated-alist)
 
-(defcustom my-flycheck-db-file
-  (expand-file-name "flycheck-include-db.el" user-emacs-directory)
-  "存储各个项目 include 路径的持久化文件。"
-  :type 'file
-  :group 'my-flycheck)
+    ;; 读取已有 .dir-locals.el 内容
+    (setq updated-alist
+          (if (file-exists-p dir-locals-file)
+              (with-temp-buffer
+                (insert-file-contents dir-locals-file)
+                (read (current-buffer)))
+            '()))
 
-(defun my--flycheck-read-db ()
-  "读取 `my-flycheck-db-file`，返回 alist: ((proj-key . paths…) …)."
-  (when (file-exists-p my-flycheck-db-file)
+    ;; 更新 c-mode 和 c++-mode 条目
+    (dolist (mode '(c-mode c++-mode))
+      (let* ((mode-entry (assoc mode updated-alist))
+             (settings (copy-tree (cdr mode-entry)))
+             (includes (cdr (assoc 'flycheck-clang-include-path settings))))
+        (unless (member new-path includes)
+          (setq includes (append includes (list new-path))))
+        (setq settings (assq-delete-all 'flycheck-clang-include-path settings))
+        (push `(flycheck-clang-include-path . ,includes) settings)
+        (setq updated-alist (assq-delete-all mode updated-alist))
+        (push `(,mode . ,settings) updated-alist)))
+
+    ;; 保存新的 .dir-locals.el
+    (with-temp-file dir-locals-file
+      (insert ";; 自动生成的 .dir-locals.el - 包含 Flycheck Clang include 路径配置\n")
+      (pp updated-alist (current-buffer))
+      (message "已添加 include 路径到：%s" dir-locals-file))))
+
+;; 设置快捷键 C-c i a 来调用该功能
+(global-set-key (kbd "C-c i a") #'my/add-clang-include-to-dir-locals)
+
+
+;; --------------------------------------------------
+;; 临时添加 include 路径到当前会话（不会写入文件）
+;; 快捷键：C-c i p
+;; --------------------------------------------------
+(require 'cl-lib)
+
+(defun my/add-clang-include-path-session ()
+  "临时将 include 路径添加到 `flycheck-clang-include-path`。
+仅在当前 Emacs 会话中有效，不会写入 .dir-locals.el 文件。
+支持重复使用并自动合并路径。"
+  (interactive)
+  (let* ((include-dir (read-directory-name "选择要添加的 include 路径: "))
+         (escaped-include (replace-regexp-in-string "\\\\" "/" include-dir))
+         (current-paths (or flycheck-clang-include-path '())))
+    (if (member escaped-include current-paths)
+        (message "路径已存在，无需重复添加。")
+      (setq flycheck-clang-include-path
+            (append current-paths (list escaped-include)))
+      (message "已添加路径: %s" escaped-include))))
+
+;; 快捷键绑定：C-c i p 添加临时路径
+(global-set-key (kbd "C-c i p") #'my/add-clang-include-path-session)
+
+
+
+;; --------------------------------------------------
+;; 修复后的 Clangd 编译器兼容路径注入功能
+;; 修复问题：默认路径设为 ~/.emacs.d/.emacs-clang-drivers.el
+;; 防止未定义变量 lsp-clients-clangd-args 报错
+;; --------------------------------------------------
+
+;; 确保变量已定义（避免初期加载时报 void 错）
+(defvar lsp-clients-clangd-args nil
+  "Arguments to pass to clangd.")
+
+;; 保存文件路径移至 ~/.emacs.d
+(defvar my/clangd-driver-file (expand-file-name ".emacs-clang-drivers.el" user-emacs-directory)
+  "保存用户指定 clangd driver 路径的文件。")
+
+(defun my/read-clangd-drivers ()
+  "从文件读取 clangd driver 路径列表。"
+  (when (file-readable-p my/clangd-driver-file)
     (with-temp-buffer
-      (insert-file-contents my-flycheck-db-file)
-      (read (current-buffer)))))
+      (insert-file-contents my/clangd-driver-file)
+      (condition-case nil
+          (read (current-buffer))
+        (error nil)))))
 
-(defun my--flycheck-write-db (db)
-  "把 alist DB 写回 `my-flycheck-db-file`。"
-  (with-temp-file my-flycheck-db-file
-    (prin1 db (current-buffer))))
+(defun my/save-clangd-drivers (driver-list)
+  "将 DRIVER-LIST 保存到配置文件。"
+  (with-temp-file my/clangd-driver-file
+    (prin1 driver-list (current-buffer))))
 
-(defun my--flycheck-current-key ()
-  "返回当前项目的 key，用 project name 或者根目录。"
-  (or (projectile-project-name)
-      (file-name-nondirectory
-       (directory-file-name (projectile-project-root)))))
+(defun my/select-compiler-path (compiler-name default-path)
+  "交互式输入编译器路径，显示默认路径。"
+  (read-file-name (format "输入 %s 路径（当前路径：%s）: " compiler-name default-path)
+                  (file-name-directory default-path)
+                  default-path t))
 
-(defun my-flycheck-load-include-paths ()
-  "在 flycheck-mode-hook 里调用：给 `flycheck-clang-args` 追加项目 include 列表。"
-  (when-let* ((proj (my--flycheck-current-key))
-              (db   (my--flycheck-read-db))
-              (paths (cdr (assoc proj db))))
-    (let ((incs (mapcar (lambda (p) (concat "-I" p)) paths)))
-      (setq-local flycheck-clang-args
-                  (append flycheck-clang-args incs)))))
+(defun my/select-clangd-drivers ()
+  "选择使用的编译器并保存到配置文件。"
+  (interactive)
+  (let* ((choice (completing-read "选择编译器: " '("GCC" "MSVC" "其它") nil t))
+         (drivers
+          (cond
+           ((string= choice "GCC")
+            (list (my/select-compiler-path "GCC" default-directory)))
+           ((string= choice "MSVC")
+            (list (my/select-compiler-path "MSVC" default-directory)))
+           ((string= choice "其它")
+            (let* ((name (read-string "请输入编译器名称: "))
+                   (path (my/select-compiler-path name default-directory)))
+              (list path))))))
+    (if (and (file-exists-p my/clangd-driver-file)
+             (yes-or-no-p "检测到已有驱动路径，是否合并保存？"))
+        (let* ((existing (my/read-clangd-drivers))
+               (merged (delete-dups (append existing drivers))))
+          (my/save-clangd-drivers merged)
+          (message "已合并保存 driver 路径。"))
+      (my/save-clangd-drivers drivers)
+      (message "已保存 driver 路径。"))
 
-;;; 把加载函数加到 flycheck 启动钩子里
-(add-hook 'flycheck-mode-hook #'my-flycheck-load-include-paths)
+    ;; 更新 lsp-clients-clangd-args
+    (setq lsp-clients-clangd-args
+          (cl-remove-if (lambda (s) (string-prefix-p "--query-driver" s))
+                        lsp-clients-clangd-args))
+    (add-to-list 'lsp-clients-clangd-args
+                 (concat "--query-driver=" (string-join (my/read-clangd-drivers) ",")))
+    (message "已更新 lsp-clients-clangd-args。")
 
-;;; Interactive 命令：添加一个 include 目录
-(defun my-flycheck-add-include-path (dir)
-  "给当前项目添加一个 INCLUDE 路径，并持久化存盘。
-DIR 是通过 `read-directory-name` 交互获得。"
-  (interactive
-   (list (read-directory-name "Choose include dir: ")))
-  (let* ((proj (my--flycheck-current-key))
-         (db   (or (my--flycheck-read-db) '()))
-         (entry (assoc proj db)))
-    (if entry
-        (setcdr entry (cl-union (cdr entry) (list dir) :test #'string=))
-      (push (cons proj (list dir)) db))
-    (my--flycheck-write-db db)
-    ;; 立即刷新：重新装载 flycheck-args 并重检
-    (my-flycheck-load-include-paths)
-    (flycheck-buffer)
-    (message "Added include: %s (project %s)" dir proj)))
+    (when (yes-or-no-p "是否立即重启 LSP 会话以应用新设置？")
+      (lsp-restart-workspace))))
 
-;; 你可以给它绑定一个全局快捷键，比如：
-(global-set-key (kbd "C-c i a") #'my-flycheck-add-include-path)
+;; 启动时自动注入已保存的驱动器路径（前提是文件存在且内容合法）
+(let ((saved-drivers (my/read-clangd-drivers)))
+  (when (and saved-drivers
+             (not (cl-some (lambda (s) (string-prefix-p "--query-driver" s))
+                           lsp-clients-clangd-args)))
+    (add-to-list 'lsp-clients-clangd-args
+                 (concat "--query-driver=" (string-join saved-drivers ",")))))
 
-
-
-
-
-
-
-
+;; 快捷键绑定
+(global-set-key (kbd "C-c i c") #'my/select-clangd-drivers)
 
 
 
