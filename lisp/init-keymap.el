@@ -208,6 +208,7 @@
 ;; ------------
 ;; 全局绑定示例：
 ;; ------------
+
 (global-set-key (kbd "M-n") 'my/scroll-window-down)
 (global-set-key (kbd "M-p") 'my/scroll-window-up)
 
@@ -216,6 +217,8 @@
 (define-key global-map (kbd "RET") 'default-indent-new-line)
 (define-key global-map (kbd "M-j") 'newline-and-indent)
 
+(global-set-key (kbd "C-M-/") 'set-mark-command)
+
 (global-set-key (kbd "C-S-o") 'my/open-insert-line)
 
 (global-set-key (kbd "C-{") 'my/shrink-window-width)
@@ -223,8 +226,7 @@
 (global-set-key (kbd "M-[") 'my/shrink-window-height)
 (global-set-key (kbd "M-]") 'my/enlarge-window-height)
 
-(global-set-key (kbd "C-i") 'forward-char)
-(global-set-key (kbd "M-i") 'forward-word)
+(global-set-key (kbd "C-<return>") 'electric-newline-and-maybe-indent)
 
 ;; 绑定快捷键 C-c h 调用该函数
 (global-set-key (kbd "C-c h") 'my/choose-plugin-and-display-functions)

@@ -9,7 +9,7 @@
 (setq lsp-mode-required-packages
       '(lsp-mode yasnippet lsp-treemacs helm-lsp
                  projectile hydra flycheck company
-                 avy which-key helm-xref))
+                 avy which-key helm-xref dap-mode))
 (when (cl-find-if-not #'package-installed-p lsp-mode-required-packages)
   (package-refresh-contents)
   (mapc #'package-install lsp-mode-required-packages))
@@ -375,8 +375,6 @@ Windows 下使用 'where gdb'，Linux/Mac 下使用 'which -a gdb'。
 
 
 
-
-
 (require 'helm-xref)
 (helm-mode)
 (define-key global-map [remap find-file] #'helm-find-files)
@@ -391,6 +389,76 @@ Windows 下使用 'where gdb'，Linux/Mac 下使用 'which -a gdb'。
       company-idle-delay 0.0
       company-minimum-prefix-length 1
       lsp-idle-delay 0.1)
+
+
+
+;; 自动生成 compile_commands.json 的辅助工具 -*- lexical-binding: t; -*-
+(defun my/find-project-root ()
+  "尝试查找当前 buffer 所在的项目根目录。"
+  (or (when (fboundp 'projectile-project-root)
+        (projectile-project-root))
+      (locate-dominating-file default-directory "compile_commands.json")
+      default-directory))
+
+(defun my/find-source-file ()
+  "查找 main.c 或 main.cpp 文件，如果不存在则询问用户。"
+  (let* ((project-root (my/find-project-root))
+         (main-c (expand-file-name "main.c" project-root))
+         (main-cpp (expand-file-name "main.cpp" project-root)))
+    (cond
+     ((file-exists-p main-c) "main.c")
+     ((file-exists-p main-cpp) "main.cpp")
+     (t (read-string "未找到 main.c 或 main.cpp，请输入源文件名: ")))))
+
+(defun my/select-cpp-standard ()
+  "让用户选择 C++ 标准版本。"
+  (completing-read "请选择 C++ 标准: " '("c++11" "c++14" "c++17" "c++20") nil t nil nil "c++17"))
+
+(defun my/gather-include-dirs ()
+  "尝试收集项目中可用的 include/src/lib 路径，并允许用户添加更多路径。"
+  (let* ((project-root (my/find-project-root))
+         (default-dirs '("include" "src" "lib"))
+         (collected (seq-filter (lambda (dir)
+                                   (file-directory-p (expand-file-name dir project-root)))
+                                 default-dirs))
+         (more t))
+    (while (and (yes-or-no-p "是否要添加额外的 include/src/lib 路径？")
+                more)
+      (let ((custom (read-directory-name "请输入要添加的路径: " project-root)))
+        (push (file-relative-name custom project-root) collected)
+        (setq more (yes-or-no-p "还要添加其它路径吗？"))))
+    collected))
+
+(defun my/generate-compile-commands-json (output-path)
+  "创建 compile_commands.json 文件。"
+  (let* ((source-file (my/find-source-file))
+         (standard (my/select-cpp-standard))
+         (include-dirs (my/gather-include-dirs))
+         (include-flags (mapconcat (lambda (d) (concat "-I" d)) include-dirs " "))
+         (command (format "g++ -std=%s %s -c %s" standard include-flags source-file))
+         (json-string (format "[{\n  \"directory\": \"./\",\n  \"command\": \"%s\",\n  \"file\": \"%s\"\n}]" command source-file)))
+    (with-temp-file output-path
+      (insert json-string))
+    (message "✅ compile_commands.json 模板已创建于: %s" output-path)))
+
+(defun my/check-or-create-compile-commands ()
+  "检查 compile_commands.json 是否存在，否则询问是否指定或创建。"
+  (interactive)
+  (let* ((project-root (my/find-project-root))
+         (json-path (expand-file-name "compile_commands.json" project-root)))
+    (if (file-exists-p json-path)
+        (message "✅ compile_commands.json 已存在: %s" json-path)
+      (if (yes-or-no-p "❓ 未发现 compile_commands.json，是否已有该文件？")
+          (let ((user-path (read-file-name "请输入 compile_commands.json 路径: " project-root)))
+            (when (file-exists-p user-path)
+              (copy-file user-path json-path t)
+              (message "✅ 已复制 compile_commands.json 到项目目录。")))
+        (when (yes-or-no-p "是否要创建一个 compile_commands.json 模板？")
+          (my/generate-compile-commands-json json-path))))))
+
+;; 快捷键绑定
+(global-set-key (kbd "C-c i j") #'my/check-or-create-compile-commands)
+
 
 
 
