@@ -371,7 +371,7 @@
 (use-package json-navigator
   :ensure t
   :commands json-navigator-mode)
-
+(global-set-key (kbd "C-c j") 'json-pretty-print-buffer)
 
 
 (provide 'init-package)
