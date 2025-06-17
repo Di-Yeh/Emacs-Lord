@@ -2,15 +2,14 @@
 
 ## 展示图✨
 
-![1](https://github.com/user-attachments/assets/3c8a5f8d-81b5-4a95-ad43-035d0c76a885)
+![1](https://github.com/user-attachments/assets/5077dd1c-c452-44a4-b8d3-23871d30e1a3)
 ****
-![2](https://github.com/user-attachments/assets/498e67d6-b735-4fdd-8250-9b59f243aae7)
+![2](https://github.com/user-attachments/assets/adc953af-35c8-45f4-9c0b-b4f79d72fd3f)
 ****
-![3](https://github.com/user-attachments/assets/9b3efd08-bfcf-460f-8677-612d1d1f57a4)
+![3](https://github.com/user-attachments/assets/83e40f7c-9f80-450f-b07f-0e4bbbbda241)
 ****
-![4](https://github.com/user-attachments/assets/1f8dbc87-0cd2-49f9-831d-992505fdc8bb)
-****
-![5](https://github.com/user-attachments/assets/e311a1c7-76d0-4d9b-a73e-85bc70620f96)
+![4](https://github.com/user-attachments/assets/ccc7c4e6-8330-455a-89a3-16f46886c3f8)
+
 
 ## 字体配置✒️
 下载文件之后进入fonts目录里面，把字体下载好再进行配置
