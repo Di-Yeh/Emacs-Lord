@@ -243,7 +243,7 @@
   (spaceline-define-segment my-winum
     "Window number (winum)."
     (when (bound-and-true-p winum-mode)
-      (format "Window %s" (winum-get-number-string))))
+      (format "Buffer %s" (winum-get-number-string))))
 
   ;; 光标位置
   (spaceline-define-segment my-position
