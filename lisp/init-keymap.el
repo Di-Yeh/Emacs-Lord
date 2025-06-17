@@ -1,4 +1,3 @@
-
 (setq-default tab-width 2)
 
 ;; -*- lexical-binding: t; -*-
@@ -205,6 +204,60 @@
   (newline-and-indent))
 
 
+(defvar my/line-select-offset 0
+  "相对于锚点的行偏移，用于连续扩展行选区。")
+
+(defvar my/line-select-anchor nil
+  "选区的起始锚点：首次按键时的行首位置。")
+
+(defun my/_select-lines (target-pos)
+  "从锚点 `my/line-select-anchor` 到 TARGET-POS 建立选区，并将光标移到 TARGET-POS。"
+  (goto-char target-pos)
+  ;; mark 在锚点处
+  (set-mark my/line-select-anchor)
+  (activate-mark))
+
+(defun my/select-line-next ()
+  "向下连续选整行。首次选当前行，后续依次扩展到下一行，光标移到行尾。"
+  (interactive)
+  (unless (eq last-command 'my/select-line-next)
+    ;; 重置偏移和锚点
+    (setq my/line-select-offset 0
+          my/line-select-anchor (line-beginning-position)))
+  ;; 计算目标行号
+  (let* ((anchor-line (line-number-at-pos my/line-select-anchor))
+         (target-line (+ anchor-line my/line-select-offset))
+         (target-end-pos
+          (save-excursion
+            (goto-char (point-min))
+            (forward-line (1- target-line))
+            (line-end-position))))
+    ;; 建立选区并移动光标
+    (my/_select-lines target-end-pos))
+  ;; 为下次扩展做准备
+  (cl-incf my/line-select-offset))
+
+(defun my/select-line-previous ()
+  "向上连续选整行。首次选当前行，后续依次扩展到上一行，光标移到行首。"
+  (interactive)
+  (unless (eq last-command 'my/select-line-previous)
+    ;; 重置偏移和锚点
+    (setq my/line-select-offset 0
+          my/line-select-anchor (line-beginning-position)))
+  ;; 计算目标行号
+  (let* ((anchor-line (line-number-at-pos my/line-select-anchor))
+         (target-line (+ anchor-line (- my/line-select-offset)))
+         (target-start-pos
+          (save-excursion
+            (goto-char (point-min))
+            (forward-line (1- target-line))
+            (line-beginning-position))))
+    ;; 建立选区并移动光标
+    (my/_select-lines target-start-pos))
+  ;; 为下次扩展做准备
+  (cl-incf my/line-select-offset))
+
+
 ;; ------------
 ;; 全局绑定示例：
 ;; ------------
@@ -217,7 +270,8 @@
 (define-key global-map (kbd "RET") 'default-indent-new-line)
 (define-key global-map (kbd "M-j") 'newline-and-indent)
 
-(global-set-key (kbd "C-M-/") 'set-mark-command)
+(global-set-key (kbd "C-M-/") #'my/select-line-next)
+(global-set-key (kbd "C-M-?") #'my/select-line-previous)
 
 (global-set-key (kbd "C-S-o") 'my/open-insert-line)
 

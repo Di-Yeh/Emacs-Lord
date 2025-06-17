@@ -227,14 +227,7 @@
 
 
 
-(when (file-directory-p "~/.emacs.d/site-lisp/emacs-application-framework/")
-  (add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-application-framework/")
-  (require 'eaf)
-  (require 'eaf-pdf-viewer)
-  (require 'eaf-browser)
-  (require 'eaf-music-player)
-  (require 'eaf-video-player)
-  (require 'eaf-image-viewer))
+
 
 
 ;; 安装 lsp-bridge
