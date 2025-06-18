@@ -124,8 +124,7 @@
 
 (require 'init-cpp)
 (require 'init-asm)
-(require 'init-lua)
-(require 'init-python)
+(require 'init-quickrun)
 (require 'init-markdown)
 
 (provide 'init-lsp)

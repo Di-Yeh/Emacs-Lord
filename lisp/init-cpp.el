@@ -109,7 +109,345 @@
 
 
 
+;;; ==================================================
+;;; 持久化文件：~/.emacs.d/compile-commands-compiler.el
+;;; ==================================================
+(defconst my/compile-commands-compiler-file
+  (expand-file-name "compile-commands-compiler.el" user-emacs-directory)
+  "存放 `my/compile-commands-compiler-alist` 及当前选中模板的文件。")
 
+
+;;; ==================================================
+;;; 全局变量：模板列表和当前模板
+;;; ==================================================
+(defvar my/compile-commands-compiler-alist nil
+  "alist 保存 模板名 → 编译器命令/路径。例如:
+  ((\"clang\" . \"clang++\")
+   (\"gcc\"   . \"/usr/bin/gcc\")
+   (\"msvc\"  . \"C:/…/cl.exe\")
+   … )")
+
+(defvar my/compile-commands-compiler-template nil
+  "当前选中的编译器模板名，必须是 `my/compile-commands-compiler-alist` 中的 key。")
+
+;;; ==================================================
+;;; 启动时：加载或初始化
+;;; ==================================================
+(if (file-exists-p my/compile-commands-compiler-file)
+    ;; 如果文件存在，就 load 它
+    (load my/compile-commands-compiler-file)
+  ;; 第一次使用时，初始化默认 clang
+  (setq my/compile-commands-compiler-alist
+        '(("clang" . "clang++")))
+  (setq my/compile-commands-compiler-template "clang"))
+
+;;; ==================================================
+;;; 交互式函数：选择编译器模板 (C-c i c)
+;;; ==================================================
+(defun my/switch-compile-commands-compiler ()
+  "交互式选择编译器：clang/gcc/msvc/other，并记忆到 `my/compile-commands-compiler-file`。
+1. 默认已有 \"clang\" → \"clang++\"。
+2. 选 gcc/msvc：首次输入路径，以后复用保存值。
+3. 选 other：输入新模板名 & 路径，加入选择列表。"
+  (interactive)
+  ;; 固定内建选项
+  (let* ((builtins '("clang" "gcc" "msvc"))
+         ;; 从 alist 中提取已保存的模板名（去掉内建，保留 custom）
+         (customs  (seq-remove
+                    (lambda (name) (member name builtins))
+                    (mapcar #'car my/compile-commands-compiler-alist)))
+         ;; 选单 = 内建 + custom + "other"
+         (choices  (append builtins customs '("other")))
+         (sel      (completing-read
+                    "选择编译器模板: " choices nil t))
+         name path)
+    ;; 如果选择 "other"，先读一个新名字
+    (when (string-equal sel "other")
+      (setq name (read-string "输入自定义模板名称: "))
+      (setq sel name))  ; 用自定义名字作为 sel
+
+    ;; 处理路径：如果 alist 中已有路径且非空，则复用；否则提示读路径
+    (let ((existing (cdr (assoc sel my/compile-commands-compiler-alist))))
+      (if (and existing (not (string-empty-p existing)))
+          (message "📂 模板 [%s] 已配置，路径：%s" sel existing)
+        ;; 否则提示输入完整路径或命令
+        (setq path
+              (read-file-name
+               (format "输入 %s 可执行文件/命令: " sel)
+               (if (fboundp 'projectile-project-root)
+                   (projectile-project-root)
+                 default-directory)
+               nil t))))
+
+    ;; 如果 path 被设置，则更新 alist
+    (when path
+      ;; 删除旧条目，再把 (sel . path) 加到 alist 头部
+      (setq my/compile-commands-compiler-alist
+            (cons (cons sel path)
+                  (assq-delete-all sel my/compile-commands-compiler-alist)))
+      (message "✅ 模板 [%s] 设置为：%s" sel path))
+
+    ;; 更新当前模板
+    (setq my/compile-commands-compiler-template sel)
+
+        ;; 持久化写入同一个文件：注意 alist 前要加 '
+    (with-temp-file my/compile-commands-compiler-file
+      (insert ";; -*- emacs-lisp -*-\n")
+      (insert ";; 自动保存：编译器模板及路径\n")
+      ;; 注意这里的 '%S，确保写成 '(("clang" . "clang++") ...)
+      (insert (format "(setq my/compile-commands-compiler-alist '%S)\n"
+                      my/compile-commands-compiler-alist))
+      (insert (format "(setq my/compile-commands-compiler-template %S)\n"
+                      my/compile-commands-compiler-template)))
+    (message "🔖 已保存到：%s" my/compile-commands-compiler-file)
+
+    ;; 可选重启 clangd，让新模板生效
+    (when (and (bound-and-true-p lsp-mode)
+               (fboundp 'lsp-restart-workspace)
+               (yes-or-no-p "是否立即重启 clangd (lsp-mode)？"))
+      (lsp-restart-workspace))))
+
+;; 绑定 C-c i c
+(with-eval-after-load 'lsp-mode
+  (define-key lsp-mode-map (kbd "C-c i c") #'my/switch-compile-commands-compiler))
+
+
+
+
+;;; ================================
+;;; MSVC 判断函数
+;;; ================================
+(defun my/compile-commands-msvc-p ()
+  "如果当前模板对应的编译器是 MSVC 或 clang-cl，则返回 t。"
+  (let* ((alist my/compile-commands-compiler-alist)
+         (tmpl  my/compile-commands-compiler-template)
+         (path  (cdr (assoc tmpl alist))))
+    (and path
+         (string-match-p "\\(?:\\\\cl\\.exe\\|clang-cl\\)" path))))
+
+;;; ================================
+;;; 生成 compile_commands.json (C-c i j)
+;;; ================================
+(require 'json)
+(require 'projectile)
+
+(defun my/generate-compile-commands ()
+  "根据当前模板生成 compile_commands.json，并可重启 clangd。
+使用 `my/compile-commands-compiler-template` 及 `my/compile-commands-compiler-alist`。"
+  (interactive)
+  (let* ((root      (or (and (fboundp 'projectile-project-root)
+                             (projectile-project-root))
+                       default-directory))
+         (out       (expand-file-name "compile_commands.json" root))
+         (files     (directory-files-recursively
+                     root "\\.\\(c\\|cc\\|cpp\\|cxx\\|h\\|hpp\\)$"))
+         (is-msvc   (my/compile-commands-msvc-p))
+         (compiler  (cdr (assoc my/compile-commands-compiler-template
+                                my/compile-commands-compiler-alist)))
+         (entries
+          (mapcar
+           (lambda (file)
+             (let ((rel (file-relative-name file root)))
+               (if is-msvc
+                   ;; MSVC/clang-cl: 用 arguments 数组
+                   `(("directory" . ,root)
+                     ("arguments" . ,(let ((args (list
+                                                  compiler
+                                                  (format "/I%s" (expand-file-name "include" root))
+                                                  "/nologo"
+                                                  "/c" rel
+                                                  "/Fo"
+                                                  (concat "build\\"
+                                                          (file-name-sans-extension
+                                                           rel)
+                                                          ".obj"))))
+                                      args))
+                     ("file" . ,file))
+                 ;; Clang/GCC: 用 command 字符串
+                 `(("directory" . ,root)
+                   ("command"   .
+                    ,(format "%s -I%s -std=c++17 -c %s -o %s"
+                             compiler
+                             (expand-file-name "include" root)
+                             file
+                             (expand-file-name
+                              (format "build/%s.o" (file-name-sans-extension
+                                                    (file-name-nondirectory file)))
+                              root)))
+                   ("file" . ,file)))))
+           files)))
+    ;; 确保有源文件
+    (unless files
+      (user-error "❌ 未找到任何 C/C++ 源文件"))
+    ;; 写入 JSON
+    (when (or (not (file-exists-p out))
+              (yes-or-no-p (format "覆盖 %s？ " out)))
+      (with-temp-file out
+        (insert (json-encode entries)))
+      (message "✅ %S 生成/更新 %s" compiler out))
+    ;; MSVC 情况下注入 --query-driver
+    (when is-msvc
+      (setq lsp-clients-clangd-args
+            (list (format "--query-driver=%s" compiler))))
+    ;; 重启 clangd
+    (when (and (bound-and-true-p lsp-mode)
+               (fboundp 'lsp-restart-workspace)
+               (yes-or-no-p "立即重启 clangd (lsp-mode)？"))
+      (lsp-restart-workspace))))
+
+(with-eval-after-load 'lsp-mode
+  (define-key lsp-mode-map (kbd "C-c i j") #'my/generate-compile-commands))
+
+
+
+;;; ================================
+;;; 添加include路径 (C-c i a)
+;;; ================================
+(require 'json)
+(require 'projectile)
+(require 'cl-lib)
+
+(defvar my/compile-commands-compiler "clang++"
+  "当前用于生成 compile_commands.json 的编译器，可为 clang++, gcc, cl.exe, clang-cl.exe 等。")
+
+(defun my/compile-commands-msvc-p ()
+  "若当前编译器是 MSVC 或 clang-cl，则返回 t。"
+  (string-match-p "\\(?:cl\\.exe\\|clang-cl\\)" my/compile-commands-compiler))
+
+(defun my/update-compile-commands-includes (paths)
+  "将 PATHS 列表添加到 compile_commands.json 中所有条目的 include 参数里，并可重启 clangd。
+支持两种模式：
+- 对带 \"arguments\" 数组的条目（MSVC/clang-cl）：在编译器后插入 `/Ipath`。
+- 对带 \"command\" 字符串的条目（Clang/GCC）：在命令最前插入 `-Ipath`。"
+  (let* ((root      (or (and (fboundp 'projectile-project-root)
+                             (projectile-project-root))
+                        default-directory))
+         (json-file (expand-file-name "compile_commands.json" root)))
+    (unless (file-exists-p json-file)
+      (user-error "❌ 未找到 compile_commands.json，请先运行 C-c i j 生成"))
+
+    ;; 准备 flag 列表：MSVC 用 "/Ipath"，其余用 "-Ipath"
+    (let* ((msvc?      (my/compile-commands-msvc-p))
+           (flags-list (mapcar (lambda (p)
+                                 (if msvc?
+                                     (concat "/I" p)
+                                   (concat "-I" p)))
+                               paths))
+           (data       (with-temp-buffer
+                         (insert-file-contents json-file)
+                         (let ((json-object-type 'alist)
+                               (json-array-type  'list))
+                           (json-read)))))
+
+      ;; 对每个 entry 进行更新
+      (setq data
+            (mapcar
+             (lambda (entry)
+               (cond
+                ;; 如果有 arguments 数组
+                ((assoc 'arguments entry)
+                 (let* ((args-pair (assoc 'arguments entry))
+                        (old-args  (cdr args-pair))
+                        ;; 去掉旧同名 flag，防止重复
+                        (cleaned   (cl-remove-if
+                                    (lambda (a)
+                                      (or (and msvc? (string-match-p "^/I" a))
+                                          (and (not msvc?) (string-match-p "^-I" a))))
+                                    old-args))
+                        ;; 新 args：compiler + flags + 其余 args
+                        (new-args  (append
+                                    (list (car old-args)) ; 编译器本身
+                                    flags-list
+                                    (cdr cleaned))))    ; 剩余参数
+                   (setcdr args-pair new-args)
+                   entry))
+
+                ;; 否则若有 command 字符串
+                ((assoc 'command entry)
+                 (let* ((cmd-pair (assoc 'command entry))
+                        (old-cmd  (cdr cmd-pair))
+                        ;; 去掉旧的 -Ixxx 或 /Ixxx
+                        (cleaned  (replace-regexp-in-string
+                                   (concat "\\(?:-I\"?[^\"]+\"?\\)"
+                                           "\\|\\(?:/I\"?[^\"]+\"?\\)")
+                                   ""
+                                   old-cmd))
+                        ;; 新命令：flags + 空格 + 原命令
+                        (new-cmd  (string-join
+                                   (append flags-list
+                                           (list cleaned))
+                                   " ")))
+                   (setcdr cmd-pair new-cmd)
+                   entry))
+
+                ;; 否则不处理
+                (t entry)))
+             data))
+
+      ;; 写回文件
+      (with-temp-file json-file
+        (insert (json-encode data)))
+      (message "✅ compile_commands.json 已更新 include：%s"
+               (string-join flags-list " "))
+
+      ;; 重启 clangd
+      (when (and (bound-and-true-p lsp-mode)
+                 (fboundp 'lsp-restart-workspace)
+                 (yes-or-no-p "立即重启 clangd (lsp-mode)？"))
+        (lsp-restart-workspace)))))
+
+(defun my/interactive-add-include ()
+  "交互式输入一个或多个 include 路径，添加到 compile_commands.json。"
+  (interactive)
+  (let ((paths '())
+        path)
+    (cl-block nil
+      (while t
+        (setq path
+              (read-directory-name
+               "输入 include 路径（回车留空结束）："
+               (or (and (fboundp 'projectile-project-root)
+                        (projectile-project-root))
+                   default-directory)
+               nil t))
+        (when (string-empty-p path)
+          (cl-return))
+        (push (expand-file-name path) paths)
+        (unless (yes-or-no-p "继续添加更多路径？")
+          (cl-return))))
+    (if (null paths)
+        (message "❗ 未输入任何路径，已取消。")
+      (my/update-compile-commands-includes
+       (nreverse paths)))))
+
+;; 绑定快捷键 C-c i a
+(with-eval-after-load 'lsp-mode
+  (define-key lsp-mode-map (kbd "C-c i a") #'my/interactive-add-include))
+
+
+
+;; 自动在命令结束后 revert 当前 buffer
+(defun my/reload-current-buffer ()
+  "在不提示确认的情况下，重载当前 buffer，以便让新的 compile_commands.json 或 include 设置生效。"
+  (when (buffer-file-name)
+    (revert-buffer :ignore-auto :noconfirm)))
+
+;; 1. 在切换模板后调用
+(with-eval-after-load 'lsp-mode
+  (advice-add 'my/switch-compile-commands-compiler :after
+              (lambda (&rest _) (my/reload-current-buffer))))
+
+;; 2. 在生成 compile_commands.json 后调用
+(advice-add 'my/generate-compile-commands :after
+            (lambda (&rest _) (my/reload-current-buffer)))
+
+;; 3. 在添加 include 路径后调用
+(advice-add 'my/update-compile-commands-includes :after
+            (lambda (&rest _) (my/reload-current-buffer)))
+
+
+
+;; CMake
 ;; --------------------------------------------
 ;; 配置 cmake-mode：为 CMakeLists.txt 和 .cmake 文件提供语法高亮和缩进
 ;; --------------------------------------------
@@ -133,27 +471,6 @@
   (setq cmake-ide-build-dir "build")
   (cmake-ide-setup)
   (message "cmake-ide 配置完成"))
-
-
-
-
-
-;; ----------
-;; g++编译配置
-;; ----------
-(use-package quickrun
-  :ensure t
-  :commands (quickrun)
-  :init
-  (quickrun-add-command "c++/c1z"
-    '((:command . "g++")
-      (:exec . ("%c -std=c++1z %o -o %e %s"
-                "%e %a"))
-      (:remove . ("%e")))
-    :default "c++"))
-
-
-
 
 ;; ------------------------
 ;; CMake 项目构建

@@ -77,13 +77,17 @@
   '((t (:background "#3d3d5c" :foreground "#1e1e1e" :box nil :weight bold)))
   "segments 样式 3" :group 'spaceline)
 
+(defface my/spaceline-face-theme-four
+  '((t (:background "#2C2C2C" :foreground "#ffffff" :box nil :weight bold)))
+  "segments 样式 4" :group 'spaceline)
+
 ;;; ----------------------------------------------
 ;;; powerline 分隔符配置
 ;;; ----------------------------------------------
 (use-package powerline
   :ensure t
   :config
-  (setq powerline-default-separator 'arrow)
+  (setq powerline-default-separator 'wave)
   (setq powerline-height 32)  ;; 按需调整
 	(setq powerline-default-separator-dir 'right) ; 让左右 segment 分割明确
   )
@@ -128,11 +132,11 @@
   (when (and (boundp 'flycheck-current-errors) flycheck-mode)
     (let-alist (flycheck-count-errors flycheck-current-errors)
       (concat
-       (all-the-icons-faicon "times-circle" :height 1.0 :v-adjust 0 :face '(:foreground "#ff0066"))   ; 错误图标
+       (all-the-icons-faicon "times-circle" :height 1.0 :v-adjust 0 :face '(:background "#2C2C2C" :foreground "#ff0066"))   ; 错误图标
        (format " %d " (or .error 0))
-       (all-the-icons-faicon "exclamation-triangle" :height 1.0 :v-adjust 0 :face '(:foreground "#ffff00")) ; 警告图标
+       (all-the-icons-faicon "exclamation-triangle" :height 1.0 :v-adjust 0 :face '(:background "#2C2C2C" :foreground "#ffff00")) ; 警告图标
        (format " %d " (or .warning 0))
-       (all-the-icons-faicon "info-circle" :height 1.0 :v-adjust 0 :face '(:foreground "#00ff00"))    ; 提示图标
+       (all-the-icons-faicon "info-circle" :height 1.0 :v-adjust 0 :face '(:background "#2C2C2C" :foreground "#00ff00"))    ; 提示图标
        (format " %d" (or .info 0))))))
 
 
@@ -339,10 +343,10 @@
 	 `((my-winum        :face 'my/spaceline-face-theme-one :priority 50)		; 窗口编号
 		 (my-buffer-id    :priority 60)		; buffer 名称 + 图标
 		 (my-major-mode   :face 'my/spaceline-face-theme-two :priority 70)   ; major-mode 名称
-		 (my-flycheck     :priority 20)   ; flycheck 错误/警告/提示图标
-		 (my-file-stats	 :face 'my/spaceline-face-theme-three :priority 75)
+		 (my-flycheck     :face 'my/spaceline-face-theme-four :priority 20)   ; flycheck 错误/警告/提示图标
+		 (my-file-stats	  :face 'my/spaceline-face-theme-three :priority 75)
 		 (my-project-dir  :face 'my/spaceline-face-theme-one :priority 15 :max-length 40)		; 项目路径
-		 (my-diff-hl		 :face 'my/spaceline-face-theme-two :priority 10)
+		 (my-diff-hl		  :face 'my/spaceline-face-theme-two :priority 10)
 		 (my-meow-status  )   ; Meow 模式高亮
 		)
 
