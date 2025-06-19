@@ -65,6 +65,8 @@
 
 **nodejs** [下载链接](https://nodejs.org/zh-cn/download)
 
+**lua** [下载链接](https://luabinaries.sourceforge.net/download.html)
+
 **masm** [下载链接](https://www.masm32.com/download.htm)
 
 **emacs-application-framework配置📦**
@@ -163,6 +165,11 @@ sudo apt install nodejs
 **npm**
 ```bash
 sudo apt install npm
+```
+
+**lua**
+```bash
+sudo apt install lua[Version]
 ```
 
 **nasm**
