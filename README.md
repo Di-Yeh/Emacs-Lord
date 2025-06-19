@@ -37,6 +37,16 @@
 
 ## 安装🏗️
 
+**Windows系统**
+
+在emacs [下载链接1](https://ftp.gnu.org/gnu/emacs/windows/) [下载链接2](https://mirror.ossplanet.net/gnu/emacs/windows/)
+
+下载后直接点击安装
+
+**Linux系统**
+
+执行`sudo apt install emacs` 安装emacs
+
 根据自己的操作系统选择对应的配置流程
 ****
 
