@@ -118,6 +118,11 @@ sudo apt install git
 sudo apt install clang clang++ clang-format
 ```
 
+**gcc**
+```bash
+sudo apt install gcc g++
+```
+
 **sbcl**
 ```bash
 sudo apt install sbcl
