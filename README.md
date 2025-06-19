@@ -1,14 +1,14 @@
 # 我的Emacs配置 🌀
 
 ## 预览🔍
-* [展示图](#展示图)
-* [字体配置](#字体配置)
-* [安装与配置](#安装与配置)
-  * [Windows系统](#Windows系统)
-  * [Linux系统](#Linux系统)
+* [Picture](#Picture)
+* [Fonts](#Fonts)
+* [Install](#Install)
+  * [Windows](#Windows)
+  * [Linux](#Linux)
 ****
 
-## 展示图✨
+## Picture✨
 
 ![1](https://github.com/user-attachments/assets/5077dd1c-c452-44a4-b8d3-23871d30e1a3)
 ****
@@ -19,7 +19,7 @@
 ![4](https://github.com/user-attachments/assets/ccc7c4e6-8330-455a-89a3-16f46886c3f8)
 ****
 
-## 字体配置✒️
+## Fonts✒️
 下载文件之后进入fonts目录里面，把字体下载好再进行配置
 
 **Windows系统**
@@ -35,12 +35,12 @@
 3. `fc-cache -fv`
 ****
 
-## 安装与配置🏗️
+## Install🏗️
 
 根据自己的操作系统选择对应的配置流程
 ****
 
-### Windows系统🪟
+### Windows🪟
 **环境配置🎁**
 
 **git** [下载链接](https://git-scm.com/downloads/win)
@@ -91,7 +91,7 @@ pip install epc orjson sexpdata six paramiko watchdog pyright
 2. 直接安装即可
 ****
 
-### Linux系统🐧
+### Linux🐧
 **适用操作系统**：Debian Mint Ubuntu Kali
 
 **环境配置🎁**
