@@ -26,7 +26,7 @@ sudo apt install -y \
   make build-essential libssl-dev zlib1g-dev \
   libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
   libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev \
-  libffi-dev liblzma-dev fd-find
+  libffi-dev liblzma-dev cmake fd-find
 
 # Step 2: 设置 lua 命令别名（确保 lua 是 5.3）
 if ! command -v lua &> /dev/null || [[ "$(lua -v 2>&1)" != *"5.3"* ]]; then
