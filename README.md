@@ -61,6 +61,8 @@
 
 **msys2** [下载链接](https://www.msys2.org/) 或 **Mingw** [下载链接](https://sourceforge.net/projects/mingw/) 择一
 
+**cmake** [下载链接](https://cmake.org/download/)
+
 **python** [下载链接](https://www.python.org/downloads/)
 
 **nodejs** [下载链接](https://nodejs.org/zh-cn/download)
@@ -126,6 +128,11 @@ sudo apt install gcc g++
 **sbcl**
 ```bash
 sudo apt install sbcl
+```
+
+**cmake**
+```bash
+sudo apt install cmake
 ```
 
 **python**
