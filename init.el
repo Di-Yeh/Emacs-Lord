@@ -57,6 +57,25 @@
     (set-fontset-font t (cons (car range) (cdr range)) "Segoe UI Emoji" nil 'prepend)))
 
 
+;; 判断 ~/.emacs.d/site-lisp/emacs-application-framework/ 是否存在
+(let ((eaf-dir (expand-file-name "site-lisp/emacs-application-framework/" user-emacs-directory)))
+  (when (file-directory-p eaf-dir)
+    ;; 添加 EAF 路径到 load-path
+    (add-to-list 'load-path eaf-dir)
+
+    ;; 加载 EAF 主模块
+    (require 'eaf)
+
+    ;; 以下是常用模块，可根据需求裁剪或添加
+    (require 'eaf-browser)
+    (require 'eaf-pdf-viewer)
+    (require 'eaf-video-player)
+    (require 'eaf-music-player)
+    (require 'eaf-image-viewer)
+
+    ;; 你也可以在此设置一些默认配置，例如键绑定或启用选项
+    ;; (setq eaf-browser-default-zoom 1.25)
+    (message "✅ EAF 加载完成。")))
 
 
 

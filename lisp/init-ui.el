@@ -245,9 +245,15 @@
 
   ;; 当前窗口编号
   (spaceline-define-segment my-winum
-    "Window number (winum)."
-    (when (bound-and-true-p winum-mode)
-      (format "Buffer %s" (winum-get-number-string))))
+  "Window number (winum)，使用图标代替文字。"
+  (when (bound-and-true-p winum-mode)
+    (concat
+     (all-the-icons-faicon "bookmark"
+                           :height 1.0
+                           :v-adjust 0
+                           :face '(:background "#ff8533"))
+     " "
+     (winum-get-number-string))))
 
   ;; 光标位置
   (spaceline-define-segment my-position
@@ -340,8 +346,8 @@
 	(spaceline-install
 	 'main
 	 ;; 左侧 segments 列表
-	 `((my-winum        :face 'my/spaceline-face-theme-one :priority 50)		; 窗口编号
-		 (my-buffer-id    :priority 60)		; buffer 名称 + 图标
+	 `((my-winum        :face 'my/spaceline-face-theme-one :priority 90)		; 窗口编号
+		 (my-buffer-id    :priority 86)		; buffer 名称 + 图标
 		 (my-major-mode   :face 'my/spaceline-face-theme-two :priority 70)   ; major-mode 名称
 		 (my-flycheck     :face 'my/spaceline-face-theme-four :priority 20)   ; flycheck 错误/警告/提示图标
 		 (my-file-stats	  :face 'my/spaceline-face-theme-three :priority 75)
