@@ -180,35 +180,52 @@
   :ensure t)
 
 
-;; 开启 org-mode 自动缩进和视觉折叠效果
-(setq org-startup-indented t)
-(setq org-ellipsis " ▼")  ; 用于折叠部分的视觉提示
+;; ================================
+;; Org-mode 标题与列表美化 —— org-superstar
+;; ================================
 
-;; 使代码块使用 Emacs 本地语法高亮
-(setq org-src-tab-acts-natively t)
+;; 1. 基础 Org 设置
+;;    - 自动缩进
+;;    - 隐藏原生的星号（*）前缀
+(setq org-startup-indented   t
+      org-hide-leading-stars t)
 
-;; 启动 org-mode 时默认启动折叠
-(setq org-hide-leading-stars t)
-
-;; 当需要让标题更加醒目时，可以调整标题字号，示例：
-(custom-set-faces
- '(org-level-1 ((t (:inherit outline-1 :height 1.3))))
- '(org-level-2 ((t (:inherit outline-2 :height 1.2))))
- '(org-level-3 ((t (:inherit outline-3 :height 1.1)))))
-
-(use-package org-modern
+;; 2. 安装并配置 org-superstar
+(use-package org-superstar
   :ensure t
-  :hook (org-mode . org-modern-mode))  ; 当进入 org-mode 时自动启用 org-modern
+  :hook (org-mode . org-superstar-mode)  ;; 进入 org-mode 时自动启用
+  :init
+  ;; 2.1 定制标题符号：第1级~第5级 headline
+  (setq org-superstar-headline-bullets-list
+        '("◉"  ;; 一级标题
+          "○"  ;; 二级标题
+          "✿"  ;; 三级标题
+          "✾"  ;; 四级标题
+          "❀")) ;; 五级标题
+  ;; 2.2 定制列表项目符号：* → •, - → –, + → ⁃
+  (setq org-superstar-item-bullet-alist
+        '((?* . ?•)
+          (?- . ?–)
+          (?+ . ?⁃)))
+  ;; 2.3 隐藏原生 bullet 后保持缩进对齐
+  (setq org-superstar-leading-bullet ?\s)
+  ;; 2.4 不干预折叠提示
+  (setq org-superstar-special-todo-items nil))
 
+;; 3. Org 折叠提示符
+;;    你也可以改成 " ◉" / " ○" 之类
+(setq org-ellipsis " ▼")
+
+;; 4. 如果你还在用 org-download，保留它的配置
 (use-package org-download
   :ensure t
   :after org
   :config
-  ;; 配置截图方式，例如使用 Windows 自带的 snippingtool，你也可以根据需要替换为其他工具
-  (setq org-download-screenshot-method "snippingtool")
-  ;; 如果需要，将图片保存到特定目录
-  (setq org-download-image-dir (expand-file-name "org-images" user-emacs-directory))
+  (setq org-download-method             'attach
+        org-download-screenshot-method  "snippingtool"
+        org-download-image-dir          (expand-file-name "org-images" user-emacs-directory))
   (org-download-enable))
+
 
 
 ;; --- 检查 site-lisp/fd 目录 ------------
