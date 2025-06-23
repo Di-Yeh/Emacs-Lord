@@ -78,6 +78,28 @@
     (message "✅ EAF 加载完成。")))
 
 
+;; 字体
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; … 你的 default 和 org-level-* 定义保持不变 …
+ '(default ((t (:family "Cascadia Code" :foundry "outline"
+                        :slant normal :weight semi-bold
+                        :height 120 :width normal))))
+ '(org-level-1 ((t (:inherit outline-1 :height 1.3))))
+ '(org-level-2 ((t (:inherit outline-2 :height 1.2))))
+ '(org-level-3 ((t (:inherit outline-3 :height 1.1)))))
+
+;; --------------------------------
+;; 中文字体设置：SimHei，继承 default face 的高度
+;;       —— 这样就能和英文一起缩放了！
+;; --------------------------------
+(when (display-graphic-p)
+  (dolist (charset '(kana han cjk-misc bopomofo))
+    ;; 只指定 family，不指定 size
+    (set-fontset-font t
+                      charset
+                      (font-spec :family "SimHei"))))
+
 
 
 (when (file-exists-p custom-file)
