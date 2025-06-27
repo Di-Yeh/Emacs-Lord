@@ -1,4 +1,4 @@
-﻿;;; init-cpp.el --- C/C++ Config
+;;; init-cpp.el --- C/C++ Config
 ;;; Commentary:
 ;;; Code:
 
@@ -43,7 +43,7 @@
 (defun my-create-clang-format-in-dir (dir)
   "在目录 DIR 下创建 .clang-format 文件（如果不存在的话），内容为预定义的格式规则。"
   (let ((file (expand-file-name ".clang-format" dir))
-        (content "BasedOnStyle: LLVM\nIndentWidth: 4\nBreakBeforeBraces: Allman\nAllowShortFunctionsOnASingleLine: None\nColumnLimit: 100\n"))
+        (content "BasedOnStyle: LLVM\nIndentWidth: 4\nBreakBeforeBraces: Allman\nAllowShortFunctionsOnASingleLine: None\nColumnLimit: 100\nSortIncludes: false\n"))
     (unless (file-exists-p file)
       (with-temp-file file
         (insert content))
@@ -105,8 +105,6 @@
 (add-hook 'kill-buffer-hook 'my-cpp-buffer-removed)
 
 (electric-pair-mode 1)
-
-
 
 
 ;;; ==================================================
@@ -206,6 +204,27 @@
                (fboundp 'lsp-restart-workspace)
                (yes-or-no-p "是否立即重启 clangd (lsp-mode)？"))
       (lsp-restart-workspace))))
+
+    ;; 自动设置 Flycheck checker（仅影响当前 buffer）
+    (when (derived-mode-p 'c-mode 'c++-mode)
+      (let ((checker (pcase name
+                       ("clang" 'c/c++-clang)
+                       ("gcc"   'c/c++-gcc)
+                       ("msvc"  'c/c++-msvc)
+                       (_       nil))))
+        (if checker
+            (progn
+              (setq-local flycheck-checker checker)
+              ;; 移除不相关的 Checker（避免冲突）
+              (setq-local flycheck-disabled-checkers
+                          (cl-remove-if (lambda (x) (eq x checker))
+                                        '(c/c++-clang c/c++-gcc c/c++-msvc)))
+              (message "✅ 当前 buffer Flycheck 检查器已切换为：%s" checker))
+          ;; 其他未知编译器，禁用所有默认 Checker
+          (setq-local flycheck-disabled-checkers
+                      '(c/c++-clang c/c++-gcc c/c++-msvc))
+          (message "ℹ️ 当前编译器未知，Flycheck 已禁用本地 Checker，仅保留 LSP 诊断。"))))
+
 
 ;; 绑定 C-c i c
 (with-eval-after-load 'lsp-mode

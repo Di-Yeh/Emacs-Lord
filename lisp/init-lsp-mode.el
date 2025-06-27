@@ -30,6 +30,7 @@
   (setq lsp-completion-provider :capf
         lsp-enable-symbol-highlighting t
 				lsp-diagnostic-package :none
+				lsp-completion-enable-additional-text-edit nil
         lsp-prefer-flymake nil
         lsp-auto-install-server nil))
 

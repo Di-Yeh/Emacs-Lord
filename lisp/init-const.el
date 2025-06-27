@@ -49,20 +49,5 @@
 (global-set-key (kbd "C-c C-w") #'my/toggle-warning-verbosity)
 
 
-(defun my/check-and-convert-to-utf8 ()
-  "如果当前 buffer 的编码不是 UTF-8，则提示是否转换为 UTF-8-unix。"
-  (let ((coding buffer-file-coding-system))
-    ;; 检查当前编码是否不是 utf-8 或 utf-8-unix
-    (unless (or (eq coding 'utf-8)
-                (eq coding 'utf-8-unix))
-      ;; 弹出提示
-      (when (yes-or-no-p
-             (format "当前文件编码为 %s，不是 UTF-8。是否转换为 UTF-8？" coding))
-        (set-buffer-file-coding-system 'utf-8 t)
-        (message "已转换为 UTF-8 编码。保存文件以生效。")))))
-
-;; 加入文件打开的 hook：每次打开文件时检查编码
-(add-hook 'prog-mode #'my/check-and-convert-to-utf8)
-
 
 (provide 'init-const)

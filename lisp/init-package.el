@@ -383,5 +383,11 @@
   :commands json-navigator-mode)
 (global-set-key (kbd "C-c j") 'json-pretty-print-buffer)
 
+(use-package emojify
+  :ensure t
+  :init
+  ;; 自动同意下载 emoji 图片，无需手动确认
+  (setq emojify-download-emoji t)
+  :hook (after-init . global-emojify-mode))
 
 (provide 'init-package)
