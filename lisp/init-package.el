@@ -390,4 +390,15 @@
   (setq emojify-download-emoji t)
   :hook (after-init . global-emojify-mode))
 
+
+;; Linux系统专用
+(use-package vterm
+  :ensure t
+  :config
+  (setq vterm-shell "/bin/bash") ;; 或 "/usr/bin/zsh" / fish
+  (setq vterm-max-scrollback 10000))
+
+
+
+
 (provide 'init-package)
