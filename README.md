@@ -189,6 +189,11 @@ sudo apt install lua[Version]
 sudo apt install nasm
 ```
 
+**vterm配置⌨️**
+```bash
+sudo apt install libvterm-dev cmake make gcc
+```
+
 **emacs-application-framework配置📦**
 
 1. 在`site-lisp/`文件目录运行这行命令`git clone --depth=1 -b master https://github.com/emacs-eaf/emacs-application-framework.git`
