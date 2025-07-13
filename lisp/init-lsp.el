@@ -86,40 +86,62 @@
 (add-hook 'find-file-hook #'my/setup-lsp)
 
 
-
-
 (defun my/toggle-lsp-backend ()
   "在当前缓冲区切换 LSP 后端：
-如果已激活 lsp-bridge，则关闭 lsp-bridge 并启用 lsp-mode；
-如果已激活 lsp-mode，则断开 lsp-mode 并启用 lsp-bridge；
-如果均未启用，则默认启动 lsp-mode。
+- 若已激活 lsp-bridge，则先关闭它并启用 lsp-mode；
+- 若已激活 lsp-mode，则先断开它并启用 lsp-bridge；
+- 若都未启用，则默认启动 lsp-mode。
 
-切换时会自动禁用当前后端的功能（如 company、flycheck、lsp-ui 等），以免彼此干扰。"
+切换时会禁用对方后端及常用扩展（company/flycheck/lsp-ui），并清理 lsp-mode 的定时器。"
   (interactive)
-  ;; 如果 lsp-bridge-mode 尚未定义，则先加载它
-  (unless (fboundp 'lsp-bridge-mode)
-    (require 'init-lsp-bridge))
+  ;; 1. 统一关闭常用扩展
+  (when (bound-and-true-p company-mode)   (company-mode -1))
+  (when (bound-and-true-p flycheck-mode)  (flycheck-mode -1))
+  (when (bound-and-true-p lsp-ui-mode)    (lsp-ui-mode -1))
+  (when (fboundp 'lsp-ui-doc-mode)        (lsp-ui-doc-mode -1))
+  ;; 2. 分支切换
   (cond
-   ;; 如果当前 lsp-bridge 已经启动，则先关闭 lsp-bridge 后启动 lsp-mode
-   ((and (fboundp 'lsp-bridge-mode) (bound-and-true-p lsp-bridge-mode))
+   ;; —— 当前激活 lsp-bridge，切到 lsp-mode —— 
+   ((bound-and-true-p lsp-bridge-mode)
+    ;; 关闭 lsp-bridge
     (lsp-bridge-mode -1)
-    ;; 如果 lsp-mode 已在其他地方激活（多数情况下不会同时启用），先做断开处理
-    (when (bound-and-true-p lsp-mode)
-      (lsp-disconnect))
+    ;; 清理 lsp-mode 的 idle 回调，防止报错
+    (when (fboundp 'lsp--on-idle)
+      (cancel-function-timers #'lsp--on-idle))
+    ;; 启动 lsp-mode
+    (require 'init-lsp-mode)
+		(setq lsp-enable-hover t)    ; 在切回 lsp-mode 时恢复
     (lsp)
-    (message "已切换到 lsp-mode"))
-   ;; 如果当前 lsp-mode 正在使用，则关闭 lsp-mode 并启动 lsp-bridge
+    (message "✅ 切换到 lsp-mode。"))
+   ;; —— 当前激活 lsp-mode，切到 lsp-bridge —— 
    ((bound-and-true-p lsp-mode)
+    ;; 断开 lsp-mode
     (lsp-disconnect)
+    ;; 清理 idle 定时器
+    (when (fboundp 'lsp--on-idle)
+      (cancel-function-timers #'lsp--on-idle))
+    ;; 确保载入并执行 Python 检测
+    (require 'init-lsp-bridge)
+		(setq lsp-enable-hover nil)  ; 在 bridge 分支禁用
+    (when (fboundp 'detect-or-set-python-path)
+      (detect-or-set-python-path))
+    ;; 启动 lsp-bridge
     (lsp-bridge-mode 1)
-    (message "已切换到 lsp-bridge 模式"))
-   ;; 如果当前未启用任何后端，则默认启动 lsp-mode
+    (message "✅ 切换到 lsp-bridge-mode。"))
+   ;; —— 默认启动 lsp-mode —— 
    (t
+    (require 'init-lsp-mode)
     (lsp)
-    (message "当前未启用任何 LSP 后端，默认启动 lsp-mode"))))
+    (message "ℹ️ 未检测到任何后端，已启动 lsp-mode。"))))
 
-;; 为该命令绑定全局快捷键 "C-c l t"
+;; 绑定快捷键 C-c l t
 (global-set-key (kbd "C-c l t") #'my/toggle-lsp-backend)
+
+
+
+
+
+
 
 
 (require 'init-cpp)
