@@ -17,11 +17,11 @@
 ;; 默认加载 Catppuccin 的 Mocha 主题（Catppuccin 的主题依赖于变量 catppuccin-flavor）
 (setq catppuccin-flavor 'mocha)
 
-
+;;; -*- lexical-binding: t -*-
 ;;; ----------------------------------------------
 ;;; 基础：自动安装所需包
 ;;; ----------------------------------------------
-(dolist (pkg '(memoize powerline spaceline winum all-the-icons diff-hl))
+(dolist (pkg '(powerline spaceline winum all-the-icons diff-hl))
   (unless (package-installed-p pkg)
     (package-install pkg)))
 
@@ -87,7 +87,7 @@
 (use-package powerline
   :ensure t
   :config
-  (setq powerline-default-separator 'wave)
+  (setq powerline-default-separator 'slant)
   (setq powerline-height 32)  ;; 按需调整
 	(setq powerline-default-separator-dir 'right) ; 让左右 segment 分割明确
   )
@@ -176,7 +176,7 @@
 			 (propertize "🐦‍ " 'face '(:background "#3d3d5c" :foreground "#9966ff" :height 1.0))
 			 (propertize "LSP-Mode" 'face '(:background "#3d3d5c" :foreground "#9966ff" :height 1.0))))
 		 (t (concat 
-				 (propertize "💤 " 'face '(:background "#3d3d5c" :foreground "#b3e6ff" :height 1.0))
+				 (propertize "💤" 'face '(:background "#3d3d5c" :foreground "#b3e6ff" :height 1.0))
 				 (propertize "No LSP" 'face '(:background "#3d3d5c" :foreground "#b3e6ff" :height 1.0))))))
 
 

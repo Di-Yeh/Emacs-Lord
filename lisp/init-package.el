@@ -15,6 +15,21 @@
         ivy-count-format "%d/%d "))
 (ivy-mode 1)
 
+(use-package all-the-icons-ivy-rich
+  :ensure t
+  :init (all-the-icons-ivy-rich-mode 1))
+
+(use-package ivy-rich
+  :ensure t
+	:custom
+	((all-the-icons-ivy-rich-icon t)
+	 (all-the-icons-ivy-rich-color-icon t)
+	 (all-the-icons-ivy-rich-icon-size 1.0)
+	 (all-the-icons-ivy-rich-project t)
+	 (all-the-icons-ivy-rich-field-width 80)
+	 )
+  :init (ivy-rich-mode 1))
+
 (use-package swiper
   :after ivy
   :bind (("C-s" . swiper)
@@ -50,17 +65,6 @@
 (use-package neotree)
 (add-to-list 'load-path "/some/path/neotree")
 (require 'neotree)
-
-
-(use-package highlight-parentheses
-  :ensure t)
-
-(require 'highlight-parentheses)
-(define-globalized-minor-mode global-highlight-parentheses-mode
-  highlight-parentheses-mode
-  (lambda ()
-    (highlight-parentheses-mode t)))
-(global-highlight-parentheses-mode t)
 
 
 (use-package indent-bars
@@ -383,22 +387,23 @@
   :commands json-navigator-mode)
 (global-set-key (kbd "C-c j") 'json-pretty-print-buffer)
 
-(use-package emojify
+;; 安装并配置 rainbow-delimiters 插件
+(use-package rainbow-delimiters
   :ensure t
-  :init
-  ;; 自动同意下载 emoji 图片，无需手动确认
-  (setq emojify-download-emoji t)
-  :hook (after-init . global-emojify-mode))
-
-
-;; Linux系统专用
-(use-package vterm
-  :ensure t
+  :hook (prog-mode . rainbow-delimiters-mode)
   :config
-  (setq vterm-shell "/bin/bash") ;; 或 "/usr/bin/zsh" / fish
-  (setq vterm-max-scrollback 10000))
-
-
+  ;; 自定义括号嵌套层级的颜色（可调整）
+  (set-face-foreground 'rainbow-delimiters-depth-1-face  "#7fbbb3") ; 淡青
+  (set-face-foreground 'rainbow-delimiters-depth-2-face  "#83c092") ; 淡绿
+  (set-face-foreground 'rainbow-delimiters-depth-3-face  "#dbbc7f") ; 黄色
+  (set-face-foreground 'rainbow-delimiters-depth-4-face  "#e69875") ; 橙红
+  (set-face-foreground 'rainbow-delimiters-depth-5-face  "#d699b6") ; 粉紫
+  (set-face-foreground 'rainbow-delimiters-depth-6-face  "#a7c080") ; 浅绿
+  (set-face-foreground 'rainbow-delimiters-depth-7-face  "#e67e80") ; 红色
+  (set-face-foreground 'rainbow-delimiters-depth-8-face  "#a3be8c") ; 浅草绿
+  (set-face-foreground 'rainbow-delimiters-depth-9-face  "#d08770") ; 土黄
+  ;; 非法括号颜色
+  (set-face-foreground 'rainbow-delimiters-unmatched-face "#ff0066"))
 
 
 (provide 'init-package)

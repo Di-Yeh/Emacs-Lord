@@ -34,7 +34,6 @@
         lsp-prefer-flymake nil
         lsp-auto-install-server nil))
 
-
 (use-package lsp-ui
   :ensure t
   :commands lsp-ui-mode

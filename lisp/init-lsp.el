@@ -51,7 +51,7 @@
       (message "当前为 Emacs Lisp 文件，不启用 LSP。"))
      ;; 仅对指定的编程语言启用 LSP
      ((and (derived-mode-p 'prog-mode)
-           (member major-mode '(c-mode c++-mode python-mode lua-mode json-mode)))
+           (member major-mode '(c-mode c++-mode python-mode lua-mode)))
       ;; 设定默认目录：尝试使用 Projectile 检测项目根目录
       (if (and (fboundp 'projectile-project-p)
                (projectile-project-p))
@@ -86,68 +86,98 @@
 (add-hook 'find-file-hook #'my/setup-lsp)
 
 
-(defun my/toggle-lsp-backend ()
-  "在当前缓冲区切换 LSP 后端：
-- 若已激活 lsp-bridge，则先关闭它并启用 lsp-mode；
-- 若已激活 lsp-mode，则先断开它并启用 lsp-bridge；
-- 若都未启用，则默认启动 lsp-mode。
+;; ———— Eldoc & Hover 管理 ————
 
-切换时会禁用对方后端及常用扩展（company/flycheck/lsp-ui），并清理 lsp-mode 的定时器。"
-  (interactive)
-  ;; 1. 统一关闭常用扩展
-  (when (bound-and-true-p company-mode)   (company-mode -1))
-  (when (bound-and-true-p flycheck-mode)  (flycheck-mode -1))
-  (when (bound-and-true-p lsp-ui-mode)    (lsp-ui-mode -1))
-  (when (fboundp 'lsp-ui-doc-mode)        (lsp-ui-doc-mode -1))
-  ;; 2. 分支切换
-  (cond
-   ;; —— 当前激活 lsp-bridge，切到 lsp-mode —— 
-   ((bound-and-true-p lsp-bridge-mode)
-    ;; 关闭 lsp-bridge
-    (lsp-bridge-mode -1)
-    ;; 清理 lsp-mode 的 idle 回调，防止报错
-    (when (fboundp 'lsp--on-idle)
-      (cancel-function-timers #'lsp--on-idle))
-    ;; 启动 lsp-mode
-    (require 'init-lsp-mode)
-		(setq lsp-enable-hover t)    ; 在切回 lsp-mode 时恢复
-    (lsp)
-    (message "✅ 切换到 lsp-mode。"))
-   ;; —— 当前激活 lsp-mode，切到 lsp-bridge —— 
-   ((bound-and-true-p lsp-mode)
-    ;; 断开 lsp-mode
+(defun my/lsp-mode-enable-hover ()
+  "在 lsp-mode 启用时，打开 hover 支持。"
+  (when (fboundp 'lsp-eldoc-mode)  (lsp-eldoc-mode 1))
+  (eldoc-mode 1))
+
+(defun my/lsp-mode-disable-hover ()
+  "在切出 lsp-mode 时，关闭 hover 支持。"
+  ;; 关闭 lsp-eldoc
+  (when (fboundp 'lsp-eldoc-mode)  (lsp-eldoc-mode -1))
+  ;; 关闭 eldoc
+  (eldoc-mode -1)
+  ;; 取消所有 lsp--on-idle hover 定时器
+  (when (fboundp 'lsp--on-idle)
+    (cancel-function-timers #'lsp--on-idle))
+  ;; 从 eldoc hook 中移除 lsp-eldoc-function
+  (remove-hook 'eldoc-documentation-functions #'lsp-eldoc-function t))
+
+;; 全局在 lsp-mode 启动后打开 hover
+(add-hook 'lsp-mode-hook #'my/lsp-mode-enable-hover)
+
+
+;; ———— 开/关 清理函数 ————
+
+(defun my/cleanup-lsp-mode ()
+  "彻底停用 lsp-mode：断开、关 workspace、停 timer、停 hover、停 minor-mode。"
+  (when (bound-and-true-p lsp-mode)
     (lsp-disconnect)
-    ;; 清理 idle 定时器
-    (when (fboundp 'lsp--on-idle)
-      (cancel-function-timers #'lsp--on-idle))
-    ;; 确保载入并执行 Python 检测
+    (dolist (ws (lsp-workspaces)) (lsp-workspace-shutdown ws))
+    (my/lsp-mode-disable-hover)
+    (lsp-mode -1)))
+
+(defun my/cleanup-lsp-bridge ()
+  "彻底停用 lsp-bridge 及其进程。"
+  (when (fboundp 'lsp-bridge-stop-process) (lsp-bridge-stop-process))
+  (when (bound-and-true-p lsp-bridge-mode)  (lsp-bridge-mode -1))
+  ;; 确保疑似残留的 Eldoc/hover 都关掉
+  (my/lsp-mode-disable-hover))
+
+
+;; ———— 切换主函数 ————
+
+(defun my/toggle-lsp-backend ()
+  "在当前缓冲区切换 LSP 后端并可选地重启（重载） buffer。
+
+- 若激活 lsp-bridge，则先清理它，启动 lsp-mode + hover  
+- 若激活 lsp-mode，则先清理它，启动 lsp-bridge（禁用 hover）  
+- 若都没启，则启动 lsp-mode + hover
+
+切换完成后，询问是否重载当前 buffer。重载会重新走一次 find-file/prog-mode 钩子，
+/// 有助于确认 LSP 后端切换是否生效。"
+  (interactive)
+  ;; 确保已加载 init-lsp-bridge
+  (unless (fboundp 'lsp-bridge-mode)
+    (require 'init-lsp-bridge))
+
+  (cond
+   ;; —— 从 lsp-bridge 切到 lsp-mode —— 
+   ((bound-and-true-p lsp-bridge-mode)
+    (my/cleanup-lsp-bridge)
+    (setq lsp-eldoc-enable-hover t)
+    (when (fboundp 'lsp-eldoc-mode) (lsp-eldoc-mode 1))
+    (require 'init-lsp-mode)
+    (lsp)
+    (message "✅ 切换到 lsp-mode，并已启用 hover"))
+
+   ;; —— 从 lsp-mode 切到 lsp-bridge —— 
+   ((bound-and-true-p lsp-mode)
+    (my/cleanup-lsp-mode)
+    (setq lsp-eldoc-enable-hover nil)
+    (when (fboundp 'lsp-eldoc-mode) (lsp-eldoc-mode -1))
     (require 'init-lsp-bridge)
-		(setq lsp-enable-hover nil)  ; 在 bridge 分支禁用
-    (when (fboundp 'detect-or-set-python-path)
-      (detect-or-set-python-path))
-    ;; 启动 lsp-bridge
     (lsp-bridge-mode 1)
-    (message "✅ 切换到 lsp-bridge-mode。"))
-   ;; —— 默认启动 lsp-mode —— 
+    (message "✅ 切换到 lsp-bridge，并已禁用 hover"))
+
+   ;; —— 默认：启动 lsp-mode + hover —— 
    (t
     (require 'init-lsp-mode)
+    (setq lsp-eldoc-enable-hover t)
+    (when (fboundp 'lsp-eldoc-mode) (lsp-eldoc-mode 1))
     (lsp)
-    (message "ℹ️ 未检测到任何后端，已启动 lsp-mode。"))))
+    (message "ℹ 未检测到后端，已启动 lsp-mode，并启用 hover"))))
 
-;; 绑定快捷键 C-c l t
+
+;; 绑定一个快捷键测试
 (global-set-key (kbd "C-c l t") #'my/toggle-lsp-backend)
-
-
-
-
-
-
 
 
 (require 'init-cpp)
 (require 'init-asm)
 (require 'init-quickrun)
-(require 'init-markdown)
 
 (provide 'init-lsp)
 ;;; init-lsp.el ends here

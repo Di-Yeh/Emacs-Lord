@@ -49,5 +49,4 @@
 (global-set-key (kbd "C-c C-w") #'my/toggle-warning-verbosity)
 
 
-
 (provide 'init-const)
