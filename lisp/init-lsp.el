@@ -154,13 +154,17 @@
     (message "✅ 切换到 lsp-mode，并已启用 hover"))
 
    ;; —— 从 lsp-mode 切到 lsp-bridge —— 
-   ((bound-and-true-p lsp-mode)
-    (my/cleanup-lsp-mode)
-    (setq lsp-eldoc-enable-hover nil)
-    (when (fboundp 'lsp-eldoc-mode) (lsp-eldoc-mode -1))
-    (require 'init-lsp-bridge)
-    (lsp-bridge-mode 1)
-    (message "✅ 切换到 lsp-bridge，并已禁用 hover"))
+	 ((bound-and-true-p lsp-mode)
+	 (my/cleanup-lsp-mode)
+	 (setq lsp-eldoc-enable-hover nil)
+	 (when (fboundp 'lsp-eldoc-mode) (lsp-eldoc-mode -1))
+	 (require 'init-lsp-bridge)
+	 (lsp-bridge-mode 1)
+	 (message "✅ 切换到 lsp-bridge，并已禁用 hover")
+	 ;; 延迟1秒刷新 spaceline，确保 diagnostic 正确载入
+	 (run-at-time "1 sec" nil (lambda ()
+															(spaceline-refresh)
+															(force-mode-line-update))))
 
    ;; —— 默认：启动 lsp-mode + hover —— 
    (t

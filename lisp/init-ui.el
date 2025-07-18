@@ -52,34 +52,18 @@
   ;; 基础 mode-line
   (dolist (face '(mode-line mode-line-inactive))
     (set-face-attribute face nil
-                        :background "#2C313C" :foreground "#ffffff"
-                        :box nil :overline nil :underline nil :inherit nil))
-  ;; powerline 常用 face
-  (set-face-attribute 'powerline-active1   nil :background "#3E4451" :foreground "#ffffff" :inherit nil)
-  (set-face-attribute 'powerline-active2   nil :background "#4B5263" :foreground "#ffffff" :inherit nil)
-  (set-face-attribute 'powerline-inactive1 nil :background "#2C2C2C" :foreground "#888888" :inherit nil)
-  (set-face-attribute 'powerline-inactive2 nil :background "#1E1E1E" :foreground "#666666" :inherit nil))
+                        :background "#1E1E1E" :foreground "#ffffff"
+                        :box nil :overline nil :underline nil :inherit nil)))
+
 ;; 在 load-theme 后执行
 (advice-add 'load-theme :after #'my/fix-mode-line-faces)
 
 ;;; ----------------------------------------------
 ;;; 定义 spaceline segment 专用 face
 ;;; ----------------------------------------------
-(defface my/spaceline-face-theme-one
-  '((t (:background "#ff8533" :foreground "#1E1E1E" :box nil :weight bold)))
+(defface my/spaceline-face-theme
+  '((t (:background "#1E1E1E" :foreground "#ffffff" :box nil :weight bold)))
   "segments 样式 1" :group 'spaceline)
-
-(defface my/spaceline-face-theme-two
-  '((t (:background "#9933ff" :foreground "#ffffff" :box nil :weight bold)))
-  "segments 样式 2" :group 'spaceline)
-
-(defface my/spaceline-face-theme-three
-  '((t (:background "#3d3d5c" :foreground "#1e1e1e" :box nil :weight bold)))
-  "segments 样式 3" :group 'spaceline)
-
-(defface my/spaceline-face-theme-four
-  '((t (:background "#2C2C2C" :foreground "#ffffff" :box nil :weight bold)))
-  "segments 样式 4" :group 'spaceline)
 
 ;;; ----------------------------------------------
 ;;; powerline 分隔符配置
@@ -87,8 +71,8 @@
 (use-package powerline
   :ensure t
   :config
-  (setq powerline-default-separator 'slant)
-  (setq powerline-height 32)  ;; 按需调整
+  (setq powerline-default-separator nil)
+  (setq powerline-height 40)  ;; 按需调整
 	(setq powerline-default-separator-dir 'right) ; 让左右 segment 分割明确
   )
 
@@ -99,46 +83,94 @@
   :ensure t
   :after powerline
   :config
-	;; buffer 名称
+	
+	;; ------------------- buffer 名称 -------------------
 	(spaceline-define-segment my-buffer-id
   (when (and (buffer-file-name) (fboundp 'all-the-icons-icon-for-buffer))
     (concat (all-the-icons-icon-for-buffer) (powerline-buffer-id))))
 
-  ;; 主模式
+  ;; ------------------- 主模式 -------------------
   (spaceline-define-segment my-major-mode
     "Major mode name."
     (format-mode-line mode-name))
 
-	(defun my-project-dir-short (path)
-		"返回 PATH 的最后两个目录名称，用于显示项目路径的缩略信息。
-	例如：\"/home/user/projects/myproject\" 将返回 \"projects/myproject\"."
-		(let* ((path (directory-file-name path))  ;; 去掉尾部斜杠
-					 (components (split-string path "/" t)))
-			(if (>= (length components) 2)
-					(concat (nth (- (length components) 2) components) "/" (car (last components)))
-				(car components))))
-
 	;; ----------------- 当前项目路径（project.el） -----------------
+  (defun my-project-dir-short (path)
+  "返回 PATH 的最后两个目录名称，用于显示项目路径的缩略信息。
+例如：\"/home/user/projects/myproject\" 将返回 \"projects/myproject\"."
+  (let* ((path (directory-file-name path))  ;; 去掉尾部斜杠
+         (components (split-string path "/" t)))
+    (if (>= (length components) 2)
+        (concat (nth (- (length components) 2) components) "/" (car (last components)))
+      (car components))))
+
 	(spaceline-define-segment my-project-dir
-		"显示项目根目录的缩略路径（仅显示最后两个目录名称）。"
+		"显示项目根目录的缩略路径（仅显示最后两个目录名称），附带图标和配色。"
 		(when (fboundp 'project-current)
 			(when-let* ((proj (project-current))
 									(root (car (project-roots proj))))
-				(my-project-dir-short (abbreviate-file-name root)))))
+				(let ((icon (all-the-icons-octicon "file-directory"
+																					 :face '(:foreground "#ff8533")
+																					 :height 1.0 :v-adjust 0))
+							(short-path (propertize (my-project-dir-short (abbreviate-file-name root))
+																			'face '(:foreground "#ff9966"))))
+					(format "%s %s" icon short-path)))))
+
+	;; ------------------- 保存文件 -------------------
+  (defvar my/save-status-show-text nil
+  "指示是否在 modeline 中显示保存状态的文字。")
+
+	(defun my/show-saved-status-text ()
+		"保存后短暂显示 Saved 文字。"
+		(setq my/save-status-show-text t)
+		(run-at-time "3 sec" nil
+								 (lambda ()
+									 (setq my/save-status-show-text nil)
+									 (force-mode-line-update))))
+
+	(defun my/setup-save-status-hook ()
+		"在当前 buffer 中设置保存状态显示的钩子。"
+		(add-hook 'after-save-hook #'my/show-saved-status-text nil t))
+
+	(add-hook 'find-file-hook #'my/setup-save-status-hook)
+
+	(spaceline-define-segment my-save-status
+		"显示保存状态图标 + 文本提示。"
+		(let* ((modified (buffer-modified-p))
+					 (icon (all-the-icons-material "save"
+																				 :height 1.0
+																				 :v-adjust -0.1
+																				 :face `(:foreground ,(if modified "#ff6600" "#66ff66"))))
+					 (text (cond
+									(modified (propertize " No Save" 'face '(:foreground "#ff6600")))
+									(my/save-status-show-text (propertize " Saved" 'face '(:foreground "#66ff66")))
+									(t ""))))
+			(concat icon text)))
 
 
+
+	;; ----------------- flycheck设置 -----------------
   (spaceline-define-segment my-flycheck
   "Flycheck status counts with icons."
   (when (and (boundp 'flycheck-current-errors) flycheck-mode)
-    (let-alist (flycheck-count-errors flycheck-current-errors)
-      (concat
-       (all-the-icons-faicon "times-circle" :height 1.0 :v-adjust 0 :face '(:background "#2C2C2C" :foreground "#ff0066"))   ; 错误图标
-       (format " %d " (or .error 0))
-       (all-the-icons-faicon "exclamation-triangle" :height 1.0 :v-adjust 0 :face '(:background "#2C2C2C" :foreground "#ffff00")) ; 警告图标
-       (format " %d " (or .warning 0))
-       (all-the-icons-faicon "info-circle" :height 1.0 :v-adjust 0 :face '(:background "#2C2C2C" :foreground "#00ff00"))    ; 提示图标
-       (format " %d" (or .info 0))))))
-
+    (let* ((counts (flycheck-count-errors flycheck-current-errors))
+           (errors   (or (cdr (assq 'error counts)) 0))
+           (warnings (or (cdr (assq 'warning counts)) 0))
+           (infos    (or (cdr (assq 'info counts)) 0))
+           (start (propertize "Flycheck:{" 'face '(:foreground "#cc66ff")))
+           (end   (propertize "}"         'face '(:foreground "#cc66ff")))
+           (icon-error (all-the-icons-faicon "times-circle"
+                                              :height 1.0 :v-adjust 0 :face '(:foreground "#ff0066")))
+           (icon-warning (all-the-icons-faicon "exclamation-triangle"
+                                                :height 1.0 :v-adjust 0 :face '(:foreground "#ffff00")))
+           (icon-info (all-the-icons-faicon "info-circle"
+                                             :height 1.0 :v-adjust 0 :face '(:foreground "#00ff00"))))
+      (format "%s %s %d %s %d %s %d %s"
+              start
+              icon-error errors
+              icon-warning warnings
+              icon-info infos
+              end))))
 
 	;; ----------------- lsp状态段 -----------------
 	;; 定义一个全局变量来保存 dap-hydra 的状态
@@ -169,81 +201,27 @@
 		(cond
 		 ((and (boundp 'lsp-bridge-mode) lsp-bridge-mode)
 			(concat
-			 (propertize "🦜 " 'face '(:background "#3d3d5c" :foreground "#00ff00" :height 1.0))
-			 (propertize "LSP-Bridge" 'face '(:background "#3d3d5c" :foreground "#00ff00" :height 1.0))))
+			 (propertize "LSP-Bridge" 'face '(:foreground "#00ff00" :height 1.0))))
 		 ((and (boundp 'lsp-mode) lsp-mode)
 			(concat
-			 (propertize "🐦‍ " 'face '(:background "#3d3d5c" :foreground "#9966ff" :height 1.0))
-			 (propertize "LSP-Mode" 'face '(:background "#3d3d5c" :foreground "#9966ff" :height 1.0))))
+			 (propertize "LSP-Mode" 'face '(:foreground "#9966ff" :height 1.0))))
 		 (t (concat 
-				 (propertize "💤" 'face '(:background "#3d3d5c" :foreground "#b3e6ff" :height 1.0))
-				 (propertize "No LSP" 'face '(:background "#3d3d5c" :foreground "#b3e6ff" :height 1.0))))))
+				 (propertize "No LSP" 'face '(:foreground "#b3e6ff" :height 1.0))))))
+
+	;; ------------------- time显示 -------------------
+  (spaceline-define-segment my-time
+  "Current time string with FontAwesome clock icon."
+  (concat
+		(all-the-icons-faicon "clock-o"
+												 :height 1.0
+												 :v-adjust 0
+												 :face '(:foreground "#ff8533"))
+												 " "
+												 (format-time-string "%H:%M")
+												 "   "))
 
 
-	;; ------------------- Meow 状态段 -------------------
-	;; 定义缓冲区局部变量，用来保存当前 Meow 状态，默认是 "Normal"
-	(defvar my-meow-current-state "Normal"
-		"当前的 Meow 状态。默认是 \"Normal\"。")
-	(make-variable-buffer-local 'my-meow-current-state)
-
-	;; 当进入 Insert 模式时调用，将当前缓冲区的状态设置为 Insert
-	(defun my-update-meow-state-to-insert ()
-		"将当前缓冲区的 Meow 状态设置为 Insert，并刷新 mode-line。"
-		(setq-local my-meow-current-state "Insert")
-		(force-mode-line-update)
-		(message "Switched to Insert"))
-
-	(add-hook 'meow-insert-mode-hook #'my-update-meow-state-to-insert)
-
-	;; 使用 post-command-hook 检查按键事件，
-	;; 如果检测到 ESC，就更新当前缓冲区状态为 Normal。
-	(defun my-check-for-escape ()
-		"检查当前命令键序列，如果第一个事件是 ESC，则将当前缓冲区的 Meow 状态更新为 Normal。"
-		(let ((keys (this-command-keys-vector)))
-			(when (and (> (length keys) 0)
-								 (eq (aref keys 0) 'escape))
-				(setq-local my-meow-current-state "Normal")
-				(force-mode-line-update)
-				(message "Switched to Normal (ESC detected)"))))
-
-	(add-hook 'post-command-hook #'my-check-for-escape)
-
-	;; 修改 mode-line 显示函数，根据当前缓冲区变量 my-meow-current-state 显示状态
-	(defun my-meow-defun ()
-		"返回当前缓冲区的 Meow 状态字符串，供 Spaceline 显示。
-	如果启用了 meow（meow-global-mode 或 meow-mode）：
-	- 当状态为 Insert 时显示淡紫色 '🐱 Insert'；
-	- 当状态为 Normal（默认）时显示橙色 '🐱 Normal'；
-	如果 meow 没启用，则返回空字符串。"
-		(if (or (bound-and-true-p meow-global-mode)
-						(bound-and-true-p meow-mode))
-				(let* ((state my-meow-current-state)
-							 (icon "🐱 ")
-							 (color (if (string= state "Insert")
-													"#cc99ff"  ;; 淡紫色用于 Insert
-												"#ff8800"))) ;; 橙色用于 Normal
-					(concat
-					 (propertize icon 'face `(:foreground ,color :weight bold))
-					 (propertize state 'face `(:foreground ,color :weight bold))))
-			""))
-
-	;; 保证每个命令后刷新 mode-line（可选，但有助于状态即时反映）
-	(add-hook 'post-command-hook #'force-mode-line-update)
-
-	;; 将 Meow 状态作为 Spaceline 的 segment 显示
-	(spaceline-define-segment my-meow-status
-		"显示当前 Meow 状态：
-	- Insert 模式下显示淡紫色 '🐱 Insert'；
-	- Normal 模式下显示橙色 '🐱 Normal'。
-	因为状态是缓冲区局部的，所以每个窗口的显示互相独立。"
-		(my-meow-defun))
-
-	;; time显示
-	(spaceline-define-segment my-time
-  "Current time string."
-  (format-time-string "%H:%M"))
-
-  ;; 当前窗口编号
+  ;; ------------------- 当前窗口编号 -------------------
   (spaceline-define-segment my-winum
   "Window number (winum)，使用图标代替文字。"
   (when (bound-and-true-p winum-mode)
@@ -251,14 +229,20 @@
      (all-the-icons-faicon "bookmark"
                            :height 1.0
                            :v-adjust 0
-                           :face '(:background "#ff8533"))
+                           :face '(:foreground "#ff8533"))
      " "
      (winum-get-number-string))))
 
-  ;; 光标位置
+  ;; ------------------- 光标位置 -------------------
   (spaceline-define-segment my-position
     "Cursor line:column."
-    (format-mode-line "%l:%c"))
+		(concat
+		 (all-the-icons-faicon "pencil"
+													 :height 1.0
+													 :v-adjust 0
+													 :face '(:foreground "#b3b3ff"))
+		 " "
+		 (format-mode-line "%l:%c")))
 
 
 	;;; ==============================
@@ -280,7 +264,7 @@
 				 (all-the-icons-faicon "git"
 															 :height 1.0
 															 :v-adjust 0
-															 :face '(:background"#9933ff" :foreground "#f1502f"))
+															 :face '(:foreground "#f1502f"))
 				 " "
 				 ;; 内容部分
 				 (if has-diff
@@ -314,31 +298,25 @@
 	;;; ----------------------------------------------
 	;;; 定义文件统计 segment
 	;;; ----------------------------------------------
-	(spaceline-define-segment my-file-stats
-		"显示当前文件的字符数、单词数和行数，图标 + 彩色显示。"
-		(when buffer-file-name
-			(let* ((char-count (buffer-size))
-						 (word-count (count-words (point-min) (point-max)))
-						 (line-count (count-lines (point-min) (point-max)))
-						 ;; 图标配置（图标 + 高度 + 调整 + 颜色）
-						 (icon-char (all-the-icons-material "text_fields"
-																								 :height 1.0 :v-adjust 0
-																								 :face '(:foreground "#ffcc00" :background "#3d3d5c")))
-						 (icon-word (all-the-icons-octicon "book"
-																								:height 1.0 :v-adjust 0
-																								:face '(:foreground "#66ff66" :background "#3d3d5c")))
-						 (icon-line (all-the-icons-faicon "bars"
-																							 :height 1.0 :v-adjust 0
-																							 :face '(:foreground "#66ccff" :background "#3d3d5c"))))
-				;; 拼接显示内容
-				(concat
-				 icon-char " " (propertize (format "%d" char-count) 'face '(:foreground "white" :background "#3d3d5c"))
-				 " "
-				 icon-word " " (propertize (format "%d" word-count) 'face '(:foreground "white" :background "#3d3d5c"))
-				 " "
-				 icon-line " " (propertize (format "%d" line-count) 'face '(:foreground "white" :background "#3d3d5c"))))))
-
-
+  (spaceline-define-segment my-file-stats
+  "显示当前文件的字符数、单词数和行数，图标 + 彩色显示。"
+  (when buffer-file-name
+    (let* ((char-count (buffer-size))
+           (word-count (count-words (point-min) (point-max)))
+           (line-count (count-lines (point-min) (point-max)))
+           ;; 显示文字
+           (file-char (propertize "char" 'face '(:foreground "#ffcc00")))
+           (file-word (propertize "word" 'face '(:foreground "#66ff66")))
+           (file-line (propertize "line" 'face '(:foreground "#66ccff")))
+           (file-start (propertize "All:{" 'face '(:foreground "#ff3399")))
+           (file-end   (propertize "}"     'face '(:foreground "#ff3399"))))
+      ;; 拼接显示内容
+      (format "%s %s %d %s %d %s %d %s"
+              file-start
+              file-char char-count
+              file-word word-count
+              file-line line-count
+              file-end))))
 
 	;; -------------------------------
 	;; 安装 spaceline 布局，并指定 face
@@ -346,21 +324,21 @@
 	(spaceline-install
 	 'main
 	 ;; 左侧 segments 列表
-	 `((my-winum        :face 'my/spaceline-face-theme-one :priority 90)		; 窗口编号
-		 (my-buffer-id    :priority 86)		; buffer 名称 + 图标
-		 (my-major-mode   :face 'my/spaceline-face-theme-two :priority 70)   ; major-mode 名称
-		 (my-flycheck     :face 'my/spaceline-face-theme-four :priority 20)   ; flycheck 错误/警告/提示图标
-		 (my-file-stats	  :face 'my/spaceline-face-theme-three :priority 75)
-		 (my-project-dir  :face 'my/spaceline-face-theme-one :priority 15 :max-length 40)		; 项目路径
-		 (my-diff-hl		  :face 'my/spaceline-face-theme-two :priority 10)
-		 (my-meow-status  )   ; Meow 模式高亮
+	 `((my-winum        :face 'my/spaceline-face-theme :priority 90)		; 窗口编号
+		 (my-buffer-id    :face 'my/spaceline-face-theme :priority 85)		; buffer 名称 + 图标
+		 (my-save-status 	:face 'my/spaceline-face-theme :priority 85)		; 文件保存
+		 (my-major-mode   :face 'my/spaceline-face-theme :priority 70)   	; major-mode 名称
+		 (my-flycheck     :face 'my/spaceline-face-theme :priority 20)   	; flycheck 错误/警告/提示图标
+		 (my-file-stats	  :face 'my/spaceline-face-theme :priority 75)		; 字数计算
+		 (my-project-dir  :face 'my/spaceline-face-theme :priority 15 :max-length 40)		; 项目路径
+		 (my-diff-hl		  :face 'my/spaceline-face-theme :priority 10)		; git
 		)
 
 	 ;; 右侧 segments 列表
 	 `(
-		 (my-lsp-status  :face 'my/spaceline-face-theme-three :priority 80)		; LSP 状态
-		 (my-position    :priority 85)		; 行:列
-		 (my-time        :face 'my/spaceline-face-theme-one :priority 100) 	; 时间
+		 (my-lsp-status  :face 'my/spaceline-face-theme :priority 80)		; LSP 状态
+		 (my-position    :face 'my/spaceline-face-theme :priority 80)		; 行:列
+		 (my-time        :face 'my/spaceline-face-theme :priority 100) 	; 时间
 		))
 
 
@@ -390,7 +368,6 @@
 
 (setq-default mode-line-end-spaces (make-string 0 ?\s))
 (setq-default truncate-lines t)
-
 (setq-default mode-line-format '("%e" (:eval (spaceline-ml-main))))
 
 
