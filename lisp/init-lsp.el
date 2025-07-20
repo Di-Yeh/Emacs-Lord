@@ -162,9 +162,10 @@
 	 (lsp-bridge-mode 1)
 	 (message "✅ 切换到 lsp-bridge，并已禁用 hover")
 	 ;; 延迟1秒刷新 spaceline，确保 diagnostic 正确载入
-	 (run-at-time "1 sec" nil (lambda ()
-															(spaceline-refresh)
-															(force-mode-line-update))))
+	 ;; (run-at-time "1 sec" nil (lambda ()
+	 ;; 														(spaceline-refresh)
+	 ;; 														(force-mode-line-update)))
+	 )
 
    ;; —— 默认：启动 lsp-mode + hover —— 
    (t

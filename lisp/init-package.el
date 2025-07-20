@@ -15,21 +15,6 @@
         ivy-count-format "%d/%d "))
 (ivy-mode 1)
 
-(use-package all-the-icons-ivy-rich
-  :ensure t
-  :init (all-the-icons-ivy-rich-mode 1))
-
-(use-package ivy-rich
-  :ensure t
-	:custom
-	((all-the-icons-ivy-rich-icon t)
-	 (all-the-icons-ivy-rich-color-icon t)
-	 (all-the-icons-ivy-rich-icon-size 1.0)
-	 (all-the-icons-ivy-rich-project t)
-	 (all-the-icons-ivy-rich-field-width 80)
-	 )
-  :init (ivy-rich-mode 1))
-
 (use-package swiper
   :after ivy
   :bind (("C-s" . swiper)
@@ -44,6 +29,20 @@
 	 ("C-c f" . counsel-recentf)
 	 ("C-c g" . counsel-git)))
 
+(use-package all-the-icons-ivy-rich
+  :ensure t
+  :init (all-the-icons-ivy-rich-mode 1))
+
+(use-package ivy-rich
+  :ensure t
+	:custom
+	((all-the-icons-ivy-rich-icon t)
+	 (all-the-icons-ivy-rich-color-icon t)
+	 (all-the-icons-ivy-rich-icon-size 1.0)
+	 (all-the-icons-ivy-rich-project t)
+	 (all-the-icons-ivy-rich-field-width 80)
+	 )
+  :init (ivy-rich-mode 1))
 
 (use-package which-key
   :defer nil
@@ -404,6 +403,9 @@
   (set-face-foreground 'rainbow-delimiters-depth-9-face  "#d08770") ; 土黄
   ;; 非法括号颜色
   (set-face-foreground 'rainbow-delimiters-unmatched-face "#ff0066"))
+
+(use-package vterm
+	:ensure t)
 
 
 (provide 'init-package)

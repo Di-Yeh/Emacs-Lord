@@ -53,7 +53,7 @@
   (dolist (face '(mode-line mode-line-inactive))
     (set-face-attribute face nil
                         :background "#1E1E1E" :foreground "#ffffff"
-                        :box nil :overline nil :underline nil :inherit nil)))
+                        :box nil :overline nil :underline nil :inherit nil :height 1.45)))
 
 ;; 在 load-theme 后执行
 (advice-add 'load-theme :after #'my/fix-mode-line-faces)
@@ -157,20 +157,20 @@
            (errors   (or (cdr (assq 'error counts)) 0))
            (warnings (or (cdr (assq 'warning counts)) 0))
            (infos    (or (cdr (assq 'info counts)) 0))
-           (start (propertize "Flycheck:{" 'face '(:foreground "#cc66ff")))
-           (end   (propertize "}"         'face '(:foreground "#cc66ff")))
+           (icon-search (all-the-icons-faicon "search"
+																							:height 1.0 :v-adjust 0 :face '(:foreground "#cc66ff")))
+           (txt   (propertize ":"         'face '(:foreground "#cc66ff")))
            (icon-error (all-the-icons-faicon "times-circle"
                                               :height 1.0 :v-adjust 0 :face '(:foreground "#ff0066")))
            (icon-warning (all-the-icons-faicon "exclamation-triangle"
                                                 :height 1.0 :v-adjust 0 :face '(:foreground "#ffff00")))
            (icon-info (all-the-icons-faicon "info-circle"
                                              :height 1.0 :v-adjust 0 :face '(:foreground "#00ff00"))))
-      (format "%s %s %d %s %d %s %d %s"
-              start
+      (format "%s%s[ %s %d %s %d %s %d ]"
+              icon-search txt
               icon-error errors
               icon-warning warnings
-              icon-info infos
-              end))))
+              icon-info infos))))
 
 	;; ----------------- lsp状态段 -----------------
 	;; 定义一个全局变量来保存 dap-hydra 的状态
@@ -218,7 +218,7 @@
 												 :face '(:foreground "#ff8533"))
 												 " "
 												 (format-time-string "%H:%M")
-												 "   "))
+												 "               "))
 
 
   ;; ------------------- 当前窗口编号 -------------------
@@ -308,15 +308,14 @@
            (file-char (propertize "char" 'face '(:foreground "#ffcc00")))
            (file-word (propertize "word" 'face '(:foreground "#66ff66")))
            (file-line (propertize "line" 'face '(:foreground "#66ccff")))
-           (file-start (propertize "All:{" 'face '(:foreground "#ff3399")))
-           (file-end   (propertize "}"     'face '(:foreground "#ff3399"))))
+           (file-attach (all-the-icons-material "attach_file" :height 1.0 :v-adjust 0 :face '(:foreground "#ff3399")))
+           (file-txt   (propertize ":"     'face '(:foreground "#ff3399"))))
       ;; 拼接显示内容
-      (format "%s %s %d %s %d %s %d %s"
-              file-start
+      (format "%s%s[ %s %d %s %d %s %d ]"
+              file-attach file-txt
               file-char char-count
               file-word word-count
-              file-line line-count
-              file-end))))
+              file-line line-count))))
 
 	;; -------------------------------
 	;; 安装 spaceline 布局，并指定 face
