@@ -306,9 +306,9 @@
 		(let ((method current-input-method))
 			(if (and method (string-prefix-p "pyim" method))
 					;; 当前为中文输入法，突出显示“中”
-					(concat "[" (propertize "中" 'face '(:foreground "#ff9933")) "]")
+					(concat "[" (propertize "中" 'face '(:foreground "#ff0000")) "]")
 				;; 否则为英文
-				(concat "[" (propertize "英" 'face '(:foreground "#ffff66")) "]"))))
+				(concat "[" (propertize "En" 'face '(:foreground "#ffff66")) "]"))))
 
 	;; 用于强制刷新 mode-line
 	(defun my/refresh-mode-line ()
