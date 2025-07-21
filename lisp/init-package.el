@@ -247,9 +247,6 @@
 
 
 
-
-
-
 ;; 安装 lsp-bridge
 (use-package lsp-bridge
   :straight (lsp-bridge
@@ -406,6 +403,36 @@
 
 (use-package vterm
 	:ensure t)
+
+
+(use-package pyim
+  :straight t
+  :init
+  ;; 🧠 初始化前设置默认方案（一定要放在 :init 或 use-package 顶部）
+  (setq default-input-method "pyim")
+  (setq pyim-default-scheme 'quanpin)
+  :config
+  ;; 设置切换输入法快捷键
+  (global-set-key (kbd "C-\\") 'toggle-input-method)
+
+  ;; 📘 使用 pyim 内置拼音词库（需单独加载 pyim-basedict）
+  (use-package pyim-basedict
+    :straight t
+    :config
+    (pyim-basedict-enable))
+
+  ;; 💬 使用 posframe 显示候选词窗口（需安装 posframe）
+  (use-package posframe
+    :straight t)
+
+  ;; 🪟 设置 pyim 使用 posframe 浮动显示候选词
+  (setq pyim-page-tooltip 'posframe)
+
+  ;; ✅ 可选：设置 posframe 的样式与最大宽度
+  (setq pyim-posframe-border-width 2)
+  (setq pyim-posframe-min-width 20)
+  (setq pyim-posframe-min-height 4)
+)
 
 
 (provide 'init-package)

@@ -45,18 +45,31 @@
   (diff-hl-flydiff-mode 1))  ;; 实时刷新
 
 ;;; ----------------------------------------------
-;;; 每次 load-theme 后修复 mode-line face
+;;; 🖌️ 自定义 mode-line face，在切换主题后保持一致
 ;;; ----------------------------------------------
 (defun my/fix-mode-line-faces (&rest _args)
-  "重置 mode-line 和 powerline 相关 face，防止主题覆盖。"
-  ;; 基础 mode-line
-  (dolist (face '(mode-line mode-line-inactive))
-    (set-face-attribute face nil
-                        :background "#1E1E1E" :foreground "#ffffff"
-                        :box nil :overline nil :underline nil :inherit nil :height 1.45)))
+  "统一设置 mode-line 样式，避免被主题覆盖。"
+  (set-face-attribute 'mode-line nil
+                      :background "#1E1E1E"
+                      :foreground "#ffffff"
+                      :box nil
+                      :overline nil
+                      :underline nil
+                      :height 1.45)
+  (set-face-attribute 'mode-line-inactive nil
+                      :background "#1E1E1E"
+                      :foreground "#ffffff"
+                      :box nil
+                      :overline nil
+                      :underline nil
+                      :height 1.45))
 
-;; 在 load-theme 后执行
-(advice-add 'load-theme :after #'my/fix-mode-line-faces)
+;; 保证在主题加载后执行
+(advice-add 'load-theme :after
+            (lambda (&rest _)
+              ;; 稍微延迟执行以防主题覆盖
+              (run-at-time 0.1 nil #'my/fix-mode-line-faces)))
+
 
 ;;; ----------------------------------------------
 ;;; 定义 spaceline segment 专用 face
@@ -157,17 +170,13 @@
            (errors   (or (cdr (assq 'error counts)) 0))
            (warnings (or (cdr (assq 'warning counts)) 0))
            (infos    (or (cdr (assq 'info counts)) 0))
-           (icon-search (all-the-icons-faicon "search"
-																							:height 1.0 :v-adjust 0 :face '(:foreground "#cc66ff")))
-           (txt   (propertize ":"         'face '(:foreground "#cc66ff")))
            (icon-error (all-the-icons-faicon "times-circle"
                                               :height 1.0 :v-adjust 0 :face '(:foreground "#ff0066")))
            (icon-warning (all-the-icons-faicon "exclamation-triangle"
                                                 :height 1.0 :v-adjust 0 :face '(:foreground "#ffff00")))
            (icon-info (all-the-icons-faicon "info-circle"
                                              :height 1.0 :v-adjust 0 :face '(:foreground "#00ff00"))))
-      (format "%s%s[ %s %d %s %d %s %d ]"
-              icon-search txt
+      (format "%s %d %s %d %s %d"
               icon-error errors
               icon-warning warnings
               icon-info infos))))
@@ -369,28 +378,24 @@
 (setq-default truncate-lines t)
 (setq-default mode-line-format '("%e" (:eval (spaceline-ml-main))))
 
-
-(load-theme 'modus-vivendi t)
-
-;; 定义一个交互式主题切换函数
+;;; ----------------------------------------------
+;;; 🌗 交互式主题切换函数，支持 Catppuccin 与其它主题
+;;; ----------------------------------------------
 (defun my/switch-theme ()
-  "交互式切换主题。
-提供所有已安装的主题（即 custom-available-themes 返回的列表）
-以及额外的 Catppuccin 自定义选项（Frappe/Mocha/Macchiato/Latte）。"
+  "交互式切换主题，支持 Catppuccin 多种风格和普通已安装主题。"
   (interactive)
-  ;; 自定义的 Catppuccin 选项列表（显示名称与风格对应）
   (let* ((catppuccin-options '("Catppuccin (Frappe)"
                                "Catppuccin (Mocha)"
                                "Catppuccin (Macchiato)"
                                "Catppuccin (Latte)"))
-         ;; 取出所有已加载主题的名称（字符串形式），并去掉 "catppuccin"，以免重复
          (other-themes (remove "catppuccin"
                                (mapcar #'symbol-name (custom-available-themes))))
-         ;; 合并自定义的 Catppuccin 选项和其他主题列表
          (theme-list (append catppuccin-options other-themes))
          (choice (completing-read "选择主题: " theme-list nil t)))
-    ;; 先禁用所有当前启用的主题，避免冲突
+    ;; 先关闭所有已启用主题
     (mapc #'disable-theme custom-enabled-themes)
+
+    ;; 判断是否为 Catppuccin 风格
     (if (member choice catppuccin-options)
         (progn
           (cond
@@ -398,19 +403,24 @@
            ((string-match-p "Macchiato" choice) (setq catppuccin-flavor 'macchiato))
            ((string-match-p "Latte" choice) (setq catppuccin-flavor 'latte))
            (t (setq catppuccin-flavor 'mocha)))
-          ;; 加载 Catppuccin 主题时只需调用 load-theme 'catppuccin，因为 catppuccin-flavor 已经决定了风格
           (load-theme 'catppuccin t)
           (message "已切换至 %s" choice))
-      (progn
-				;; 对于其它主题，choice 已经是 custom-available-themes 中的名称
-				(load-theme (intern choice) t)
-				(message "已切换至 %s" choice)))
-		(powerline-reset)
-		))
+      ;; 其它普通主题
+      (load-theme (intern choice) t)
+      (message "已切换至 %s" choice))
 
-;; 绑定全局快捷键 C-t 调用主题切换函数
+    ;; ✅ 每次切换主题后自动刷新 mode-line
+    (my/fix-mode-line-faces)
+
+    ;; ✅ 如果使用 powerline 或 spaceline，刷新它
+    (when (fboundp 'powerline-reset)
+      (powerline-reset))))
+
+;; 全局快捷键：使用 C-t 快速切换主题
 (global-set-key (kbd "C-t") 'my/switch-theme)
 
+
+(load-theme 'modus-vivendi t)
 
 
 
