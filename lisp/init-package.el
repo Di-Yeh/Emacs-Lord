@@ -407,6 +407,8 @@
 (use-package vterm
 	:ensure t)
 
+(use-package lv
+  :straight t)
 
 (use-package pyim
   :straight t

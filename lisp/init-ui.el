@@ -21,7 +21,7 @@
 ;;; ----------------------------------------------
 ;;; 基础：自动安装所需包
 ;;; ----------------------------------------------
-(dolist (pkg '(powerline spaceline winum all-the-icons diff-hl))
+(dolist (pkg '(powerline spaceline all-the-icons diff-hl))
   (unless (package-installed-p pkg)
     (package-install pkg)))
 
@@ -31,12 +31,9 @@
 (require 'powerline)
 (require 'spaceline)
 (require 'spaceline-config)  ;; 必须先载入，提供 spacíeline-install
-(require 'winum)
 (require 'all-the-icons)  ;; 确保 icon 可用
 (require 'diff-hl)
-
-
-(winum-mode 1)  ;; 启用窗口编号
+(display-battery-mode t)
 
 (use-package diff-hl
   :hook ((prog-mode . diff-hl-mode)
@@ -55,14 +52,14 @@
                       :box nil
                       :overline nil
                       :underline nil
-                      :height 1.45)
+                      :height 1.15)
   (set-face-attribute 'mode-line-inactive nil
                       :background "#1E1E1E"
                       :foreground "#ffffff"
                       :box nil
                       :overline nil
                       :underline nil
-                      :height 1.45))
+                      :height 1.15))
 
 ;; 保证在主题加载后执行
 (advice-add 'load-theme :after
@@ -75,7 +72,9 @@
 ;;; 定义 spaceline segment 专用 face
 ;;; ----------------------------------------------
 (defface my/spaceline-face-theme
-  '((t (:background "#1E1E1E" :foreground "#ffffff" :box nil :weight bold)))
+  '((t (
+				:background "#1E1E1E"
+	 			:foreground "#ffffff" :box nil :weight bold)))
   "segments 样式 1" :group 'spaceline)
 
 ;;; ----------------------------------------------
@@ -97,37 +96,26 @@
   :after powerline
   :config
 	
-	;; ------------------- buffer 名称 -------------------
+	;; ------------------- 文件路径 + 文件名 -------------------
 	(spaceline-define-segment my-buffer-id
-  (when (and (buffer-file-name) (fboundp 'all-the-icons-icon-for-buffer))
-    (concat (all-the-icons-icon-for-buffer) (powerline-buffer-id))))
+		"显示文件图标 + 缩略路径（最后两个目录） + 文件名，例如：.emacs.d/lisp/init-ui.el"
+		(when (and (buffer-file-name) (fboundp 'all-the-icons-icon-for-buffer))
+			(let* ((filepath (abbreviate-file-name (buffer-file-name)))
+						 ;; 去掉结尾斜杠并分割路径
+						 (components (split-string filepath "/" t))
+						 ;; 获取最后三个部分：最后两个目录 + 文件名
+						 (last-components (last components (min 3 (length components))))
+						 (short-path (mapconcat #'identity last-components "/"))
+						 (icon (all-the-icons-icon-for-buffer))
+						 ;; 给路径加颜色
+						 (styled-path (propertize short-path 'face '(:foreground "#d70751"))))
+				(concat icon " " styled-path))))
+
 
   ;; ------------------- 主模式 -------------------
   (spaceline-define-segment my-major-mode
     "Major mode name."
     (format-mode-line mode-name))
-
-	;; ----------------- 当前项目路径（project.el） -----------------
-  (defun my-project-dir-short (path)
-  "返回 PATH 的最后两个目录名称，用于显示项目路径的缩略信息。
-例如：\"/home/user/projects/myproject\" 将返回 \"projects/myproject\"."
-  (let* ((path (directory-file-name path))  ;; 去掉尾部斜杠
-         (components (split-string path "/" t)))
-    (if (>= (length components) 2)
-        (concat (nth (- (length components) 2) components) "/" (car (last components)))
-      (car components))))
-
-	(spaceline-define-segment my-project-dir
-		"显示项目根目录的缩略路径（仅显示最后两个目录名称），附带图标和配色。"
-		(when (fboundp 'project-current)
-			(when-let* ((proj (project-current))
-									(root (car (project-roots proj))))
-				(let ((icon (all-the-icons-octicon "file-directory"
-																					 :face '(:foreground "#ff8533")
-																					 :height 1.0 :v-adjust 0))
-							(short-path (propertize (my-project-dir-short (abbreviate-file-name root))
-																			'face '(:foreground "#ff9966"))))
-					(format "%s %s" icon short-path)))))
 
 	;; ------------------- 保存文件 -------------------
   (defvar my/save-status-show-text nil
@@ -159,8 +147,6 @@
 									(my/save-status-show-text (propertize " Saved" 'face '(:foreground "#66ff66")))
 									(t ""))))
 			(concat icon text)))
-
-
 
 	;; ----------------- flycheck设置 -----------------
   (spaceline-define-segment my-flycheck
@@ -205,17 +191,14 @@
 
 	;; ------------------- LSP 状态段 -------------------
 	(spaceline-define-segment my-lsp-status
-		"返回一个字符串，描述当前激活的是 lsp-mode 还是 lsp-bridge，
-	如果两者都没有启用，则显示 'No LSP'."
+		"返回一个字符串，描述当前激活的是 lsp-mode 还是 lsp-bridge"
 		(cond
 		 ((and (boundp 'lsp-bridge-mode) lsp-bridge-mode)
 			(concat
 			 (propertize "LSP-Bridge" 'face '(:foreground "#00ff00" :height 1.0))))
 		 ((and (boundp 'lsp-mode) lsp-mode)
 			(concat
-			 (propertize "LSP-Mode" 'face '(:foreground "#9966ff" :height 1.0))))
-		 (t (concat 
-				 (propertize "No LSP" 'face '(:foreground "#b3e6ff" :height 1.0))))))
+			 (propertize "LSP-Mode" 'face '(:foreground "#9966ff" :height 1.0))))))
 
 	;; ------------------- time显示 -------------------
   (spaceline-define-segment my-time
@@ -227,31 +210,21 @@
 												 :face '(:foreground "#ff8533"))
 												 " "
 												 (format-time-string "%H:%M")
-												 "               "))
+												 "      "))
 
-
-  ;; ------------------- 当前窗口编号 -------------------
-  (spaceline-define-segment my-winum
-  "Window number (winum)，使用图标代替文字。"
-  (when (bound-and-true-p winum-mode)
+  ;; ------------------- 光标位置 ------------------
+	(spaceline-define-segment my-position
+  "以 [ 行:列 ] 方式显示光标位置，并为数字部分设置红色背景。"
+  (let* ((line (propertize (format-mode-line "%l")
+                           'face '(:background "#ff0000" :foreground "black")))
+         (col  (propertize (format-mode-line "%c")
+                           'face '(:background "#ff0000" :foreground "black")))
+         (sep  (propertize ":" 'face '(:background "#ff0000" :foreground "black"))))
     (concat
-     (all-the-icons-faicon "bookmark"
-                           :height 1.0
-                           :v-adjust 0
-                           :face '(:foreground "#ff8533"))
-     " "
-     (winum-get-number-string))))
+     " ["
+     line sep col
+     "]")))
 
-  ;; ------------------- 光标位置 -------------------
-  (spaceline-define-segment my-position
-    "Cursor line:column."
-		(concat
-		 (all-the-icons-faicon "pencil"
-													 :height 1.0
-													 :v-adjust 0
-													 :face '(:foreground "#b3b3ff"))
-		 " "
-		 (format-mode-line "%l:%c")))
 
 
 	;;; ==============================
@@ -314,17 +287,97 @@
            (word-count (count-words (point-min) (point-max)))
            (line-count (count-lines (point-min) (point-max)))
            ;; 显示文字
-           (file-char (propertize "char" 'face '(:foreground "#ffcc00")))
-           (file-word (propertize "word" 'face '(:foreground "#66ff66")))
-           (file-line (propertize "line" 'face '(:foreground "#66ccff")))
-           (file-attach (all-the-icons-material "attach_file" :height 1.0 :v-adjust 0 :face '(:foreground "#ff3399")))
-           (file-txt   (propertize ":"     'face '(:foreground "#ff3399"))))
+           (file-char (propertize "Ⓒ" 'face '(:foreground "#ffcc00")))
+           (file-word (propertize "Ⓦ" 'face '(:foreground "#66ff66")))
+           (file-line (propertize "Ⓛ" 'face '(:foreground "#66ccff"))))
       ;; 拼接显示内容
-      (format "%s%s[ %s %d %s %d %s %d ]"
-              file-attach file-txt
+      (format "%s %d %s %d %s %d"
               file-char char-count
               file-word word-count
               file-line line-count))))
+
+  ;;; ----------------------------------------------
+	;; 输入法状态显示（[英]/[中]）
+	;;; ----------------------------------------------
+
+	;; 返回当前输入法状态的字符串，用于 mode-line
+	(defun my/mode-line-input-method-indicator ()
+		"显示当前输入法状态：[英] 或 [中]"
+		(let ((method current-input-method))
+			(if (and method (string-prefix-p "pyim" method))
+					;; 当前为中文输入法，突出显示“中”
+					(concat "[" (propertize "中" 'face '(:foreground "#ff9933")) "]")
+				;; 否则为英文
+				(concat "[" (propertize "英" 'face '(:foreground "#ffff66")) "]"))))
+
+	;; 用于强制刷新 mode-line
+	(defun my/refresh-mode-line ()
+		"强制刷新 mode-line。"
+		(force-mode-line-update t))
+
+	;; 在输入法切换时刷新 mode-line
+	(add-hook 'input-method-activate-hook #'my/refresh-mode-line)
+	(add-hook 'input-method-inactivate-hook #'my/refresh-mode-line)
+
+	;; 如果你用 spaceline，可以这样加进去（否则见下方 vanilla mode-line 添加方式）
+	(when (featurep 'spaceline)
+		(spaceline-define-segment my-input-method
+			(my/mode-line-input-method-indicator))
+
+		;; 添加到主 mode-line 格式中（你也可以插入别的位置）
+		(spaceline-compile
+			"my-line"
+			'((my-input-method :face highlight-face)
+				my-buffer-id)
+			'((line-column :separator "|")
+				buffer-encoding)))
+
+	;;; ----------------------------------------------
+	;;; 显示电池电量和状态
+	;;; ----------------------------------------------
+
+	(spaceline-define-segment my-battery
+		"仅用 all-the-icons 图标显示电池状态，不含数字。"
+		(when (and battery-status-function (fboundp 'battery))
+			(let* ((data (funcall battery-status-function))
+						 ;; 尝试从不同 key 取得电量百分比和状态
+						 (charge-str (or (cdr (assoc ?p data)) (cdr (assoc "percentage" data))))
+						 (status-str (or (cdr (assoc ?B data)) (cdr (assoc "status" data))))
+						 ;; 转换为纯数字
+						 (charge (if (and (stringp charge-str)
+															(string-match "[0-9]+" charge-str))
+												 (string-to-number (match-string 0 charge-str))
+											 0))
+						 (charging (and status-str
+														(string-match-p (regexp-opt '("charging" "Charging" "AC")) status-str)))
+						 ;; 选择合适图标
+						 (icon (cond
+										(charging
+										 (all-the-icons-alltheicon "battery-charging"
+																							 :face '(:foreground "#66ff33")
+																							 :height 1.0
+																							 :v-adjust 0))
+										((> charge 80)
+										 (all-the-icons-faicon "battery-full"
+																					 :face '(:foreground "#50fa7b")
+																					 :height 1.0
+																					 :v-adjust 0))
+										((> charge 50)
+										 (all-the-icons-faicon "battery-half"
+																					 :face '(:foreground "#f1fa8c")
+																					 :height 1.0
+																					 :v-adjust 0))
+										((> charge 20)
+										 (all-the-icons-faicon "battery-quarter"
+																					 :face '(:foreground "#ffb86c")
+																					 :height 1.0
+																					 :v-adjust 0))
+										(t
+										 (all-the-icons-faicon "battery-empty"
+																					 :face '(:foreground "#ff5555")
+																					 :height 1.0
+																					 :v-adjust 0)))))
+				(concat " " icon " Battery"))))
 
 	;; -------------------------------
 	;; 安装 spaceline 布局，并指定 face
@@ -332,20 +385,20 @@
 	(spaceline-install
 	 'main
 	 ;; 左侧 segments 列表
-	 `((my-winum        :face 'my/spaceline-face-theme :priority 90)		; 窗口编号
-		 (my-buffer-id    :face 'my/spaceline-face-theme :priority 85)		; buffer 名称 + 图标
+	 `((my-buffer-id    :face 'my/spaceline-face-theme :priority 85 :max-width 40)		; buffer 名称 + 图标
 		 (my-save-status 	:face 'my/spaceline-face-theme :priority 85)		; 文件保存
 		 (my-major-mode   :face 'my/spaceline-face-theme :priority 70)   	; major-mode 名称
+		 (my-position    	:face 'my/spaceline-face-theme :priority 80)		; 行:列
 		 (my-flycheck     :face 'my/spaceline-face-theme :priority 20)   	; flycheck 错误/警告/提示图标
 		 (my-file-stats	  :face 'my/spaceline-face-theme :priority 75)		; 字数计算
-		 (my-project-dir  :face 'my/spaceline-face-theme :priority 15 :max-length 40)		; 项目路径
 		 (my-diff-hl		  :face 'my/spaceline-face-theme :priority 10)		; git
+		 (my-battery			:face 'my/spaceline-face-theme :priority 20)		; 显示电池电量和状态
 		)
 
 	 ;; 右侧 segments 列表
 	 `(
 		 (my-lsp-status  :face 'my/spaceline-face-theme :priority 80)		; LSP 状态
-		 (my-position    :face 'my/spaceline-face-theme :priority 80)		; 行:列
+		 (my-input-method :face 'my/spaceline-face-theme :priority 80)	; 输入法状态显示
 		 (my-time        :face 'my/spaceline-face-theme :priority 100) 	; 时间
 		))
 
@@ -359,20 +412,20 @@
 (display-time-mode 1)
 (setq display-time-default-load-average nil)
 
-(setq-default mode-line-format
-  '("%e"
-    (:eval
-     (let* ((lhs (spaceline--seg main 'lhs))
-            (rhs (spaceline--seg main 'rhs))
-            ;; 计算剩余宽度：窗口总宽 – lhs 长度 – rhs 长度
-            (fill-width (max 0 (- (window-total-width) 
-                                  (length lhs) 
-                                  (length rhs)))))
-       (concat
-        lhs
-        ;; 填充成空白或分隔符
-        (powerline-fill 'mode-line fill-width)
-        rhs)))))
+;; (setq-default mode-line-format
+;;   '("%e"
+;;     (:eval
+;;      (let* ((lhs (spaceline--seg main 'lhs))
+;;             (rhs (spaceline--seg main 'rhs))
+;;             ;; 计算剩余宽度：窗口总宽 – lhs 长度 – rhs 长度
+;;             (fill-width (max 0 (- (window-total-width) 
+;;                                   (length lhs) 
+;;                                   (length rhs)))))
+;;        (concat
+;;         lhs
+;;         ;; 填充成空白或分隔符
+;;         (powerline-fill 'mode-line fill-width)
+;;         rhs)))))
 
 (setq-default mode-line-end-spaces (make-string 0 ?\s))
 (setq-default truncate-lines t)
