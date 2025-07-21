@@ -100,6 +100,17 @@
                       charset
                       (font-spec :family "SimHei"))))
 
+;; --------------------------------
+;; 显示相对行号
+;; --------------------------------
+
+
+(use-package emacs
+  :ensure t
+	:config 
+	(setq display-line-numbers-type 'relative) 
+	(global-display-line-numbers-mode t)
+)
 
 
 (when (file-exists-p custom-file)
