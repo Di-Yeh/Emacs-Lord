@@ -209,7 +209,7 @@
 												 :face '(:foreground "#ff8533"))
 												 " "
 												 (format-time-string "%H:%M")
-												 "      "))
+												 "            "))
 
   ;; ------------------- 光标位置 ------------------
 	(spaceline-define-segment my-position
@@ -296,7 +296,7 @@
               file-line line-count))))
 
   ;;; ----------------------------------------------
-	;; 输入法状态显示（[英]/[中]）
+	;;; 输入法状态显示（[英]/[中]）
 	;;; ----------------------------------------------
 
 	;; 返回当前输入法状态的字符串，用于 mode-line
@@ -331,6 +331,36 @@
 			'((line-column :separator "|")
 				buffer-encoding)))
 
+  ;;; ----------------------------------------------
+	;;; 以百分比显示当前在buffer中的位置
+  ;;; ----------------------------------------------
+	(spaceline-define-segment buffer-percent-position
+  "以百分比显示当前在 buffer 中的位置。"
+  (let* ((total (point-max))
+         (pos (point))
+         (percent (if (> total 0)
+                      (floor (* 100 (/ (float pos) total)))
+                    0)))
+    (format "%d%%%%" percent)))
+
+  ;;; ----------------------------------------------
+	;;; 显示编码风格和系统图标
+  ;;; ----------------------------------------------
+	(spaceline-define-segment buffer-encoding-eol
+  "顯示當前 buffer 的編碼與行結尾風格，並加上對應操作系統圖標"
+  (let* ((coding buffer-file-coding-system)
+         (base (symbol-name (coding-system-base coding)))
+         (eol-type (coding-system-eol-type coding))
+         (eol-str (nth eol-type '("Unix" "DOS" "Mac")))
+         (icon (pcase eol-type
+                 (0 (propertize (all-the-icons-faicon "linux" :height 1.0 :v-adjust 0 :face '(:foreground "#ffcc00"))))
+                 (1 (propertize (all-the-icons-faicon "windows" :height 1.0 :v-adjust 0 :face '(:foreground "#3399ff"))))
+                 (2 (propertize (all-the-icons-faicon "apple" :height 1.0 :v-adjust 0 :face '(:foreground "#ff0066"))))))
+         (text (format "%s | %s" (upcase base) eol-str)))
+    (when coding
+      (format "%s %s" icon text))))
+
+
 	;; -------------------------------
 	;; 安装 spaceline 布局，并指定 face
 	;; -------------------------------
@@ -341,6 +371,7 @@
 		 (my-save-status 	:face 'my/spaceline-face-theme :priority 85)		; 文件保存
 		 (my-major-mode   :face 'my/spaceline-face-theme :priority 70)   	; major-mode 名称
 		 (my-position    	:face 'my/spaceline-face-theme :priority 80)		; 行:列
+		 (buffer-percent-position :face 'my/spaceline-face-theme :priority 80) ; 以百分比显示当前在buffer中的位置
 		 (my-flycheck     :face 'my/spaceline-face-theme :priority 20)   	; flycheck 错误/警告/提示图标
 		 (my-file-stats	  :face 'my/spaceline-face-theme :priority 75)		; 字数计算
 		 (my-diff-hl		  :face 'my/spaceline-face-theme :priority 10)		; git
@@ -350,6 +381,7 @@
 	 ;; 右侧 segments 列表
 	 `(
 		 (my-lsp-status  :face 'my/spaceline-face-theme :priority 80)		; LSP 状态
+		 (buffer-encoding-eol :face 'my/spaceline-face-theme :priority 80) ; 显示编码风格和系统图标
 		 (my-input-method :face 'my/spaceline-face-theme :priority 80)	; 输入法状态显示
 		 (my-time        :face 'my/spaceline-face-theme :priority 100) 	; 时间
 		))
