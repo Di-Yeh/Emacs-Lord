@@ -33,7 +33,6 @@
 (require 'spaceline-config)  ;; 必须先载入，提供 spacíeline-install
 (require 'all-the-icons)  ;; 确保 icon 可用
 (require 'diff-hl)
-(display-battery-mode t)
 
 (use-package diff-hl
   :hook ((prog-mode . diff-hl-mode)
@@ -331,53 +330,6 @@
 				my-buffer-id)
 			'((line-column :separator "|")
 				buffer-encoding)))
-
-	;;; ----------------------------------------------
-	;;; 显示电池电量和状态
-	;;; ----------------------------------------------
-
-	(spaceline-define-segment my-battery
-		"仅用 all-the-icons 图标显示电池状态，不含数字。"
-		(when (and battery-status-function (fboundp 'battery))
-			(let* ((data (funcall battery-status-function))
-						 ;; 尝试从不同 key 取得电量百分比和状态
-						 (charge-str (or (cdr (assoc ?p data)) (cdr (assoc "percentage" data))))
-						 (status-str (or (cdr (assoc ?B data)) (cdr (assoc "status" data))))
-						 ;; 转换为纯数字
-						 (charge (if (and (stringp charge-str)
-															(string-match "[0-9]+" charge-str))
-												 (string-to-number (match-string 0 charge-str))
-											 0))
-						 (charging (and status-str
-														(string-match-p (regexp-opt '("charging" "Charging" "AC")) status-str)))
-						 ;; 选择合适图标
-						 (icon (cond
-										(charging
-										 (all-the-icons-alltheicon "battery-charging"
-																							 :face '(:foreground "#66ff33")
-																							 :height 1.0
-																							 :v-adjust 0))
-										((> charge 80)
-										 (all-the-icons-faicon "battery-full"
-																					 :face '(:foreground "#50fa7b")
-																					 :height 1.0
-																					 :v-adjust 0))
-										((> charge 50)
-										 (all-the-icons-faicon "battery-half"
-																					 :face '(:foreground "#f1fa8c")
-																					 :height 1.0
-																					 :v-adjust 0))
-										((> charge 20)
-										 (all-the-icons-faicon "battery-quarter"
-																					 :face '(:foreground "#ffb86c")
-																					 :height 1.0
-																					 :v-adjust 0))
-										(t
-										 (all-the-icons-faicon "battery-empty"
-																					 :face '(:foreground "#ff5555")
-																					 :height 1.0
-																					 :v-adjust 0)))))
-				(concat " " icon " Battery"))))
 
 	;; -------------------------------
 	;; 安装 spaceline 布局，并指定 face
