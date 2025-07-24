@@ -128,20 +128,6 @@
 (advice-add 'query-replace-regexp-read-args :around #'my/query-replace-read-args-advice)
 
 
-(defun my/query-replace-from-top ()
-  "自动将光标移至缓冲区顶部并调用 query-replace。"
-  (interactive)
-  (goto-char (point-min))
-  (call-interactively 'query-replace))
-
-(defun my/query-replace-regexp-from-top ()
-  "自动将光标移至缓冲区顶部并调用 query-replace-regexp。"
-  (interactive)
-  (goto-char (point-min))
-  (call-interactively 'query-replace-regexp))
-
-
-
 (defun my/list-lsp-diagnostics ()
   "显示当前诊断信息:
 如果当前启用了 lsp-bridge，则使用 `lsp-bridge-diagnostic-list`；
@@ -308,10 +294,6 @@
 
 ;; 將替換字符函數綁定到 C-c C
 (global-set-key (kbd "C-c C") 'my/change-char)
-
-;; 替换文字快捷键
-(global-set-key (kbd "M-%") 'my/query-replace-from-top)
-(global-set-key (kbd "C-M-%") 'my/query-replace-regexp-from-top)
 
 ;; lsp-ui-peek-find-definitions
 (global-set-key (kbd "C-c l F") 'lsp-ui-peek-find-definitions)
