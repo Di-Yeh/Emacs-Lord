@@ -14,6 +14,10 @@
 (use-package modus-themes
   :ensure t)
 
+(use-package spacemacs-theme
+  :straight t
+  :defer t)
+
 ;; 默认加载 Catppuccin 的 Mocha 主题（Catppuccin 的主题依赖于变量 catppuccin-flavor）
 (setq catppuccin-flavor 'mocha)
 
@@ -41,31 +45,40 @@
   (diff-hl-flydiff-mode 1))  ;; 实时刷新
 
 ;;; ----------------------------------------------
-;;; 🖌️ 自定义 mode-line face，在切换主题后保持一致
+;;; 🖌️ 自定义 mode-line & spaceline face，防止被主题覆盖
 ;;; ----------------------------------------------
 (defun my/fix-mode-line-faces (&rest _args)
-  "统一设置 mode-line 样式，避免被主题覆盖。"
-  (set-face-attribute 'mode-line nil
-                      :background "#1E1E1E"
-                      :foreground "#ffffff"
-                      :box nil
-                      :overline nil
-                      :underline nil
-                      :height 1.15)
-  (set-face-attribute 'mode-line-inactive nil
-                      :background "#1E1E1E"
-                      :foreground "#ffffff"
-                      :box nil
-                      :overline nil
-                      :underline nil
-                      :height 1.15))
-
-;; 保证在主题加载后执行
+  "统一设置 mode-line 和 spaceline/powerline 相关 face，避免主题覆盖。"
+  (let ((bg "#1E1E1E")
+        (fg-active "#ffffff")
+        (fg-inactive "#888888"))
+    ;; 基础 mode-line
+    (dolist (face '(mode-line mode-line-inactive))
+      (set-face-attribute face nil
+                          :background bg
+                          :foreground (if (eq face 'mode-line) fg-active fg-inactive)
+                          :box nil :overline nil :underline nil :height 1.15))
+    ;; Spaceline/Powerline 分隔器和填充
+    (dolist (face '(powerline-active1 powerline-active2
+                    powerline-inactive1 powerline-inactive2))
+      (when (facep face)
+        (set-face-attribute face nil
+                            :background bg
+                            :box nil
+                            ;; 保持继承 mode-line 以显示文字颜色
+                            :inherit 'mode-line)))
+    ;; Spaceline 高亮段落背景
+    (when (facep 'spaceline-highlight-face)
+      (set-face-attribute 'spaceline-highlight-face nil
+                          :background bg
+                          :box nil))
+    ))
+;; 在每次 load-theme 后延迟执行，保证覆盖
 (advice-add 'load-theme :after
             (lambda (&rest _)
-              ;; 稍微延迟执行以防主题覆盖
               (run-at-time 0.1 nil #'my/fix-mode-line-faces)))
-
+;; 启动时也执行一次
+(my/fix-mode-line-faces)
 
 ;;; ----------------------------------------------
 ;;; 定义 spaceline segment 专用 face
@@ -360,7 +373,6 @@
     (when coding
       (format "%s %s" icon text))))
 
-
 	;; -------------------------------
 	;; 安装 spaceline 布局，并指定 face
 	;; -------------------------------
@@ -368,7 +380,7 @@
 	 'main
 	 ;; 左侧 segments 列表
 	 `((my-buffer-id    :face 'my/spaceline-face-theme :priority 85 :max-width 40)		; buffer 名称 + 图标
-		 (my-save-status 	:face 'my/spaceline-face-theme :priority 85)		; 文件保存
+		 (my-save-status  :face 'my/spaceline-face-theme:priority 85)		; 文件保存
 		 (my-major-mode   :face 'my/spaceline-face-theme :priority 70)   	; major-mode 名称
 		 (my-position    	:face 'my/spaceline-face-theme :priority 80)		; 行:列
 		 (buffer-percent-position :face 'my/spaceline-face-theme :priority 80) ; 以百分比显示当前在buffer中的位置
@@ -379,8 +391,7 @@
 		)
 
 	 ;; 右侧 segments 列表
-	 `(
-		 (my-lsp-status  :face 'my/spaceline-face-theme :priority 80)		; LSP 状态
+	 `((my-lsp-status  :face 'my/spaceline-face-theme :priority 80)		; LSP 状态
 		 (buffer-encoding-eol :face 'my/spaceline-face-theme :priority 80) ; 显示编码风格和系统图标
 		 (my-input-method :face 'my/spaceline-face-theme :priority 80)	; 输入法状态显示
 		 (my-time        :face 'my/spaceline-face-theme :priority 100) 	; 时间
@@ -414,6 +425,7 @@
 (setq-default mode-line-end-spaces (make-string 0 ?\s))
 (setq-default truncate-lines t)
 (setq-default mode-line-format '("%e" (:eval (spaceline-ml-main))))
+
 
 ;;; ----------------------------------------------
 ;;; 🌗 交互式主题切换函数，支持 Catppuccin 与其它主题
@@ -456,9 +468,6 @@
 ;; 全局快捷键：使用 C-t 快速切换主题
 (global-set-key (kbd "C-t") 'my/switch-theme)
 
-
 (load-theme 'modus-vivendi t)
-
-
 
 (provide 'init-ui)
