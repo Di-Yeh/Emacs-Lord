@@ -187,17 +187,16 @@
 ;; Org-mode 标题与列表美化 —— org-superstar
 ;; ================================
 
-;; 1. 基础 Org 设置
+;; 基础 Org 设置
 ;;    - 自动缩进
 ;;    - 隐藏原生的星号（*）前缀
 (setq org-startup-indented   t
       org-hide-leading-stars t)
 
-;; 2. 安装并配置 org-superstar
+;; 安装并配置 org-superstar
 (use-package org-superstar
   :ensure t
-  :hook ((org-mode . org-superstar-mode)
-				 (after-load-theme-hook . org-superstar-mode))  ;; 进入 org-mode 时自动启用
+  :hook (org-mode . org-superstar-mode)  ;; 进入 org-mode 时自动启用
   :init
   ;; 2.1 定制标题符号：第1级~第5级 headline
   (setq org-superstar-headline-bullets-list
@@ -206,21 +205,34 @@
           "✿"  ;; 三级标题
           "✾"  ;; 四级标题
           "❀")) ;; 五级标题
-  ;; 2.2 定制列表项目符号：* → •, - → –, + → ⁃
+  ;; 定制列表项目符号：* → •, - → –, + → ⁃
   (setq org-superstar-item-bullet-alist
         '((?* . ?•)
           (?- . ?–)
           (?+ . ?⁃)))
-  ;; 2.3 隐藏原生 bullet 后保持缩进对齐
+  ;; 隐藏原生 bullet 后保持缩进对齐
   (setq org-superstar-leading-bullet ?\s)
-  ;; 2.4 不干预折叠提示
+  ;; 不干预折叠提示
   (setq org-superstar-special-todo-items nil))
 
-;; 3. Org 折叠提示符
+;; Org 折叠提示符
 ;;    你也可以改成 " ◉" / " ○" 之类
 (setq org-ellipsis " ▼")
 
-;; 4. 如果你还在用 org-download，保留它的配置
+(defun my/org-superstar-fix-org-hide-face (&rest _)
+  "修复 `org-hide` face，使其在切换主题后与背景一致，实现真正隐藏星号。"
+  (when (facep 'org-hide)
+    (let ((bg (face-background 'default nil 'default)))
+      (set-face-foreground 'org-hide bg))))
+
+;; 加入到 load-theme 的 after advice
+(advice-add 'load-theme :after #'my/org-superstar-fix-org-hide-face)
+
+;; 初始加载时也运行一次，避免首次不生效
+(my/org-superstar-fix-org-hide-face)
+
+
+;; org-download
 (use-package org-download
   :ensure t
   :after org
