@@ -48,37 +48,45 @@
 ;;; 🖌️ 自定义 mode-line & spaceline face，防止被主题覆盖
 ;;; ----------------------------------------------
 (defun my/fix-mode-line-faces (&rest _args)
-  "统一设置 mode-line 和 spaceline/powerline 相关 face，避免主题覆盖。"
+  "统一清除 theme/spaceline/powerline 在 theme 切换时残留的 box 属性，
+并把背景都设成 #1E1E1E。"
   (let ((bg "#1E1E1E")
-        (fg-active "#ffffff")
+        (fg-active   "#ffffff")
         (fg-inactive "#888888"))
-    ;; 基础 mode-line
+    ;; 基本 mode-line
     (dolist (face '(mode-line mode-line-inactive))
-      (set-face-attribute face nil
-                          :background bg
-                          :foreground (if (eq face 'mode-line) fg-active fg-inactive)
-                          :box nil :overline nil :underline nil :height 1.15))
-    ;; Spaceline/Powerline 分隔器和填充
+      (when (facep face)
+        (set-face-attribute face nil
+                            :background bg
+                            :foreground (if (eq face 'mode-line) fg-active fg-inactive)
+                            :box nil
+                            :overline nil
+                            :underline nil
+                            :height 1.15)))
+    ;; Powerline/Spaceline 背景段
     (dolist (face '(powerline-active1 powerline-active2
-                    powerline-inactive1 powerline-inactive2))
+                    powerline-inactive1 powerline-inactive2
+                    spaceline-highlight-face
+                    spaceline-evil-normal
+                    spaceline-evil-insert
+                    spaceline-evil-visual
+                    spaceline-evil-replace
+                    spaceline-evil-motion
+                    spaceline-unmodified))
       (when (facep face)
         (set-face-attribute face nil
                             :background bg
                             :box nil
-                            ;; 保持继承 mode-line 以显示文字颜色
-                            :inherit 'mode-line)))
-    ;; Spaceline 高亮段落背景
-    (when (facep 'spaceline-highlight-face)
-      (set-face-attribute 'spaceline-highlight-face nil
-                          :background bg
-                          :box nil))
-    ))
-;; 在每次 load-theme 后延迟执行，保证覆盖
+                            ;; 继承 mode-line, 保留文字色
+                            :inherit 'mode-line)))))
+
+;; 在每次 load-theme 后延迟执行，确保覆盖所有 theme 动作
 (advice-add 'load-theme :after
             (lambda (&rest _)
               (run-at-time 0.1 nil #'my/fix-mode-line-faces)))
-;; 启动时也执行一次
+;; 启动时先执行一次
 (my/fix-mode-line-faces)
+
 
 ;;; ----------------------------------------------
 ;;; 定义 spaceline segment 专用 face
@@ -86,7 +94,7 @@
 (defface my/spaceline-face-theme
   '((t (
 				:background "#1E1E1E"
-	 			:foreground "#ffffff" :box nil :weight bold)))
+	 			:foreground "#ffffff" :weight bold)))
   "segments 样式 1" :group 'spaceline)
 
 ;;; ----------------------------------------------
@@ -359,19 +367,26 @@
   ;;; ----------------------------------------------
 	;;; 显示编码风格和系统图标
   ;;; ----------------------------------------------
-	(spaceline-define-segment buffer-encoding-eol
-  "顯示當前 buffer 的編碼與行結尾風格，並加上對應操作系統圖標"
-  (let* ((coding buffer-file-coding-system)
-         (base (symbol-name (coding-system-base coding)))
-         (eol-type (coding-system-eol-type coding))
-         (eol-str (nth eol-type '("Unix" "DOS" "Mac")))
-         (icon (pcase eol-type
-                 (0 (propertize (all-the-icons-faicon "linux" :height 1.0 :v-adjust 0 :face '(:foreground "#ffcc00"))))
-                 (1 (propertize (all-the-icons-faicon "windows" :height 1.0 :v-adjust 0 :face '(:foreground "#3399ff"))))
-                 (2 (propertize (all-the-icons-faicon "apple" :height 1.0 :v-adjust 0 :face '(:foreground "#ff0066"))))))
-         (text (format "%s | %s" (upcase base) eol-str)))
-    (when coding
-      (format "%s %s" icon text))))
+  (spaceline-define-segment buffer-encoding-eol
+  "显示当前 buffer 的编码与行结尾风格，并加上对应操作系统图标。"
+  (when buffer-file-coding-system
+    (let* ((raw-cs buffer-file-coding-system)
+           ;; 如果是向量或列表，取第一个元素
+           (cs (cond
+                ((vectorp raw-cs) (aref raw-cs 0))
+                ((listp   raw-cs) (car    raw-cs))
+                (t                raw-cs)))
+           (eol-type (coding-system-eol-type cs))      ; 0=Unix,1=DOS,2=Mac
+           (eol-str  (nth eol-type '("Unix" "DOS" "Mac")))
+           (icon     (pcase eol-type
+                       (0 (all-the-icons-faicon "linux"   :face '(:foreground "#ffcc00") :height 1.0))
+                       (1 (all-the-icons-faicon "windows" :face '(:foreground "#3399ff") :height 1.0))
+                       (2 (all-the-icons-faicon "apple"   :face '(:foreground "#ff0066") :height 1.0))))
+           (base     (coding-system-base cs))
+           (name     (upcase (symbol-name base)))
+           (text     (format "%s | %s" name eol-str)))
+      (concat " " icon " " text))))
+
 
 	;; -------------------------------
 	;; 安装 spaceline 布局，并指定 face
@@ -380,7 +395,7 @@
 	 'main
 	 ;; 左侧 segments 列表
 	 `((my-buffer-id    :face 'my/spaceline-face-theme :priority 85 :max-width 40)		; buffer 名称 + 图标
-		 (my-save-status  :face 'my/spaceline-face-theme:priority 85)		; 文件保存
+		 (my-save-status  :face 'my/spaceline-face-theme :priority 85)		; 文件保存
 		 (my-major-mode   :face 'my/spaceline-face-theme :priority 70)   	; major-mode 名称
 		 (my-position    	:face 'my/spaceline-face-theme :priority 80)		; 行:列
 		 (buffer-percent-position :face 'my/spaceline-face-theme :priority 80) ; 以百分比显示当前在buffer中的位置
@@ -468,6 +483,6 @@
 ;; 全局快捷键：使用 C-t 快速切换主题
 (global-set-key (kbd "C-t") 'my/switch-theme)
 
-(load-theme 'modus-vivendi t)
+(load-theme 'spacemacs-dark t)
 
 (provide 'init-ui)

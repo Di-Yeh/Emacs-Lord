@@ -196,7 +196,8 @@
 ;; 2. 安装并配置 org-superstar
 (use-package org-superstar
   :ensure t
-  :hook (org-mode . org-superstar-mode)  ;; 进入 org-mode 时自动启用
+  :hook ((org-mode . org-superstar-mode)
+				 (after-load-theme-hook . org-superstar-mode))  ;; 进入 org-mode 时自动启用
   :init
   ;; 2.1 定制标题符号：第1级~第5级 headline
   (setq org-superstar-headline-bullets-list
@@ -230,7 +231,6 @@
   (org-download-enable))
 
 
-
 ;; --- 检查 site-lisp/fd 目录 ------------
 (use-package dirvish
 	:ensure t
@@ -244,10 +244,6 @@
 	(setq dirvish-cache-dir (expand-file-name "dirvish-cache" user-emacs-directory))
 	;; 根据 CUSTOMIZING.org 建议，进一步定制属性显示：
 	(setq dirvish-hide-details nil))
-
-
-
-
 
 
 ;; 安装 lsp-bridge
