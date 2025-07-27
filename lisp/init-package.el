@@ -61,11 +61,6 @@
 (use-package ace-window 
              :bind (("M-o" . 'ace-window)))
 
-(use-package neotree)
-(add-to-list 'load-path "/some/path/neotree")
-(require 'neotree)
-
-
 (use-package indent-bars
 	:custom
 		(indent-bars-treesit-support t)
@@ -182,54 +177,104 @@
 (use-package multiple-cursors
   :ensure t)
 
+;; ================================
+;; Org-Roam 设置
+;; ================================
+
+;; 设置 org-roam 主目录为 ~/.emacs.d/org-roam/
+(use-package org-roam
+  :straight t
+  :custom
+  (org-roam-directory (expand-file-name "org-roam/" user-emacs-directory)) ;; ~/.emacs.d/org-roam/
+  (org-roam-dailies-directory "daily/") ;; ~/.emacs.d/org-roam/daily/
+  (org-roam-db-gc-threshold most-positive-fixnum) ;; 提高性能
+  :bind (("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c n c" . org-roam-capture)
+         ("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n u" . org-roam-ui-mode))
+  :bind-keymap
+  ("C-c n d" . org-roam-dailies-map)
+  :config
+  (require 'org-roam-dailies)
+  ;; 自动创建目录（如果不存在）
+  (let* ((main-dir (expand-file-name "org-roam/" user-emacs-directory))
+         (daily-dir (expand-file-name "daily/" main-dir)))
+    (unless (file-directory-p main-dir)
+      (make-directory main-dir t))
+    (unless (file-directory-p daily-dir)
+      (make-directory daily-dir t)))
+  ;; 启用数据库自动同步
+  (org-roam-db-autosync-mode))
+
+;; 可视化 UI（浏览器中查看笔记图谱）
+(use-package org-roam-ui
+  :straight t
+  :after org-roam
+  :custom
+  (org-roam-ui-sync-theme t)
+  (org-roam-ui-follow t)
+  (org-roam-ui-update-on-save t))
 
 ;; ================================
-;; Org-mode 标题与列表美化 —— org-superstar
+;; Org-mode 标题与列表美化 —— org-modern
 ;; ================================
 
 ;; 基础 Org 设置
-;;    - 自动缩进
-;;    - 隐藏原生的星号（*）前缀
-(setq org-startup-indented   t
-      org-hide-leading-stars t)
+(setq org-startup-indented t              ;; 自动缩进
+      org-hide-leading-stars t            ;; 隐藏原生星号前缀
+      org-ellipsis " ▼"                   ;; 折叠提示符
+      org-pretty-entities t               ;; 显示符号替换（√ → ✓ 等）
+      org-hide-emphasis-markers t         ;; 隐藏 *强调* 的星号
+      org-image-actual-width '(300))      ;; 图像宽度
 
-;; 安装并配置 org-superstar
-(use-package org-superstar
+;; 安装并启用 org-modern
+(use-package org-modern
   :ensure t
-  :hook (org-mode . org-superstar-mode)  ;; 进入 org-mode 时自动启用
+  :hook (org-mode . org-modern-mode)
   :init
-  ;; 2.1 定制标题符号：第1级~第5级 headline
-  (setq org-superstar-headline-bullets-list
-        '("◉"  ;; 一级标题
-          "○"  ;; 二级标题
-          "✿"  ;; 三级标题
-          "✾"  ;; 四级标题
-          "❀")) ;; 五级标题
-  ;; 定制列表项目符号：* → •, - → –, + → ⁃
-  (setq org-superstar-item-bullet-alist
-        '((?* . ?•)
-          (?- . ?–)
-          (?+ . ?⁃)))
-  ;; 隐藏原生 bullet 后保持缩进对齐
-  (setq org-superstar-leading-bullet ?\s)
-  ;; 不干预折叠提示
-  (setq org-superstar-special-todo-items nil))
+  (setq
+   ;; headline bullets 替代符号（依次是一级到五级）
+   org-modern-star '("◉" "○" "✿" "✾" "❀")
+   ;; 项目列表符号替代
+   org-modern-list '((?- . "–") (?+ . "⁃") (?* . "•"))
+	 ;; 使用漂亮的 Unicode 标题符号
+   org-modern-headline '("◉" "○" "✿" "✸" "✜" "✢" "✧" "◆")
+   ;; 设置 TODO 样式
+   org-modern-todo-faces
+   '(("TODO"  . (:inherit (bold org-todo) :background "#ffcccc" :foreground "#990000"))
+     ("DONE"  . (:inherit (bold org-done) :background "#ccffcc" :foreground "#006600")))
+   ;; 美化 checkbox
+   org-modern-checkbox
+   '((?X . "☑") (?- . "❍") (?\s . "☐"))
+   ;; 水平分割线样式
+   org-modern-horizontal-rule "──────────"
+	 ;; 列表项美化符号
+   org-modern-list '((43 . "➕") (45 . "➖") (42 . "•")) ; + - *
+   ;; 代码块样式
+   org-modern-block-fringe nil
+   org-modern-block-name t
+   ;; 表格横线样式
+   org-modern-table-vertical 1
+   org-modern-table-horizontal 0.2
+   ;; 标签样式（例如 :tag:）
+   org-modern-tag nil
+	 ;; 时间戳格式化
+   org-modern-timestamp t
+   ;; 缩进线（可选）
+   org-modern-indent nil))
 
-;; Org 折叠提示符
-;;    你也可以改成 " ◉" / " ○" 之类
-(setq org-ellipsis " ▼")
-
-(defun my/org-superstar-fix-org-hide-face (&rest _)
-  "修复 `org-hide` face，使其在切换主题后与背景一致，实现真正隐藏星号。"
+;; 自动隐藏星号的 foreground（适配主题背景）
+(defun my/org-modern-fix-org-hide-face (&rest _)
+  "让 `org-hide` face 与当前背景一致，实现真正隐藏星号。"
   (when (facep 'org-hide)
     (let ((bg (face-background 'default nil 'default)))
       (set-face-foreground 'org-hide bg))))
 
-;; 加入到 load-theme 的 after advice
-(advice-add 'load-theme :after #'my/org-superstar-fix-org-hide-face)
-
-;; 初始加载时也运行一次，避免首次不生效
-(my/org-superstar-fix-org-hide-face)
+;; 加入到主题切换后自动调用
+(advice-add 'load-theme :after #'my/org-modern-fix-org-hide-face)
+;; 初始加载时也运行一次
+(my/org-modern-fix-org-hide-face)
 
 
 ;; org-download

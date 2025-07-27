@@ -84,6 +84,11 @@
 (advice-add 'load-theme :after
             (lambda (&rest _)
               (run-at-time 0.1 nil #'my/fix-mode-line-faces)))
+
+(advice-add 'load-file :after
+            (lambda (&rest _)
+              (run-at-time 0.1 nil #'my/fix-mode-line-faces)))
+
 ;; 启动时先执行一次
 (my/fix-mode-line-faces)
 
@@ -441,7 +446,6 @@
 (setq-default truncate-lines t)
 (setq-default mode-line-format '("%e" (:eval (spaceline-ml-main))))
 
-
 ;;; ----------------------------------------------
 ;;; 🌗 交互式主题切换函数，支持 Catppuccin 与其它主题
 ;;; ----------------------------------------------
@@ -483,6 +487,6 @@
 ;; 全局快捷键：使用 C-t 快速切换主题
 (global-set-key (kbd "C-t") 'my/switch-theme)
 
-(load-theme 'modus-vivendi t)
+(load-theme 'manoj-dark t)
 
 (provide 'init-ui)

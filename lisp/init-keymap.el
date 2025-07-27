@@ -307,12 +307,8 @@
 ;; lsp-treemacs-show-
 (global-set-key (kbd "C-c l e") 'lsp-treemacs-errors-list)
 
-;; neotree
-(global-set-key (kbd "C-c n") 'neotree-toggle)
-
 ;; lsp显示错误
 (global-set-key (kbd "C-c l e") 'my/list-lsp-diagnostics)
-
 
 ;; ts-fold
 (global-set-key (kbd "C-c t t") 'ts-fold-toggle)    ;; 切换当前语法节点的折叠状态
@@ -337,8 +333,8 @@
 ;; 将调试函数绑定到全局快捷键
 (global-set-key (kbd "C-M-g") 'my-gdb-run)
 
-
-
+;; org-roam
+(global-set-key (kbd "C-c C-n") 'org-roam-node-find)
 
 
 
