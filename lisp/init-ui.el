@@ -85,10 +85,6 @@
             (lambda (&rest _)
               (run-at-time 0.1 nil #'my/fix-mode-line-faces)))
 
-(advice-add 'load-file :after
-            (lambda (&rest _)
-              (run-at-time 0.1 nil #'my/fix-mode-line-faces)))
-
 ;; 启动时先执行一次
 (my/fix-mode-line-faces)
 
@@ -235,7 +231,7 @@
 												 :face '(:foreground "#ff8533"))
 												 " "
 												 (format-time-string "%H:%M")
-												 "            "))
+												 "          "))
 
   ;; ------------------- 光标位置 ------------------
 	(spaceline-define-segment my-position
@@ -325,7 +321,7 @@
 	;;; 输入法状态显示（[英]/[中]）
 	;;; ----------------------------------------------
 
-	;; 返回当前输入法状态的字符串，用于 mode-line
+  ;; 返回当前输入法状态的字符串，用于 mode-line
 	(defun my/mode-line-input-method-indicator ()
 		"显示当前输入法状态：[英] 或 [中]"
 		(let ((method current-input-method))
@@ -357,6 +353,7 @@
 			'((line-column :separator "|")
 				buffer-encoding)))
 
+
   ;;; ----------------------------------------------
 	;;; 以百分比显示当前在buffer中的位置
   ;;; ----------------------------------------------
@@ -374,9 +371,8 @@
   ;;; ----------------------------------------------
   (spaceline-define-segment buffer-encoding-eol
   "显示当前 buffer 的编码与行结尾风格，并加上对应操作系统图标。"
-  (when buffer-file-coding-system
+  (when (and buffer-file-name buffer-file-coding-system) ; 仅在已保存文件时处理
     (let* ((raw-cs buffer-file-coding-system)
-           ;; 如果是向量或列表，取第一个元素
            (cs (cond
                 ((vectorp raw-cs) (aref raw-cs 0))
                 ((listp   raw-cs) (car    raw-cs))
@@ -384,14 +380,40 @@
            (eol-type (coding-system-eol-type cs))      ; 0=Unix,1=DOS,2=Mac
            (eol-str  (nth eol-type '("Unix" "DOS" "Mac")))
            (icon     (pcase eol-type
-                       (0 (all-the-icons-faicon "linux"   :face '(:foreground "#ffcc00") :height 1.0))
-                       (1 (all-the-icons-faicon "windows" :face '(:foreground "#3399ff") :height 1.0))
-                       (2 (all-the-icons-faicon "apple"   :face '(:foreground "#ff0066") :height 1.0))))
+                       (0 (all-the-icons-faicon "linux"   :height 1.0 :v-adjust 0 :face '(:foreground "#ffcc00")))
+                       (1 (all-the-icons-faicon "windows" :height 1.0 :v-adjust 0 :face '(:foreground "#3399ff")))
+                       (2 (all-the-icons-faicon "apple"   :height 1.0 :v-adjust 0 :face '(:foreground "#ff0066")))))
            (base     (coding-system-base cs))
            (name     (upcase (symbol-name base)))
            (text     (format "%s | %s" name eol-str)))
       (concat " " icon " " text))))
 
+
+  ;;; ----------------------------------------------
+	;;; 显示最近输入的字符或按键
+  ;;; ----------------------------------------------
+	(defface my/spaceline-last-input-face
+  '((t (:foreground "black" :background "#76a1ef" :weight bold)))
+  "Face for displaying last input or command in spaceline.")
+
+	(defvar my/spaceline-last-input ""
+  "记录最近一次输入的命令或按键。")
+
+	(defun my/update-last-input ()
+  "更新最后一个按键或命令到 `my/spaceline-last-input`。"
+  (let ((key (this-command-keys-vector)))
+    (setq my/spaceline-last-input
+          (if (and (vectorp key) (> (length key) 0))
+              (key-description key)
+            ""))))
+	(add-hook 'pre-command-hook #'my/update-last-input)
+
+	(spaceline-define-segment my-last-input
+  "显示最近一次输入的按键或命令。"
+  (when (and my/spaceline-last-input
+             (not (string-empty-p my/spaceline-last-input)))
+    (propertize (format "[%s]" my/spaceline-last-input)
+                'face 'my/spaceline-last-input-face)))
 
 	;; -------------------------------
 	;; 安装 spaceline 布局，并指定 face
@@ -406,13 +428,13 @@
 		 (buffer-percent-position :face 'my/spaceline-face-theme :priority 80) ; 以百分比显示当前在buffer中的位置
 		 (my-flycheck     :face 'my/spaceline-face-theme :priority 20)   	; flycheck 错误/警告/提示图标
 		 (my-file-stats	  :face 'my/spaceline-face-theme :priority 75)		; 字数计算
+		 (buffer-encoding-eol :face 'my/spaceline-face-theme :priority 80) ; 显示编码风格和系统图标
 		 (my-diff-hl		  :face 'my/spaceline-face-theme :priority 10)		; git
-		 (my-battery			:face 'my/spaceline-face-theme :priority 20)		; 显示电池电量和状态
 		)
 
 	 ;; 右侧 segments 列表
 	 `((my-lsp-status  :face 'my/spaceline-face-theme :priority 80)		; LSP 状态
-		 (buffer-encoding-eol :face 'my/spaceline-face-theme :priority 80) ; 显示编码风格和系统图标
+		 (my-last-input  :face 'my/spaceline-face-theme :priority 80) ; 最近输入讯息
 		 (my-input-method :face 'my/spaceline-face-theme :priority 80)	; 输入法状态显示
 		 (my-time        :face 'my/spaceline-face-theme :priority 100) 	; 时间
 		))

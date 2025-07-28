@@ -181,31 +181,69 @@
 ;; Org-Roam 设置
 ;; ================================
 
-;; 设置 org-roam 主目录为 ~/.emacs.d/org-roam/
 (use-package org-roam
   :straight t
-  :custom
-  (org-roam-directory (expand-file-name "org-roam/" user-emacs-directory)) ;; ~/.emacs.d/org-roam/
-  (org-roam-dailies-directory "daily/") ;; ~/.emacs.d/org-roam/daily/
-  (org-roam-db-gc-threshold most-positive-fixnum) ;; 提高性能
+  :init
+  ;; 预先定义占位目录（启动时不设置具体目录）
+  (setq org-roam-directory nil)
+  (setq org-roam-dailies-directory "daily/")
   :bind (("C-c n f" . org-roam-node-find)
          ("C-c n i" . org-roam-node-insert)
          ("C-c n c" . org-roam-capture)
          ("C-c n l" . org-roam-buffer-toggle)
          ("C-c n u" . org-roam-ui-mode))
   :bind-keymap
-  ("C-c n d" . org-roam-dailies-map)
-  :config
-  (require 'org-roam-dailies)
-  ;; 自动创建目录（如果不存在）
-  (let* ((main-dir (expand-file-name "org-roam/" user-emacs-directory))
-         (daily-dir (expand-file-name "daily/" main-dir)))
-    (unless (file-directory-p main-dir)
-      (make-directory main-dir t))
+  ("C-c n d" . org-roam-dailies-map))
+
+;; 自定义函数：选择 org-roam 根目录并自动设置
+(require 'org-roam-dailies)
+
+(defvar my/org-roam-dir-file
+  (expand-file-name ".org-roam-dir.el" user-emacs-directory)
+  "保存 org-roam 目录路径的文件。")
+
+(defun my/load-org-roam-directory ()
+  "从配置文件读取 org-roam 目录。"
+  (when (file-exists-p my/org-roam-dir-file)
+    (load-file my/org-roam-dir-file)
+    (when (and (boundp 'my/saved-org-roam-directory)
+               (file-directory-p my/saved-org-roam-directory))
+      (setq org-roam-directory (file-truename my/saved-org-roam-directory))
+      (setq org-roam-dailies-directory "daily/")
+      (org-roam-db-sync)
+      (org-roam-db-autosync-mode 1)
+      (message "已载入 org-roam 目录：%s" org-roam-directory))))
+
+(defun my/set-org-roam-directory ()
+  "手动选择 org-roam 的主目录，并设置相关路径。"
+  (interactive)
+  (let* ((selected-dir (read-directory-name "选择 org-roam 笔记主目录: "))
+         (daily-dir (expand-file-name "daily/" selected-dir)))
+    ;; 保存路径
+    (setq my/saved-org-roam-directory (file-truename selected-dir))
+    ;; 保存到文件
+    (with-temp-file my/org-roam-dir-file
+      (insert (format "(setq my/saved-org-roam-directory %S)\n"
+                      my/saved-org-roam-directory)))
+    ;; 应用设置
+    (setq org-roam-directory my/saved-org-roam-directory)
+    (setq org-roam-dailies-directory "daily/")
+    ;; 创建目录
+    (unless (file-directory-p org-roam-directory)
+      (make-directory org-roam-directory t))
     (unless (file-directory-p daily-dir)
-      (make-directory daily-dir t)))
-  ;; 启用数据库自动同步
-  (org-roam-db-autosync-mode))
+      (make-directory daily-dir t))
+    ;; 同步数据库
+    (org-roam-db-sync)
+    (org-roam-db-autosync-mode 1)
+    (message "org-roam 目录已设置为: %s" org-roam-directory)))
+
+;; 全局快捷键绑定
+(global-set-key (kbd "C-c C-d") #'my/set-org-roam-directory)
+
+;; 启动时尝试自动加载目录设置
+(my/load-org-roam-directory)
+
 
 ;; 可视化 UI（浏览器中查看笔记图谱）
 (use-package org-roam-ui
@@ -217,7 +255,7 @@
   (org-roam-ui-update-on-save t))
 
 ;; ================================
-;; Org-mode 标题与列表美化 —— org-modern
+;; Org-mode 标题与列表美化
 ;; ================================
 
 ;; 基础 Org 设置
@@ -228,7 +266,6 @@
       org-hide-emphasis-markers t         ;; 隐藏 *强调* 的星号
       org-image-actual-width '(300))      ;; 图像宽度
 
-;; 安装并启用 org-modern
 (use-package org-modern
   :ensure t
   :hook (org-mode . org-modern-mode)
@@ -275,7 +312,6 @@
 (advice-add 'load-theme :after #'my/org-modern-fix-org-hide-face)
 ;; 初始加载时也运行一次
 (my/org-modern-fix-org-hide-face)
-
 
 ;; org-download
 (use-package org-download
