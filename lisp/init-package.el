@@ -186,14 +186,7 @@
   :init
   ;; 预先定义占位目录（启动时不设置具体目录）
   (setq org-roam-directory nil)
-  (setq org-roam-dailies-directory "daily/")
-  :bind (("C-c n f" . org-roam-node-find)
-         ("C-c n i" . org-roam-node-insert)
-         ("C-c n c" . org-roam-capture)
-         ("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n u" . org-roam-ui-mode))
-  :bind-keymap
-  ("C-c n d" . org-roam-dailies-map))
+  (setq org-roam-dailies-directory "daily/"))
 
 ;; 自定义函数：选择 org-roam 根目录并自动设置
 (require 'org-roam-dailies)
@@ -266,52 +259,46 @@
       org-hide-emphasis-markers t         ;; 隐藏 *强调* 的星号
       org-image-actual-width '(300))      ;; 图像宽度
 
-(use-package org-modern
+(use-package org-superstar
   :ensure t
-  :hook (org-mode . org-modern-mode)
+  :hook (org-mode . org-superstar-mode)
   :init
   (setq
-   ;; headline bullets 替代符号（依次是一级到五级）
-   org-modern-star '("◉" "○" "✿" "✾" "❀")
-   ;; 项目列表符号替代
-   org-modern-list '((?- . "–") (?+ . "⁃") (?* . "•"))
-	 ;; 使用漂亮的 Unicode 标题符号
-   org-modern-headline '("◉" "○" "✿" "✸" "✜" "✢" "✧" "◆")
-   ;; 设置 TODO 样式
-   org-modern-todo-faces
-   '(("TODO"  . (:inherit (bold org-todo) :background "#ffcccc" :foreground "#990000"))
-     ("DONE"  . (:inherit (bold org-done) :background "#ccffcc" :foreground "#006600")))
+   ;; 设置 headline 的符号（最多支持8级）
+   org-superstar-headline-bullets-list '("◉" "○" "✿" "✸" "✜" "✢" "✧" "◆")
+   ;; 美化列表符号 - 替换 -, +, *
+   org-superstar-item-bullet-alist '((?- . "➖") (?+ . "➕") (?* . "•"))
+   ;; 隐藏前导星号（只保留替代符号）
+   org-hide-leading-stars t
+   org-superstar-leading-bullet " "
    ;; 美化 checkbox
-   org-modern-checkbox
-   '((?X . "☑") (?- . "❍") (?\s . "☐"))
-   ;; 水平分割线样式
-   org-modern-horizontal-rule "──────────"
-	 ;; 列表项美化符号
-   org-modern-list '((43 . "➕") (45 . "➖") (42 . "•")) ; + - *
-   ;; 代码块样式
-   org-modern-block-fringe nil
-   org-modern-block-name t
-   ;; 表格横线样式
-   org-modern-table-vertical 1
-   org-modern-table-horizontal 0.2
-   ;; 标签样式（例如 :tag:）
-   org-modern-tag nil
-	 ;; 时间戳格式化
-   org-modern-timestamp t
-   ;; 缩进线（可选）
-   org-modern-indent nil))
+   org-superstar-special-todo-items t))
 
-;; 自动隐藏星号的 foreground（适配主题背景）
-(defun my/org-modern-fix-org-hide-face (&rest _)
-  "让 `org-hide` face 与当前背景一致，实现真正隐藏星号。"
+;; 美化 checkbox 样式
+(setq org-checkbox-symbols
+      '((?X . "[☑]") 
+        (?\s . "[☐]") 
+        (?- . "[❍]")))
+(font-lock-add-keywords 'org-mode
+  '(("\\[\\([X ]\\)\\]" . font-lock-function-name-face)))
+
+;; 设置 TODO / DONE 的样式（可自行修改颜色）
+(setq org-todo-keyword-faces
+      '(("TODO" . (:background "#ffcccc" :foreground "#990000" :weight bold))
+        ("DONE" . (:background "#ccffcc" :foreground "#006600" :weight bold))))
+
+;; 自动隐藏星号的 foreground（让星号看不见，但结构还在）
+(defun my/org-hide-leading-star-fix (&rest _)
+  "让 `org-hide` face 与背景一致，实现隐藏星号效果。"
   (when (facep 'org-hide)
     (let ((bg (face-background 'default nil 'default)))
       (set-face-foreground 'org-hide bg))))
 
-;; 加入到主题切换后自动调用
-(advice-add 'load-theme :after #'my/org-modern-fix-org-hide-face)
-;; 初始加载时也运行一次
-(my/org-modern-fix-org-hide-face)
+;; 加入到主题切换 hook
+(advice-add 'load-theme :after #'my/org-hide-leading-star-fix)
+;; 初始执行一次
+(my/org-hide-leading-star-fix)
+
 
 ;; org-download
 (use-package org-download

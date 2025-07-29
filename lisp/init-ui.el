@@ -8,9 +8,6 @@
 (use-package catppuccin-theme
   :ensure t)
 
-(use-package monokai-pro-theme
-  :ensure t)
-
 (use-package modus-themes
   :ensure t)
 
@@ -509,6 +506,6 @@
 ;; 全局快捷键：使用 C-t 快速切换主题
 (global-set-key (kbd "C-t") 'my/switch-theme)
 
-(load-theme 'manoj-dark t)
+(load-theme 'wheatgrass t)
 
 (provide 'init-ui)

@@ -336,9 +336,16 @@
 ;; org-roam
 (global-set-key (kbd "C-c C-n") 'org-roam-node-find)
 
+;; 定义 org-roam 快捷键前缀
+(define-prefix-command 'org-roam-prefix-map)
+(global-set-key (kbd "C-c r") 'org-roam-prefix-map)
 
-
-
+;; 设置具体子命令
+(define-key org-roam-prefix-map (kbd "f") #'org-roam-node-find)
+(define-key org-roam-prefix-map (kbd "i") #'org-roam-node-insert)
+(define-key org-roam-prefix-map (kbd "c") #'org-roam-capture)
+(define-key org-roam-prefix-map (kbd "l") #'org-roam-buffer-toggle)
+(define-key org-roam-prefix-map (kbd "u") #'org-roam-ui-mode)
 
 
 
