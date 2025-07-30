@@ -61,26 +61,6 @@
                   (princ (format "%-40s: %s\n" (symbol-name cmd) intro))))
             (princ (format "未找到与 \"%s\" 相关的命令." plugin))))))))
 
-;; 自定义 iedit-dwim 函数：
-(defun iedit-dwim (arg)
-  "启动 iedit 模式。
-如果传入前缀参数，则在整个缓冲区中匹配，否则仅匹配当前函数内部的内容。"
-  (interactive "P")
-  (if arg
-      (iedit-mode)
-    (save-excursion
-      (save-restriction
-        (widen)
-        (narrow-to-defun)
-        (iedit-mode)))))
-
-;; 使用示例：
-;; 1. 在编辑代码或文本时，将光标放在某个单词上。
-;; 2. 按下 C-; 进入 iedit 模式，此时所有与该单词相同的部分会高亮显示，
-;;    编辑其中一个区域，其他区域会同步更新。
-;; 3. 当编辑完成后，按下 C-c C-c 结束 iedit 模式。
-
-
 (defun my/indent-region-or-tab ()
   "如果选中区域就缩进选区，否则插入四个空格"
   (interactive)
@@ -270,9 +250,6 @@
 
 ;; 绑定快捷键 C-c h 调用该函数
 (global-set-key (kbd "C-c h") 'my/choose-plugin-and-display-functions)
-
-;; 为 iedit-dwim 绑定一个快捷键，比如 M-I（Alt + I），你可以根据自己的习惯更改：
-(global-set-key (kbd "M-I") 'iedit-dwim)
 
 ;; multiple cursor
 (global-set-key (kbd "C-M->") 'mc/mark-next-like-this)

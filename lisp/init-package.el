@@ -9,57 +9,73 @@
              :bind (("<M-up>" . drag-stuff-up)
                     ("<M-down>" . drag-stuff-down)))
 
-(use-package ivy :demand
-  :config
-  (setq ivy-use-virtual-buffers t
-        ivy-count-format "%d/%d "))
-(ivy-mode 1)
+;; 使用 Vertico
+(use-package vertico
+  :straight t
+  :init
+  (vertico-mode 1))
 
-(use-package swiper
-  :after ivy
-  :bind (("C-s" . swiper)
-	 ("C-r" . swiper-isearch-backward))
- :config (setq swiper-action-recenter t
-		swiper-include-line-number-in-search t))
+;; 使用 Marginalia 显示候选项额外信息（类似 ivy-rich）
+(use-package marginalia
+  :straight t
+  :init
+  (marginalia-mode 1))
 
-(use-package counsel
-  :after (ivy)
-  :bind (("M-x" . counsel-M-x)
-	 ("C-x C-f" . counsel-find-file)
-	 ("C-c f" . counsel-recentf)
-	 ("C-c g" . counsel-git)))
+;; Orderless 提供模糊匹配（比 ivy 更自由）
+(use-package orderless
+  :straight t
+  :custom
+  (completion-styles '(orderless basic)) ; 使用 orderless 做为主要匹配风格
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles . (partial-completion)))))) ; 文件路径可用 partial
 
-(use-package all-the-icons-ivy-rich
-  :ensure t
-  :init (all-the-icons-ivy-rich-mode 1))
+;; Consult 替代 Swiper 和 Counsel
+(use-package consult
+  :straight t
+  :bind (("C-s" . consult-line)               ; 替代 swiper
+         ("C-r" . consult-line)               ; 向后搜索
+         ("C-c f" . consult-recent-file)      ; 替代 counsel-recentf
+         ("C-c g" . consult-git-grep)))       ; 替代 counsel-git
 
-(use-package ivy-rich
-  :ensure t
-	:custom
-	((all-the-icons-ivy-rich-icon t)
-	 (all-the-icons-ivy-rich-color-icon t)
-	 (all-the-icons-ivy-rich-icon-size 1.0)
-	 (all-the-icons-ivy-rich-project t)
-	 (all-the-icons-ivy-rich-field-width 80)
-	 )
-  :init (ivy-rich-mode 1))
+;; Embark 提供对候选项的上下文操作（光标移动到候选项时按 C-. 可以弹出操作菜单）
+(use-package embark
+  :straight t
+  :bind
+  (("C-." . embark-act)
+   ("C-h B" . embark-bindings)) ;; 查看当前 keymap 的所有绑定
+  :init
+  (setq prefix-help-command #'embark-prefix-help-command))
 
+;; 更好地与 consult 结合
+(use-package embark-consult
+  :straight t
+  :hook (embark-collect-mode . consult-preview-at-point-mode))
+
+;; which-key 保留，不变
 (use-package which-key
+  :straight t
   :defer nil
-  :config (which-key-mode))
+  :config
+  (which-key-mode))
 
-(use-package ivy-posframe
-  :init (setq ivy-posframe-display-functions-alist
-			  '((swiper . ivy-posframe-display-at-frame-center)
-				(conmplete-symbol . ivy-posframe-display-at-point)
-				(counsel-M-x . ivy-posframe-display-at-frame-center)
-				(counsel-find-file . ivy-posframe-display-at-frame-center)
-				(ivy-switch-buffer . ivy-posframe-display-at-frame-center)
-				(t . ivy-posframe-display-at-frame-center)))
-                (ivy-posframe-mode 1))
+;; 可选：美化 minibuffer（建议搭配）
+(use-package nerd-icons-completion
+  :straight t
+  :after marginalia
+  :config
+  (nerd-icons-completion-mode)
+  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
 (use-package ace-window 
              :bind (("M-o" . 'ace-window)))
+
+(use-package async
+  :straight t
+  :init
+  ;; 自动加载 async byte-compile 的 hook（可选）
+  (dired-async-mode 1) ; 若你常用 Dired
+  (async-bytecomp-package-mode 1)) ; 对插件异步 byte-compile，加快 Emacs 启动
+
 
 (use-package indent-bars
 	:custom
@@ -129,28 +145,24 @@
   :config
   (marginalia-mode))
 
-
-;; 安装 meow
-(use-package meow
-  :ensure t)
-
-
 ;; --------------------------------------------
 ;; 配置 Projectile：项目管理工具，用于快速在项目间跳转、搜索文件、查找符号等
 ;; --------------------------------------------
+;; 启用项目管理工具 Projectile
 (use-package projectile
-  :ensure t
+  :straight t
   :init
-  (projectile-mode +1)  ;; 全局启用 Projectile 模式
-  :config
-  ;; 根据实际情况设置你的项目目录，可以添加多个目录
-  (setq projectile-project-search-path '("~/projects/"))
-  ;; 结合 Ivy 使用更加流畅的补全体验
-  (setq projectile-completion-system 'ivy)
-  ;; 建议绑定 Projectile 的命令前缀，例如 "C-c p"
-  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-  (message "Projectile 已启动"))
+  (projectile-mode +1)
+  :custom
+  ;; 设置项目搜索路径（你可以继续添加）
+  (projectile-project-search-path '("~/projects/"))
+  ;; 使用默认 completion-system，交由 Vertico + Consult 接管
+  (projectile-completion-system 'default))
 
+;; 使用 Consult 封装的 Projectile 接口，提供更好 UI 和功能
+(use-package consult-projectile
+  :straight t
+  :after (consult projectile))
 
 (use-package iedit
   :ensure t
@@ -173,6 +185,15 @@
         (widen)
         (narrow-to-defun)
         (iedit-mode)))))
+
+;; 使用示例：
+;; 1. 在编辑代码或文本时，将光标放在某个单词上。
+;; 2. 按下 C-; 进入 iedit 模式，此时所有与该单词相同的部分会高亮显示，
+;;    编辑其中一个区域，其他区域会同步更新。
+;; 3. 当编辑完成后，按下 C-c C-c 结束 iedit 模式。
+
+;; 为 iedit-dwim 绑定一个快捷键，比如 M-I（Alt + I），你可以根据自己的习惯更改：
+(global-set-key (kbd "M-I") 'iedit-dwim)
 
 (use-package multiple-cursors
   :ensure t)
@@ -311,19 +332,47 @@
   (org-download-enable))
 
 
-;; --- 检查 site-lisp/fd 目录 ------------
+;; --- dirvish ------------
+;; 安装 dirvish（用 straight）
 (use-package dirvish
-	:ensure t
-	:defer nil  ;; 确保启动时加载
-	:config
-	;; 使用 Dirvish 内置的 icons 主题，它会显示 Dirvish 自带的图标风格
-	(setq dirvish-theme 'icons)
-	;; 是否显示隐藏文件；此处设为 nil 表示默认不显示隐藏文件
-	(setq dirvish-show-hidden-files nil)
-	;; 设置 Dirvish 用于缓存持久数据（例如图片缓存、属性缓存）的目录
-	(setq dirvish-cache-dir (expand-file-name "dirvish-cache" user-emacs-directory))
-	;; 根据 CUSTOMIZING.org 建议，进一步定制属性显示：
-	(setq dirvish-hide-details nil))
+  :straight t
+  :defer nil  ;; 启动时立即加载
+  :config
+  ;; 开启 Dirvish 模式
+  (dirvish-override-dired-mode)
+
+  ;; ✅ 主题设为图标（你已安装 all-the-icons 和字体）
+  (setq dirvish-theme 'icons)
+
+  ;; ✅ 默认不显示隐藏文件（可透过 `h` 切换）
+  (setq dirvish-show-hidden-files nil)
+
+  ;; ✅ 避免访问系统文件造成的权限错误
+  (setq dirvish-hide-details nil)  ;; 显示详细信息
+  (setq dirvish-attributes '(all-the-icons file-size subtree-state vc-state))  ;; 显示图标和其他属性
+
+  ;; ✅ 禁止尝试访问受限系统文件
+  (setq dirvish-side-auto-refresh nil)  ;; 避免频繁触发文件扫描
+  (setq dirvish-side-follow-current-file nil)  ;; 不要追踪当前 buffer 文件
+
+  ;; ✅ 缓存设置
+  (setq dirvish-cache-dir (expand-file-name "dirvish-cache" user-emacs-directory))
+
+  ;; ✅ 快捷键提示
+  (define-key dirvish-mode-map (kbd "?") #'dirvish-dispatch) ;; 显示可用命令
+  (define-key dirvish-mode-map (kbd "TAB") #'dirvish-subtree-toggle) ;; 子目录展开
+  (define-key dirvish-mode-map (kbd "a") #'dirvish-quick-access) ;; 快速访问
+  (define-key dirvish-mode-map (kbd "f") #'dirvish-file-info-menu)
+  (define-key dirvish-mode-map (kbd "y") #'dirvish-yank-menu)
+  (define-key dirvish-mode-map (kbd "N") #'dirvish-narrow)
+  (define-key dirvish-mode-map (kbd "h") #'dirvish-history-jump)  ;; 历史目录跳转
+  (define-key dirvish-mode-map (kbd "s") #'dirvish-setup-menu)
+
+  ;; ✅ 启用图片和音频预览（跳过 vipsthumbnail）
+  (setq dirvish-preview-enabled t)
+  (setq dirvish-preview-dispatchers '(image audio))  ;; 避免 text 触发错误
+
+  (message "✅ Dirvish 加载完成"))
 
 
 ;; 安装 lsp-bridge
@@ -489,31 +538,80 @@
 (use-package pyim
   :straight t
   :init
-  ;; 🧠 初始化前设置默认方案（一定要放在 :init 或 use-package 顶部）
+  ;; 设置 pyim 为默认输入法
   (setq default-input-method "pyim")
-  (setq pyim-default-scheme 'quanpin)
+
+  ;; ✅ 拼音方案：quanpin = 全拼（也可用 'ziranma 表示双拼）
+  (setq pyim-default-scheme 'quanpin) ;; quanpin
+
+  ;; ✅ 增加候选词数量（默认是 5）
+  (setq pyim-page-length 9) ;; 显示更多候选词（例如9个）
+
   :config
-  ;; 设置切换输入法快捷键
+  ;; 切换中英文输入法快捷键（C-\）
   (global-set-key (kbd "C-\\") 'toggle-input-method)
 
-  ;; 📘 使用 pyim 内置拼音词库（需单独加载 pyim-basedict）
+  ;; 加载内置拼音词库（基于 pyim-basedict）
   (use-package pyim-basedict
     :straight t
     :config
     (pyim-basedict-enable))
 
-  ;; 💬 使用 posframe 显示候选词窗口（需安装 posframe）
-  (use-package posframe
-    :straight t)
-
-  ;; 🪟 设置 pyim 使用 posframe 浮动显示候选词
+  ;; ✅ 使用 posframe 漂浮提示窗口
   (setq pyim-page-tooltip 'posframe)
 
-  ;; ✅ 可选：设置 posframe 的样式与最大宽度
+  ;; 可选：额外美化 posframe 样式
+  (use-package posframe
+    :straight t)
   (setq pyim-posframe-border-width 2)
   (setq pyim-posframe-min-width 20)
   (setq pyim-posframe-min-height 4)
-)
+
+  ;; 建议启用词频记忆（提升输入精度）
+  (setq pyim-dcache-auto-update t))
+
+;; 快速跳转增强插件：avy（可视化跳转字符/单词/行）
+(use-package avy
+  :straight t
+  :defer t
+  :bind
+  (("M-g c" . avy-goto-char)         ;; 跳转到指定字符（当前窗口可见区域）
+   ("M-g 2" . avy-goto-char-2)       ;; 跳转到一对字符（更精准）
+   ("M-g w" . avy-goto-word-1)       ;; 跳转到以某字符开头的单词
+   ("M-g l" . avy-goto-line))        ;; 跳转到指定行
+  :config
+  ;; 设置跳转提示风格：预览字母提示（默认 'pre）
+  (setq avy-style 'pre)
+
+  ;; 如果你觉得按键提示太快消失，可手动设置等待时间（单位为秒）
+  ;; (setq avy-timeout-seconds 0.5)
+
+  (message "🚀 avy 快速跳转已加载"))
+
+;; vlf：Very Large File 支援
+(use-package vlf
+  :ensure t
+  :config
+  (require 'vlf-setup)
+
+  ;; 打开大文件时自动询问是否使用 vlf
+  (defun my/maybe-enable-vlf ()
+    "如果当前 buffer 的文件大于 500MB，询问是否启用 vlf。"
+    (let* ((file (buffer-file-name))
+           (size (when file
+                   (nth 7 (file-attributes file)))))
+      (when (and size (> size (* 500 1024 1024))) ;; > 500MB
+        (when (yes-or-no-p (format "文件超过 500MB，是否使用 vlf 打开？"))
+          (vlf-mode 1)))))
+
+  ;; 添加到文件打开 hook 中
+  (add-hook 'find-file-hook #'my/maybe-enable-vlf))
+
+
+(use-package undo-tree
+  :ensure t
+  :init
+  (global-undo-tree-mode))
 
 
 (provide 'init-package)
