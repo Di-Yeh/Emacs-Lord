@@ -90,7 +90,7 @@ chmod +x ./install-eaf.py
 1. 安装python (python 3.12版本)
 2. 使用`pip`安装以下依赖库
 ```bash
-pip3 install epc orjson sexpdata six paramiko watchdog pyright
+pip3 install epc orjson sexpdata six paramiko watchdog pyright setuptools
 ```
 
 **dirvish配置🗂️**
@@ -213,7 +213,7 @@ chmod +x ./install-eaf.py
 1. 安装python (python 3.12版本)
 2. 使用`pip`安装以下依赖库
 ```bash
-pip install epc orjson sexpdata six paramiko watchdog pyright
+pip install epc orjson sexpdata six paramiko watchdog pyright setuptools
 ```
 
 **dirvish配置🗂️**
