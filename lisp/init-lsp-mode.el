@@ -18,21 +18,26 @@
   :ensure t
   :commands lsp
   :init
+  ;; 设置 LSP 快捷键前缀，例如：C-c l r 重命名，C-c l d 跳转定义等
   (setq lsp-keymap-prefix "C-c l")
-	:custom
-  (setq lsp-clients-clangd-args
-      '("--background-index"         ;; 后台索引
-        "--clang-tidy"               ;; 打开 clang-tidy
-        "--completion-style=detailed";; 丰富补全格式
-        "--header-insertion=never"   ;; 关掉自动插 include
-        ))
+
   :config
-  (setq lsp-completion-provider :capf
-        lsp-enable-symbol-highlighting t
-				lsp-diagnostic-package :none
-				lsp-completion-enable-additional-text-edit nil
-        lsp-prefer-flymake nil
-        lsp-auto-install-server nil))
+  ;; clangd 相关参数：自动补全、背景索引、禁用自动 include
+  (setq lsp-clients-clangd-args
+        '("--background-index"          ; 后台索引，加快跳转响应
+          "--clang-tidy"                ; 启用 clang-tidy
+          "--completion-style=detailed" ; 显示完整补全信息
+          "--header-insertion=never"  	; 不自动插入头文件
+					"--compile-commands-dir=."))  ; 如果你将 compile_commands.json 放在项目根目录
+
+  ;; 通用 LSP 设置
+  (setq lsp-completion-provider :capf                    ; 使用 Emacs 的 Capf 补全
+        lsp-enable-symbol-highlighting t                 ; 高亮变量名
+        lsp-diagnostic-package :none                     ; 不用内建诊断系统（你可能用 flycheck）
+        lsp-completion-enable-additional-text-edit nil   ; 禁用附加的编辑动作
+        lsp-prefer-flymake nil                           ; 使用 flycheck 而不是 flymake
+        lsp-auto-install-server nil))                    ; 不自动下载语言服务器
+
 
 (use-package lsp-ui
   :ensure t
@@ -161,73 +166,28 @@ Windows 下使用 'where gdb'，Linux/Mac 下使用 'which -a gdb'。
 ;; 用 flex 做模糊匹配，basic 保留原生前缀匹配
 (setq completion-styles '(flex basic))
 
-
-
-(use-package company-box
-  :ensure t
-  :after company
-  :hook (company-mode . company-box-mode)
-  :config
-  ;; 如果系统是 Windows，则重载获取桌面名称的函数，以防止 wmctrl 的依赖问题
-  (when (eq system-type 'windows-nt)
-    (defun company-box--get-desktop-name ()
-      "在 Windows 上返回一个虚拟桌面名称，绕过 wmctrl 依赖。"
-      "windows-desktop"))
-  ;; 设置 company-box 使用 all-the-icons 来显示图标
-  (when (require 'all-the-icons nil t)
-    (setq company-box-icons-all-the-icons
-          `((Unknown       . ,(all-the-icons-material "find_in_page"             :height 0.8 :v-adjust -0.2))
-            (Text          . ,(all-the-icons-material "text_fields"              :height 0.8 :v-adjust -0.2))
-            (Method        . ,(all-the-icons-material "functions"                :height 0.8 :v-adjust -0.2))
-            (Function      . ,(all-the-icons-material "functions"                :height 0.8 :v-adjust -0.2))
-            (Constructor   . ,(all-the-icons-material "functions"                :height 0.8 :v-adjust -0.2))
-            (Field         . ,(all-the-icons-material "functions"                :height 0.8 :v-adjust -0.2))
-            (Variable      . ,(all-the-icons-material "adjust"                   :height 0.8 :v-adjust -0.2))
-            (Class         . ,(all-the-icons-material "class"                    :height 0.8 :v-adjust -0.2))
-            (Interface     . ,(all-the-icons-material "settings_input_component" :height 0.8 :v-adjust -0.2))
-            (Module        . ,(all-the-icons-material "view_module"              :height 0.8 :v-adjust -0.2))
-            (Property      . ,(all-the-icons-material "settings"                 :height 0.8 :v-adjust -0.2))
-            (Unit          . ,(all-the-icons-material "straighten"               :height 0.8 :v-adjust -0.2))
-            (Value         . ,(all-the-icons-material "filter_1"                 :height 0.8 :v-adjust -0.2))
-            (Enum          . ,(all-the-icons-material "plus_one"                 :height 0.8 :v-adjust -0.2))
-            (Keyword       . ,(all-the-icons-material "filter_center_focus"      :height 0.8 :v-adjust -0.2))
-            (Snippet       . ,(all-the-icons-material "short_text"               :height 0.8 :v-adjust -0.2))
-            (Color         . ,(all-the-icons-material "color_lens"               :height 0.8 :v-adjust -0.2))
-            (File          . ,(all-the-icons-material "insert_drive_file"        :height 0.8 :v-adjust -0.2))
-            (Reference     . ,(all-the-icons-material "collections_bookmark"     :height 0.8 :v-adjust -0.2))
-            (Folder        . ,(all-the-icons-material "folder"                   :height 0.8 :v-adjust -0.2))
-            (EnumMember    . ,(all-the-icons-material "people"                   :height 0.8 :v-adjust -0.2))
-            (Constant      . ,(all-the-icons-material "pause_circle_filled"      :height 0.8 :v-adjust -0.2))
-            (Struct        . ,(all-the-icons-material "streetview"               :height 0.8 :v-adjust -0.2))
-            (Event         . ,(all-the-icons-material "event"                    :height 0.8 :v-adjust -0.2))
-            (Operator      . ,(all-the-icons-material "control_point"            :height 0.8 :v-adjust -0.2))
-            (TypeParameter . ,(all-the-icons-material "class"                    :height 0.8 :v-adjust -0.2))
-            (Template      . ,(all-the-icons-material "short_text"               :height 0.8 :v-adjust -0.2))))
-    ;; 如果需要，你也可以设置 company-box-backends-colors 为 nil 或其它合适的值
-    (setq company-box-backends-colors nil)))
-
-
 ;; --------------------------------------------------
 ;; Flycheck 配置（全局启用，保存时检查）
 ;; --------------------------------------------------
+;; Flycheck 语法检查配置，配合 lsp-mode 使用 clangd 做诊断
 (use-package flycheck
   :ensure t
   :init
+  ;; 全局启用 Flycheck
   (global-flycheck-mode)
+
   :config
-  ;; 只在保存文件和启用时检查，不在编辑时自动检查
+  ;; 检查时机：只在保存或启用 mode 时检查，不在编辑时实时检查
   (setq flycheck-check-syntax-automatically '(save mode-enabled))
-	;; 对 C/C++ 及头文件，禁用 Flycheck 本身的 checker，只用 LSP 提供的诊断
-  (dolist (hook '(c-mode-common-hook c++-mode-hook))
+
+  ;; 禁用 flycheck 自带的 C/C++ checker，使用 lsp 提供的诊断
+  (dolist (hook '(c-mode-hook c++-mode-hook))
     (add-hook hook
               (lambda ()
-                (when (and buffer-file-name
-                           (string-match-p "\\.\\(c\\|cc\\|cpp\\|cxx\\|h\\|hpp\\)$"
-                                           buffer-file-name))
-                  (setq-local flycheck-disabled-checkers
-                              '(c/c++-clang c/c++-gcc c/c++-msvc))
-                  ;; 使用 LSP diagnostics
-                  (setq-local lsp-diagnostics-provider :flycheck))))))
+                (setq-local flycheck-disabled-checkers
+                            '(c/c++-clang c/c++-gcc c/c++-msvc))
+                ;; 设置 lsp-mode 使用 flycheck 来显示诊断信息
+                (setq-local lsp-diagnostics-provider :flycheck)))))
 
 (require 'helm-xref)
 (helm-mode)
