@@ -228,7 +228,7 @@
 												 :face '(:foreground "#ff8533"))
 												 " "
 												 (format-time-string "%H:%M")
-												 "          "))
+												 "            "))
 
   ;; ------------------- 光标位置 ------------------
 	(spaceline-define-segment my-position

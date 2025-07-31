@@ -198,6 +198,11 @@
 (use-package multiple-cursors
   :ensure t)
 
+;; multiple cursor
+(global-set-key (kbd "C-M->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-M-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+
 ;; ================================
 ;; Org-Roam 设置
 ;; ================================
@@ -611,7 +616,29 @@
 (use-package undo-tree
   :ensure t
   :init
-  (global-undo-tree-mode))
+  (global-undo-tree-mode)
+  :custom
+  ;; ✅ 启用持久化历史记录
+  (undo-tree-auto-save-history t)
+  ;; ✅ 设置统一保存目录
+  (undo-tree-history-directory-alist
+   `(("." . ,(expand-file-name "Undo-tree/" user-emacs-directory))))
+  :config
+  ;; 创建目录（如果不存在）
+  (let ((dir (expand-file-name "Undo-tree/" user-emacs-directory)))
+    (unless (file-directory-p dir)
+      (make-directory dir t))))
+
+;; 删除超过 7 天的 undo 文件（可选）
+(run-at-time "1 day" (* 24 60 60)  ;; 每天执行
+             (lambda ()
+               (let ((dir (expand-file-name "Undo-tree/" user-emacs-directory)))
+                 (when (file-directory-p dir)
+                   (dolist (file (directory-files dir t "\\.~undo-tree~$"))
+                     (when (> (float-time (time-subtract (current-time) (nth 5 (file-attributes file))))
+                              (* 7 24 60 60))  ; 超过 7 天
+                       (delete-file file)))))))
+
 
 
 (provide 'init-package)

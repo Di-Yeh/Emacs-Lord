@@ -251,11 +251,6 @@
 ;; 绑定快捷键 C-c h 调用该函数
 (global-set-key (kbd "C-c h") 'my/choose-plugin-and-display-functions)
 
-;; multiple cursor
-(global-set-key (kbd "C-M->") 'mc/mark-next-like-this)
-(global-set-key (kbd "C-M-<") 'mc/mark-previous-like-this)
-(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-
 ;; markdown-view-mode
 (global-set-key (kbd "C-c m v") 'markdown-view-mode)
 (global-set-key (kbd "C-c m m") 'markdown-mode)
