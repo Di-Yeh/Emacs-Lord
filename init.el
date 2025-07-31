@@ -10,6 +10,7 @@
 (require 'init-elpa)
 (require 'init-package)
 (require 'init-lsp)
+(require 'init-lisp)
 
 (require 'init-dashboard)
 (require 'init-ui)

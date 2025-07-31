@@ -51,7 +51,7 @@
       (message "当前为 Emacs Lisp 文件，不启用 LSP。"))
      ;; 仅对指定的编程语言启用 LSP
      ((and (derived-mode-p 'prog-mode)
-           (member major-mode '(c-mode c++-mode python-mode lua-mode)))
+           (member major-mode '(clojure-mode clojurec-mode clojurescript-mode c-mode c++-mode python-mode lua-mode))) ; 如果要使用clojure就加入 clojure-mode clojurec-mode clojurescript-mode 即可
       ;; 设定默认目录：尝试使用 Projectile 检测项目根目录
       (if (and (fboundp 'projectile-project-p)
                (projectile-project-p))

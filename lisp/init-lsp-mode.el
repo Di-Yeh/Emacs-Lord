@@ -189,6 +189,10 @@ Windows 下使用 'where gdb'，Linux/Mac 下使用 'which -a gdb'。
                 ;; 设置 lsp-mode 使用 flycheck 来显示诊断信息
                 (setq-local lsp-diagnostics-provider :flycheck)))))
 
+(with-eval-after-load 'flycheck
+  (setq-default flycheck-disabled-checkers '(json-python-json))
+  (flycheck-add-mode 'json-jsonlint 'json-mode))
+
 (require 'helm-xref)
 (helm-mode)
 (define-key global-map [remap find-file] #'helm-find-files)

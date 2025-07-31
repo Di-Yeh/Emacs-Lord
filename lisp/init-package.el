@@ -33,9 +33,19 @@
 (use-package consult
   :straight t
   :bind (("C-s" . consult-line)               ; 替代 swiper
-         ("C-r" . consult-line)               ; 向后搜索
-         ("C-c f" . consult-recent-file)      ; 替代 counsel-recentf
-         ("C-c g" . consult-git-grep)))       ; 替代 counsel-git
+         ("C-r" . consult-line)								; 向后搜索
+         ("C-c f" . consult-recent-file)			; 替代 counsel-recentf
+         ("C-c g" . consult-git-grep))				; 替代 counsel-git
+  :custom
+  ;; ✅ 启用实时预览功能（等效 swiper）
+  (consult-preview-key '(:debounce 0.2 any))  ;; 或 '(:debounce 0.3 any)
+  ;; ✅ 默认不显示太多 preview 窗口
+  (consult-narrow-key "<")
+  ;; 可选：让 consult-line 默认从当前点开始往后找
+  (consult-line-start-from-top nil))
+
+;; ✅ 这个函数会确保实时预览在 minibuffer 启用
+(add-hook 'completion-list-mode-hook #'consult-preview-at-point-mode)
 
 ;; Embark 提供对候选项的上下文操作（光标移动到候选项时按 C-. 可以弹出操作菜单）
 (use-package embark
@@ -51,7 +61,7 @@
   :straight t
   :hook (embark-collect-mode . consult-preview-at-point-mode))
 
-;; which-key 保留，不变
+;; which-key
 (use-package which-key
   :straight t
   :defer nil
@@ -484,29 +494,6 @@
           (gdb final-cmd))
       (message "已取消启动 GDB 调试会话."))))
 
-
-(use-package sly
-  :ensure t
-  :init
-  ;; 指定你 Common Lisp 实现的路径，比如这里使用 SBCL
-  (setq inferior-lisp-program "sbcl")
-  :config
-  ;; 默认使用 sly-fancy 提供更完善的扩展功能
-  (sly-setup '(sly-fancy)))
-
-(defun my-auto-start-sly-for-common-lisp ()
-  "如果当前访问的文件扩展名为 .lisp，并且不是 Emacs Lisp 文件，则自动启动 SLY。
-这样可以确保 Common Lisp 文件自动开启 SLY，而不干扰 .el 文件。"
-  (when (and buffer-file-name
-             (string-match-p "\\.lisp\\'" buffer-file-name)
-             (not (derived-mode-p 'emacs-lisp-mode)))
-    ;; 如果 SLY 尚未连接，则调用 sly 启动 SLY 环境
-    (unless (bound-and-true-p sly-mode)
-      (sly))))
-
-;; 将自动启动函数加入 lisp-mode 的 hook 中
-(add-hook 'lisp-mode-hook #'my-auto-start-sly-for-common-lisp)
-
 (use-package json-mode
   :ensure t
   :mode ("\\.json\\'" . json-mode))
@@ -589,7 +576,7 @@
   (setq avy-style 'pre)
 
   ;; 如果你觉得按键提示太快消失，可手动设置等待时间（单位为秒）
-  ;; (setq avy-timeout-seconds 0.5)
+  (setq avy-timeout-seconds 2)
 
   (message "🚀 avy 快速跳转已加载"))
 

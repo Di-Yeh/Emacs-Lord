@@ -506,6 +506,6 @@
 ;; 全局快捷键：使用 C-t 快速切换主题
 (global-set-key (kbd "C-t") 'my/switch-theme)
 
-(load-theme 'wheatgrass t)
+(load-theme 'manoj-dark t)
 
 (provide 'init-ui)
