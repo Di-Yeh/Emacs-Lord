@@ -220,7 +220,8 @@ pip install epc orjson sexpdata six paramiko watchdog pyright setuptools
 **dirvish配置🗂️**
 
 执行这条指令 `sudo apt install fd-find` 
-安装vipsthumbnail `sudo apt install libvips-tools`
+
+安装依赖工具`sudo apt install libvips-tools ffmpegthumbnailer imagemagick poppler-utils`
 
 **pandoc配置📑**
 
