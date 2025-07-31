@@ -96,6 +96,7 @@ pip3 install epc orjson sexpdata six paramiko watchdog pyright setuptools
 **dirvish配置🗂️**
 
 使用 **winget** `winget install sharkdp.fd`
+使用MSYS2 安装vipsthumbnail `pacman -S mingw-w64-ucrt-x86_64-libvips`
 
 或是下载fd.exe [fd](https://github.com/sharkdp/fd/releases)（下载对应操作系统的版本）并且放到环境变量中
 
@@ -219,6 +220,7 @@ pip install epc orjson sexpdata six paramiko watchdog pyright setuptools
 **dirvish配置🗂️**
 
 执行这条指令 `sudo apt install fd-find` 
+安装vipsthumbnail `sudo apt install libvips-tools`
 
 **pandoc配置📑**
 
