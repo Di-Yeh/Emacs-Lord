@@ -71,6 +71,16 @@
 
 **masm** [下载链接](https://www.masm32.com/download.htm)
 
+**Coljure配置☯️**
+
+安装依赖：
+
+**Coljure** [下载链接](https://github.com/casselc/clj-msi)
+
+**OpenJDK** [下载链接](https://adoptium.net/zh-CN)
+
+**clj-kondo** [下载链接](https://github.com/clj-kondo/clj-kondo?tab=readme-ov-file#installation)
+
 **emacs-application-framework配置📦**
 
 1. 在`site-lisp/`文件目录运行这行命令`git clone --depth=1 -b master https://github.com/emacs-eaf/emacs-application-framework.git`
@@ -194,6 +204,24 @@ sudo apt install nasm
 ```bash
 sudo apt install libvterm-dev cmake make gcc
 ```
+
+**Coljure配置☯️**
+
+1. 安装 Java
+`sudo apt install openjdk-17-jdk`
+
+2. 安装 Clojure CLI
+`sudo apt install clojure`
+
+3. 安装 clj-kondo
+```bash
+curl -sLO https://raw.githubusercontent.com/clj-kondo/clj-kondo/master/script/install-clj-kondo
+chmod +x install-clj-kondo
+./install-clj-kondo
+```
+
+4. （可选）安装 Leiningen
+`sudo apt install leiningen`
 
 **emacs-application-framework配置📦**
 
