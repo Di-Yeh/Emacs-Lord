@@ -59,6 +59,10 @@
 
 **sbcl** [下载链接](https://www.sbcl.org/platform-table.html)
 
+**Racket** [下载链接](https://download.racket-lang.org/)
+
+在CMD或Powershell 执行这条指令 `raco pkg install racket-langserver`
+
 **msys2** [下载链接](https://www.msys2.org/) 或 **Mingw** [下载链接](https://sourceforge.net/projects/mingw/) 择一
 
 **cmake** [下载链接](https://cmake.org/download/)
@@ -139,6 +143,12 @@ sudo apt install gcc g++
 **sbcl**
 ```bash
 sudo apt install sbcl
+```
+
+**Racket**
+```bash
+sudo apt install racket
+raco pkg install racket-langserver
 ```
 
 **cmake**
