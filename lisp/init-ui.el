@@ -228,7 +228,7 @@
 												 :face '(:foreground "#ff8533"))
 												 " "
 												 (format-time-string "%H:%M")
-												 "            "))
+												 "        "))
 
   ;; ------------------- 光标位置 ------------------
 	(spaceline-define-segment my-position
@@ -427,13 +427,13 @@
 		 (my-file-stats	  :face 'my/spaceline-face-theme :priority 75)		; 字数计算
 		 (buffer-encoding-eol :face 'my/spaceline-face-theme :priority 80) ; 显示编码风格和系统图标
 		 (my-diff-hl		  :face 'my/spaceline-face-theme :priority 10)		; git
+		 (my-last-input  :face 'my/spaceline-face-theme :priority 60) ; 最近输入讯息
 		)
 
 	 ;; 右侧 segments 列表
 	 `((my-lsp-status  :face 'my/spaceline-face-theme :priority 80)		; LSP 状态
-		 (my-last-input  :face 'my/spaceline-face-theme :priority 80) ; 最近输入讯息
-		 (my-input-method :face 'my/spaceline-face-theme :priority 80)	; 输入法状态显示
-		 (my-time        :face 'my/spaceline-face-theme :priority 100) 	; 时间
+		 (my-input-method :face 'my/spaceline-face-theme :priority 70)	; 输入法状态显示
+		 (my-time        :face 'my/spaceline-face-theme :priority 65) 	; 时间
 		))
 
 

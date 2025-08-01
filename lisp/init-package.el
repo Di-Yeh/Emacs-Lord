@@ -4,6 +4,7 @@
 ;;; Code:
 
 (use-package restart-emacs)
+(setq straight-vc-git-default-clone-depth 1)
 
 (use-package drag-stuff
              :bind (("<M-up>" . drag-stuff-up)
@@ -23,7 +24,7 @@
 
 ;; Orderless 提供模糊匹配（比 ivy 更自由）
 (use-package orderless
-  :straight t
+  :ensure t
   :custom
   (completion-styles '(orderless basic)) ; 使用 orderless 做为主要匹配风格
   (completion-category-defaults nil)
@@ -31,7 +32,7 @@
 
 ;; Consult 替代 Swiper 和 Counsel
 (use-package consult
-  :straight t
+  :ensure t
   :bind (("C-s" . consult-line)               ; 替代 swiper
          ("C-r" . consult-line)								; 向后搜索
          ("C-c f" . consult-recent-file)			; 替代 counsel-recentf
@@ -49,7 +50,7 @@
 
 ;; Embark 提供对候选项的上下文操作（光标移动到候选项时按 C-. 可以弹出操作菜单）
 (use-package embark
-  :straight t
+  :ensure t
   :bind
   (("C-." . embark-act)
    ("C-h B" . embark-bindings)) ;; 查看当前 keymap 的所有绑定
@@ -58,19 +59,19 @@
 
 ;; 更好地与 consult 结合
 (use-package embark-consult
-  :straight t
+  :ensure t
   :hook (embark-collect-mode . consult-preview-at-point-mode))
 
 ;; which-key
 (use-package which-key
-  :straight t
+  :ensure t
   :defer nil
   :config
   (which-key-mode))
 
 ;; 可选：美化 minibuffer（建议搭配）
 (use-package nerd-icons-completion
-  :straight t
+  :ensure t
   :after marginalia
   :config
   (nerd-icons-completion-mode)
@@ -218,7 +219,7 @@
 ;; ================================
 
 (use-package org-roam
-  :straight t
+  :ensure t
   :init
   ;; 预先定义占位目录（启动时不设置具体目录）
   (setq org-roam-directory nil)
@@ -276,7 +277,7 @@
 
 ;; 可视化 UI（浏览器中查看笔记图谱）
 (use-package org-roam-ui
-  :straight t
+  :ensure t
   :after org-roam
   :custom
   (org-roam-ui-sync-theme t)
@@ -348,7 +349,7 @@
 
 
 ;; --- dirvish ------------
-;; 安装 dirvish（用 straight）
+;; 安装 dirvish
 (use-package dirvish
   :straight t
   :defer nil  ;; 启动时立即加载
@@ -564,7 +565,7 @@
 
 ;; 快速跳转增强插件：avy（可视化跳转字符/单词/行）
 (use-package avy
-  :straight t
+  :ensure t
   :defer t
   :bind
   (("M-g c" . avy-goto-char)         ;; 跳转到指定字符（当前窗口可见区域）

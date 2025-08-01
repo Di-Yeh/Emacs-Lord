@@ -154,9 +154,37 @@ Windows 下使用 'where gdb'，Linux/Mac 下使用 'which -a gdb'。
 (use-package company
   :ensure t
   :hook (after-init . global-company-mode)
+  :custom
+  (company-tooltip-align-annotations t)   ; 补全注解右对齐
+  (company-minimum-prefix-length 1)       ; 输入 1 个字符就开始补全
+  (company-idle-delay 0.1)                ; 补全延迟时间
+  (company-show-numbers t)                ; 显示候选项编号
+  (company-tooltip-limit 10)              ; 显示最多 10 个候选项
+  (company-require-match nil)             ; 不强制匹配
+  (company-dabbrev-downcase nil)          ; 保留大小写
+  (company-global-modes '(not eshell-mode shell-mode)) ; 不在 shell 中启用
   :config
-  (setq company-minimum-prefix-length 1
-        company-show-quick-access t))
+  ;; 默认使用 Emacs 字体缩放同步调整 popup
+  (setq company-tooltip-minimum-width 40) ;; 保持宽度统一
+  ;; 更优雅的样式颜色
+  (custom-set-faces
+   '(company-tooltip ((t (:inherit default :background "#282c34" :foreground "#bbc2cf"))))
+   '(company-tooltip-selection ((t (:background "#3e4451" :foreground "#ffffff"))))
+   '(company-tooltip-common ((t (:foreground "#c678dd" :weight bold))))
+   '(company-tooltip-annotation ((t (:foreground "#56b6c2"))))
+   '(company-scrollbar-bg ((t (:background "#3e4451"))))
+   '(company-scrollbar-fg ((t (:background "#61afef"))))
+   '(company-tooltip-search ((t (:foreground "#98be65" :weight bold))))
+   '(company-preview ((t (:background "#1c1f24" :foreground "#5B6268"))))
+   '(company-preview-common ((t (:inherit company-preview :foreground "#c678dd"))))))
+
+(use-package kind-icon
+  :straight t
+  :after company
+  :custom
+  (kind-icon-default-face 'corfu-default) ;; 跟 corfu 同样的图标样式
+  :config
+  (add-to-list 'company-format-margin-function #'kind-icon-margin-formatter))
 
 ;; 让 Emacs completion-at-point 全局不分大小写
 (setq completion-ignore-case               t

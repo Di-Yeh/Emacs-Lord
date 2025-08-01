@@ -77,8 +77,7 @@
   :hook ((racket-mode . paredit-mode)
          (racket-mode . aggressive-indent-mode)
          (racket-mode . company-mode)
-         (racket-mode . racket-smart-open-bracket-mode)
-         (racket-mode . my/setup-racket-company-backend))
+         (racket-mode . racket-smart-open-bracket-mode))
   :config
   (setq racket-program "racket"))
 
