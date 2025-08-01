@@ -16,7 +16,6 @@
 (require 'init-ui)
 
 (require 'init-keymap)
-(require 'init-meow)
 
 (require 'rainbow-identifiers)
 (add-hook 'prog-mode-hook 'rainbow-identifiers-mode)
