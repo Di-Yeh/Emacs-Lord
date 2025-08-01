@@ -3,6 +3,9 @@
 ;;; Commentary:
 ;;; Code:
 
+;; -----------------------------------------------
+;; Common Lisp
+;; -----------------------------------------------
 (use-package sly
   :ensure t
   :init
@@ -25,6 +28,9 @@
 ;; 将自动启动函数加入 lisp-mode 的 hook 中
 (add-hook 'lisp-mode-hook #'my-auto-start-sly-for-common-lisp)
 
+;; -----------------------------------------------
+;; Clojure Lisp
+;; -----------------------------------------------
 (use-package clojure-mode
   :straight t
 	:hook ((clojure-mode . lsp)
@@ -45,11 +51,6 @@
 
 (global-set-key (kbd "C-c C-z") 'cider-jack-in)
 
-(use-package paredit
-  :straight t
-  :hook (clojure-mode . paredit-mode))
-
-
 (use-package flycheck-clj-kondo
   :ensure t
   :after flycheck
@@ -66,6 +67,36 @@
           (message "☠ Deleted .nrepl-port: %s" port-file))))))
 
 (add-hook 'cider-disconnected-hook #'my/cider-cleanup-nrepl-port)
+
+;; -----------------------------------------------
+;; Racket Lisp
+;; -----------------------------------------------
+(use-package racket-mode
+  :straight t
+  :mode "\\.rkt\\'"
+  :hook ((racket-mode . paredit-mode)
+         (racket-mode . aggressive-indent-mode)
+         (racket-mode . company-mode)
+         (racket-mode . racket-smart-open-bracket-mode)
+         (racket-mode . my/setup-racket-company-backend))
+  :config
+  (setq racket-program "racket"))
+
+;; 快捷键：运行、编译、进入 REPL
+(global-set-key (kbd "C-^ r r") 'racket-run)
+(global-set-key (kbd "C-^ r c") 'racket-compile)
+(global-set-key (kbd "C-^ r R") 'racket-repl)
+
+;; -----------------------------------------------
+;; Lisp Plugin
+;; -----------------------------------------------
+(use-package aggressive-indent
+  :straight t
+  :hook (lisp-mode . aggressive-indent-mode))
+
+(use-package paredit
+  :straight t
+  :hook (clojure-mode . paredit-mode))
 
 
 (provide 'init-lisp)
