@@ -43,7 +43,7 @@
 (defun my-create-clang-format-in-dir (dir)
   "在目录 DIR 下创建 .clang-format 文件（如果不存在的话），内容为预定义的格式规则。"
   (let ((file (expand-file-name ".clang-format" dir))
-        (content "BasedOnStyle: LLVM\nIndentWidth: 4\nBreakBeforeBraces: Allman\nAllowShortFunctionsOnASingleLine: None\nColumnLimit: 100\nSortIncludes: false\n"))
+        (content "BasedOnStyle: LLVM\nIndentWidth: 4\nBreakBeforeBraces: Allman\nAllowShortFunctionsOnASingleLine: None\nColumnLimit: 0\nSortIncludes: false\n"))
     (unless (file-exists-p file)
       (with-temp-file file
         (insert content))
