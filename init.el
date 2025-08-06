@@ -21,7 +21,6 @@
 (add-hook 'prog-mode-hook 'rainbow-identifiers-mode)
 
 
-
 (defun my/setup-emoji-font ()
   "为 emoji 设置专用字体，仅补充显示，不影响主字体。"
   (when (display-graphic-p)
@@ -82,9 +81,9 @@
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; … 你的 default 和 org-level-* 定义保持不变 …
- '(default ((t (:family "Cascadia Code" :foundry "outline"
+ '(default ((t (:family "JetBrains Mono" :foundry "outline"
                         :slant normal :weight semi-bold
-                        :height 120 :width normal))))
+                        :height 143 :width normal))))
  '(org-level-1 ((t (:inherit outline-1 :height 1.3))))
  '(org-level-2 ((t (:inherit outline-2 :height 1.2))))
  '(org-level-3 ((t (:inherit outline-3 :height 1.1)))))
