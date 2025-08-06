@@ -9,24 +9,28 @@
 (use-package sly
   :ensure t
   :init
-  ;; 指定你 Common Lisp 实现的路径，比如这里使用 SBCL
+  ;; 指定你的 Common Lisp 实现，例如使用 SBCL
   (setq inferior-lisp-program "sbcl")
   :config
-  ;; 默认使用 sly-fancy 提供更完善的扩展功能
+  ;; 启用 sly-fancy 增强功能
   (sly-setup '(sly-fancy)))
 
 (defun my-auto-start-sly-for-common-lisp ()
-  "如果当前访问的文件扩展名为 .lisp，并且不是 Emacs Lisp 文件，则自动启动 SLY。
-这样可以确保 Common Lisp 文件自动开启 SLY，而不干扰 .el 文件。"
+  "若当前文件为 Common Lisp（.lisp 或 .lsp），自动启动 SLY，排除 Emacs Lisp。"
   (when (and buffer-file-name
-             (string-match-p "\\.lisp\\'" buffer-file-name)
+             (string-match-p "\\.lisp\\'\\|\\.lsp\\'" buffer-file-name)
              (not (derived-mode-p 'emacs-lisp-mode)))
-    ;; 如果 SLY 尚未连接，则调用 sly 启动 SLY 环境
+    ;; 如果 SLY 尚未激活，则调用 sly 启动连接
     (unless (bound-and-true-p sly-mode)
       (sly))))
 
-;; 将自动启动函数加入 lisp-mode 的 hook 中
+;; 在 Lisp 模式下自动检测文件类型并启动 SLY
 (add-hook 'lisp-mode-hook #'my-auto-start-sly-for-common-lisp)
+
+(use-package sly-asdf :after sly)
+(use-package sly-quicklisp :after sly)
+(use-package sly-macrostep :after sly)
+
 
 ;; -----------------------------------------------
 ;; Clojure Lisp
@@ -43,7 +47,8 @@
 
 (use-package cider
   :straight t
-  :hook ((clojure-mode . cider-mode))
+  :hook ((clojure-mode . cider-mode)
+				 (clojure-mode . aggressive-indent-mode))
   :config
   (setq cider-repl-display-help-banner nil
         cider-allow-jack-in-without-project t
@@ -90,12 +95,10 @@
 ;; Lisp Plugin
 ;; -----------------------------------------------
 (use-package aggressive-indent
-  :straight t
-  :hook (lisp-mode . aggressive-indent-mode))
+  :straight t)
 
 (use-package paredit
-  :straight t
-  :hook (clojure-mode . paredit-mode))
-
+  :config
+  (message "🧠 Paredit 启用结构化括号编辑"))
 
 (provide 'init-lisp)

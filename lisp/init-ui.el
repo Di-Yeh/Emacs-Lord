@@ -418,22 +418,22 @@
 	(spaceline-install
 	 'main
 	 ;; 左侧 segments 列表
-	 `((my-buffer-id    :face 'my/spaceline-face-theme :priority 85 :max-width 40)		; buffer 名称 + 图标
-		 (my-save-status  :face 'my/spaceline-face-theme :priority 85)		; 文件保存
-		 (my-major-mode   :face 'my/spaceline-face-theme :priority 70)   	; major-mode 名称
-		 (my-position    	:face 'my/spaceline-face-theme :priority 80)		; 行:列
-		 (buffer-percent-position :face 'my/spaceline-face-theme :priority 80) ; 以百分比显示当前在buffer中的位置
-		 (my-flycheck     :face 'my/spaceline-face-theme :priority 20)   	; flycheck 错误/警告/提示图标
-		 (my-file-stats	  :face 'my/spaceline-face-theme :priority 75)		; 字数计算
-		 (buffer-encoding-eol :face 'my/spaceline-face-theme :priority 80) ; 显示编码风格和系统图标
-		 (my-diff-hl		  :face 'my/spaceline-face-theme :priority 10)		; git
-		 (my-last-input  :face 'my/spaceline-face-theme :priority 60) ; 最近输入讯息
+	 `((my-buffer-id    :face 'my/spaceline-face-theme :priority 100 :max-width 40)		; buffer 名称 + 图标
+		 (my-save-status  :face 'my/spaceline-face-theme :priority 90)		; 文件保存
+		 (my-major-mode   :face 'my/spaceline-face-theme :priority 80)   	; major-mode 名称
+		 (my-position    	:face 'my/spaceline-face-theme :priority 70)		; 行:列
+		 (buffer-percent-position :face 'my/spaceline-face-theme :priority 60) ; 以百分比显示当前在buffer中的位置
+		 (my-flycheck     :face 'my/spaceline-face-theme :priority 50)   	; flycheck 错误/警告/提示图标
+		 (my-file-stats	  :face 'my/spaceline-face-theme :priority 45)		; 字数计算
+		 (buffer-encoding-eol :face 'my/spaceline-face-theme :priority 40) ; 显示编码风格和系统图标
+		 (my-diff-hl		  :face 'my/spaceline-face-theme :priority 35)		; git
+		 (my-last-input  :face 'my/spaceline-face-theme :priority 30) ; 最近输入讯息
 		)
 
 	 ;; 右侧 segments 列表
 	 `((my-lsp-status  :face 'my/spaceline-face-theme :priority 80)		; LSP 状态
-		 (my-input-method :face 'my/spaceline-face-theme :priority 70)	; 输入法状态显示
-		 (my-time        :face 'my/spaceline-face-theme :priority 65) 	; 时间
+		 (my-input-method :face 'my/spaceline-face-theme :priority 90)	; 输入法状态显示
+		 (my-time        :face 'my/spaceline-face-theme :priority 100) 	; 时间
 		))
 
 

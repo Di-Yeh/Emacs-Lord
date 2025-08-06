@@ -319,6 +319,7 @@
 (define-key org-roam-prefix-map (kbd "l") #'org-roam-buffer-toggle)
 (define-key org-roam-prefix-map (kbd "u") #'org-roam-ui-mode)
 
+(global-set-key (kbd "C-c e") #'eshell)
 
 
 

@@ -168,7 +168,13 @@
   ;; 设置项目搜索路径（你可以继续添加）
   (projectile-project-search-path '("~/projects/"))
   ;; 使用默认 completion-system，交由 Vertico + Consult 接管
-  (projectile-completion-system 'default))
+  (projectile-completion-system 'default)
+  :bind-keymap
+  ;; 将 C-c p 设为 projectile 命令的前缀键
+  ("C-c p" . projectile-command-map)
+  :config
+  ;; 可选：禁用提示你是否在项目中自动启用 projectile
+  (setq projectile-switch-project-action #'projectile-dired))
 
 ;; 使用 Consult 封装的 Projectile 接口，提供更好 UI 和功能
 (use-package consult-projectile
@@ -302,9 +308,9 @@
   :init
   (setq
    ;; 设置 headline 的符号（最多支持8级）
-   org-superstar-headline-bullets-list '("◉" "○" "✿" "✸" "✜" "✢" "✧" "◆")
+   org-superstar-headline-bullets-list '("♚" "♛" "♜" "♝" "♞" "♟" "☭" "✿" "◉")
    ;; 美化列表符号 - 替换 -, +, *
-   org-superstar-item-bullet-alist '((?- . "➖") (?+ . "➕") (?* . "•"))
+   org-superstar-item-bullet-alist '((?- . "•") (?+ . "⊕")) ;; 原版 '((?- . "➖") (?+ . "➕") (?* . "•"))
    ;; 隐藏前导星号（只保留替代符号）
    org-hide-leading-stars t
    org-superstar-leading-bullet " "
