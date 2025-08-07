@@ -163,18 +163,15 @@
 (use-package projectile
   :straight t
   :init
-  (projectile-mode +1)
-  :custom
-  ;; 设置项目搜索路径（你可以继续添加）
-  (projectile-project-search-path '("~/projects/"))
-  ;; 使用默认 completion-system，交由 Vertico + Consult 接管
-  (projectile-completion-system 'default)
-  :bind-keymap
-  ;; 将 C-c p 设为 projectile 命令的前缀键
-  ("C-c p" . projectile-command-map)
+  (projectile-mode +1)  ;; 全局启用 Projectile 模式
   :config
-  ;; 可选：禁用提示你是否在项目中自动启用 projectile
-  (setq projectile-switch-project-action #'projectile-dired))
+  ;; 根据实际情况设置你的项目目录，可以添加多个目录
+  (setq projectile-project-search-path '("~/projects/"))
+  ;; 结合 Ivy 使用更加流畅的补全体验
+  (setq projectile-completion-system 'default)
+  ;; 建议绑定 Projectile 的命令前缀，例如 "C-c p"
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+  (message "Projectile 已启动"))
 
 ;; 使用 Consult 封装的 Projectile 接口，提供更好 UI 和功能
 (use-package consult-projectile
