@@ -109,7 +109,7 @@ pacman -S mingw-w64-ucrt-x86_64-libvips  # 透过 MSYS2
 
 #### ⚙️ 基础工具安装
 ```bash
-sudo apt install git clang clang++ clang-format gcc g++ sbcl racket cmake
+sudo apt install git clang clangd clang-format gcc g++ sbcl racket cmake
 ```
 
 #### 🐍 Python（使用 pyenv 安装推荐）
@@ -139,7 +139,7 @@ sudo apt install nodejs npm
 
 #### 🌙 Lua / NASM / vterm
 ```bash
-sudo apt install lua5.4 nasm libvterm-dev cmake make gcc
+sudo apt install lua5.3 nasm libvterm-dev cmake make gcc
 ```
 
 ---
