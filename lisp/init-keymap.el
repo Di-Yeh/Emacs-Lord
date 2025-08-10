@@ -160,15 +160,17 @@
   (interactive)
   (my/adjust-window-height 1))
 
-
-;; 定义 Vim 风格的 open 命令
 (defun my/open-insert-line ()
-  "模仿 Vim 的 'o' 命令：在当前行末尾插入新行（并自动缩进），
-然后进入插入模式。"
+  "模仿 Vim 的 'o'：在当前行末尾插入新行，先继承上一行缩进，
+然后再让 major-mode 根据语法做一次微调。"
   (interactive)
-  (end-of-line)
-  (newline-and-indent))
-
+  (let ((indent (current-indentation)))
+    (end-of-line)
+    (newline)
+    (indent-to indent)
+    ;; 再调用 major-mode 的缩进命令，让它稍微修正
+    (when (fboundp 'indent-according-to-mode)
+      (indent-according-to-mode))))
 
 (defvar my/line-select-offset 0
   "相对于锚点的行偏移，用于连续扩展行选区。")

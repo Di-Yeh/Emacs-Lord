@@ -228,7 +228,7 @@
 												 :face '(:foreground "#ff8533"))
 												 " "
 												 (format-time-string "%H:%M")
-												 "        "))
+												 "     "))
 
   ;; ------------------- 光标位置 ------------------
 	(spaceline-define-segment my-position
@@ -506,6 +506,6 @@
 ;; 全局快捷键：使用 C-t 快速切换主题
 (global-set-key (kbd "C-t") 'my/switch-theme)
 
-(load-theme 'manoj-dark t)
+(load-theme 'deeper-blue t)
 
 (provide 'init-ui)
