@@ -250,6 +250,9 @@
 
 (global-set-key (kbd "C-<return>") 'electric-newline-and-maybe-indent)
 
+;; neotree
+(global-set-key (kbd "C-c n") 'neotree-toggle)
+
 ;; 绑定快捷键 C-c h 调用该函数
 (global-set-key (kbd "C-c h") 'my/choose-plugin-and-display-functions)
 
