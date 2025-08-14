@@ -31,6 +31,15 @@
 (use-package sly-quicklisp :after sly)
 (use-package sly-macrostep :after sly)
 
+(defun my/common-lisp-pair-behavior ()
+  "在 SLY / Common Lisp 下也让光标留在括号内。"
+  (setq-local electric-pair-inhibit-predicate
+              (lambda (char)
+                ;; 保留默认判断，但不要因为是 Lisp 就放到括号外
+                (electric-pair-default-inhibit char))))
+
+(add-hook 'sly-mode-hook #'my/common-lisp-pair-behavior)
+(add-hook 'lisp-mode-hook #'my/common-lisp-pair-behavior)
 
 ;; -----------------------------------------------
 ;; Clojure Lisp
