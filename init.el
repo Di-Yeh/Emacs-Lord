@@ -110,10 +110,10 @@
 )
 
 ;; 设置当前 Frame 透明度：90% 前景 / 70% 非激活时
-(set-frame-parameter (selected-frame) 'alpha '(90 . 70))
+(set-frame-parameter (selected-frame) 'alpha '(95 . 85))
 
 ;; 默认新建 Frame 也应用
-(add-to-list 'default-frame-alist '(alpha . (90 . 70)))
+(add-to-list 'default-frame-alist '(alpha . (95 . 85)))
 
 
 
