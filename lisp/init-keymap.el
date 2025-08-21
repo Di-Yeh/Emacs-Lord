@@ -326,7 +326,7 @@
 
 (global-set-key (kbd "C-c e") #'eshell)
 
-
+(global-set-key (kbd "C-c v") #'vterm)
 
 
 
