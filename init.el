@@ -83,7 +83,7 @@
  ;; … 你的 default 和 org-level-* 定义保持不变 …
  '(default ((t (:family "JetBrains Mono" :foundry "outline"
                         :slant normal :weight semi-bold
-                        :height 143 :width normal))))
+                        :height 120 :width normal))))
  '(org-level-1 ((t (:inherit outline-1 :height 1.3))))
  '(org-level-2 ((t (:inherit outline-2 :height 1.2))))
  '(org-level-3 ((t (:inherit outline-3 :height 1.1)))))
@@ -102,14 +102,19 @@
 ;; --------------------------------
 ;; 显示相对行号
 ;; --------------------------------
-
-
 (use-package emacs
   :ensure t
 	:config 
 	(setq display-line-numbers-type 'relative) 
 	(global-display-line-numbers-mode t)
 )
+
+;; 设置当前 Frame 透明度：90% 前景 / 70% 非激活时
+(set-frame-parameter (selected-frame) 'alpha '(90 . 70))
+
+;; 默认新建 Frame 也应用
+(add-to-list 'default-frame-alist '(alpha . (90 . 70)))
+
 
 
 (when (file-exists-p custom-file)
