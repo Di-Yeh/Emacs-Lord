@@ -115,7 +115,7 @@
                                    token_tree token_tree_pattern 
                                    token_repetition)))
 		
-		:hook ((prog-mode) . indent-bars-mode))
+		:hook ((c-mode) . indent-bars-mode))
 
 
 (setq
