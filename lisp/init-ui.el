@@ -121,8 +121,8 @@
 			(let* ((filepath (abbreviate-file-name (buffer-file-name)))
 						 ;; 去掉结尾斜杠并分割路径
 						 (components (split-string filepath "/" t))
-						 ;; 获取最后三个部分：最后两个目录 + 文件名
-						 (last-components (last components (min 3 (length components))))
+						 ;; 获取最后两个部分：最后一个目录 + 文件名
+						 (last-components (last components (min 2 (length components))))
 						 (short-path (mapconcat #'identity last-components "/"))
 						 (icon (all-the-icons-icon-for-buffer))
 						 ;; 给路径加颜色
