@@ -81,7 +81,7 @@
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; … 你的 default 和 org-level-* 定义保持不变 …
- '(default ((t (:family "JetBrains Mono" :foundry "outline"
+ '(default ((t (:family "Comic Sans MS" :foundry "outline"
                         :slant normal :weight semi-bold
                         :height 120 :width normal))))
  '(org-level-1 ((t (:inherit outline-1 :height 1.3))))
