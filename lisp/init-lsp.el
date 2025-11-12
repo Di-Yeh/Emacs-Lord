@@ -182,7 +182,7 @@
 
 (require 'init-cpp)
 (require 'init-asm)
-(require 'init-quickrun)
 
 (provide 'init-lsp)
 ;;; init-lsp.el ends here
+
