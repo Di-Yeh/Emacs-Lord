@@ -88,12 +88,14 @@
   (async-bytecomp-package-mode 1)) ; 对插件异步 byte-compile，加快 Emacs 启动
 
 
+;; ============================
+;; indent-bars - 通用设置
+;; ============================
 (use-package indent-bars
 	:custom
 		(indent-bars-treesit-support t)
     (indent-bars-treesit-wrap '((c argument_list parameter_list init_declarator parenthesized_expression)))
 	:hook ((c-mode csharp-mode rust-mode) . indent-bars-mode))
-
 
 (setq
     indent-bars-no-descend-lists t
@@ -118,6 +120,49 @@
 			indent-bars-no-descend-lists nil) ; elisp is mostly continued lists!  allow bars to descend inside
 	    (indent-bars-mode 1)))
 
+;; ----------------------------
+;; 只在真实文件缓冲区显示空格/Tab 标记
+;; ----------------------------
+(defun my/show-space-as-dot ()
+  "在当前 buffer 里，把空格显示成一个中点 · 。"
+  (let ((table (make-display-table)))
+    ;; 空格 (32) 显示成字符 · (183)
+    (aset table 32 [183])
+    ;; tab (9) 显示成 4 个中点
+    (aset table 9  [183 183 183 183])
+    (setq buffer-display-table table)))
+
+(defun my/enable-space-dots-maybe ()
+  "只对真实文件 buffer 启用空格显示 dot。"
+  (when (and buffer-file-name
+             (file-exists-p buffer-file-name))
+    (my/show-space-as-dot)))
+
+;; 在打开文件时启用
+(add-hook 'find-file-hook #'my/enable-space-dots-maybe)
+
+;; major-mode 切换后再次检查（保险）
+(add-hook 'after-change-major-mode-hook #'my/enable-space-dots-maybe)
+
+(use-package whitespace
+  :hook (prog-mode . whitespace-mode)
+  :custom
+  (whitespace-style '(face tabs spaces trailing space-mark tab-mark))
+  (whitespace-display-mappings
+   '(
+     (space-mark 32 [183])     ;; 空格 → ·
+     (tab-mark   9  [187 9])   ;; TAB → »
+     ))
+  :config
+  ;; 保留颜色，但取消背景以跟随主题
+  (set-face-attribute 'whitespace-space nil
+                      :foreground "#555555"
+                      :background nil)
+  (set-face-attribute 'whitespace-tab nil
+                      :foreground "#666666"
+                      :background nil)
+  (set-face-attribute 'whitespace-newline nil
+                      :background nil))
 
 (use-package all-the-icons
   :ensure t
@@ -400,60 +445,55 @@
 (add-to-list 'load-path
              (expand-file-name "straight/repos/lsp-bridge/acm" user-emacs-directory))
 
-;; =======================
-;; company
-;; =======================
-
-(use-package company
-  :ensure t
-  :hook (after-init . global-company-mode)
+;;; --- Completion 基础 ---
+(use-package corfu
+  :straight t
+  :init
+  (global-corfu-mode)
   :custom
-  (company-tooltip-align-annotations t)   ; 补全注解右对齐
-  (company-minimum-prefix-length 1)       ; 输入 1 个字符就开始补全
-  (company-idle-delay 0.1)                ; 补全延迟时间
-  (company-show-numbers t)                ; 显示候选项编号
-  (company-tooltip-limit 10)              ; 显示最多 10 个候选项
-  (company-require-match nil)             ; 不强制匹配
-  (company-dabbrev-downcase nil)          ; 保留大小写
-  (company-global-modes '(not eshell-mode shell-mode)) ; 不在 shell 中启用
-  :config
-  ;; 默认使用 Emacs 字体缩放同步调整 popup
-  (setq company-tooltip-minimum-width 40) ;; 保持宽度统一
-  ;; 更优雅的样式颜色
-  (custom-set-faces
-   '(company-tooltip ((t (:inherit default :background "#282c34" :foreground "#bbc2cf"))))
-   '(company-tooltip-selection ((t (:background "#3e4451" :foreground "#ffffff"))))
-   '(company-tooltip-common ((t (:foreground "#c678dd" :weight bold))))
-   '(company-tooltip-annotation ((t (:foreground "#56b6c2"))))
-   '(company-scrollbar-bg ((t (:background "#3e4451"))))
-   '(company-scrollbar-fg ((t (:background "#61afef"))))
-   '(company-tooltip-search ((t (:foreground "#98be65" :weight bold))))
-   '(company-preview ((t (:background "#1c1f24" :foreground "#5B6268"))))
-   '(company-preview-common ((t (:inherit company-preview :foreground "#c678dd"))))))
+  (corfu-auto t)              ;; 自动弹出
+  (corfu-auto-delay 0)
+  (corfu-auto-prefix 1)
+  (corfu-preselect 'prompt)
+  (corfu-popupinfo-mode t))   ;; 显示文档 (类似 company-quickhelp)
+
+(use-package corfu-popupinfo
+  :after corfu
+  :ensure nil
+  :custom (corfu-popupinfo-delay 0.2))
+
+;;; --- CAPE：额外补全功能 ---
+(use-package cape
+  :straight t
+  :init
+  ;; 常用补全绑定（可选）
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-keyword))
 
 ;; ==========================
-;; 🌟 自动切换 company / lsp-bridge
+;; 🌟 自动切换 corfu / lsp-bridge
 ;; ==========================
 
-(defun my/disable-company-when-lsp-bridge ()
-  "在启用 lsp-bridge 时禁用 company。"
-  (when (bound-and-true-p company-mode)
-    (setq my/company-was-enabled t)
-    (global-company-mode -1)
-    (message "🔧 已禁用 company-mode（由 lsp-bridge 接管补全）")))
+(defun my/disable-corfu-when-lsp-bridge ()
+  "在启用 lsp-bridge 时禁用 corfu。"
+  (when (bound-and-true-p corfu-mode)
+    (setq my/corfu-was-enabled t)
+    (global-corfu-mode -1)
+    (message "🔧 已禁用 corfu-mode（由 lsp-bridge 接管补全）")))
 
-(defun my/restore-company-when-lsp-bridge-off ()
-  "在关闭 lsp-bridge 时恢复 company。"
-  (when (and (boundp 'my/company-was-enabled) my/company-was-enabled)
-    (setq my/company-was-enabled nil)
-    (global-company-mode 1)
-    (message "✅ 已重新启用 company-mode")))
+(defun my/restore-corfu-when-lsp-bridge-off ()
+  "在关闭 lsp-bridge 时恢复 corfu。"
+  (when (and (boundp 'my/corfu-was-enabled) my/corfu-was-enabled)
+    (setq my/corfu-was-enabled nil)
+    (global-corfu-mode 1)
+    (message "✅ 已重新启用 corfu-mode")))
 
-;; 当 lsp-bridge 启动时禁用 company
-(add-hook 'lsp-bridge-mode-on-hook #'my/disable-company-when-lsp-bridge)
+;; 当 lsp-bridge 启动时禁用 corfu
+(add-hook 'lsp-bridge-mode-on-hook #'my/disable-corfu-when-lsp-bridge)
 
-;; 当 lsp-bridge 关闭时恢复 company
-(add-hook 'lsp-bridge-mode-off-hook #'my/restore-company-when-lsp-bridge-off)
+;; 当 lsp-bridge 关闭时恢复 corfu
+(add-hook 'lsp-bridge-mode-off-hook #'my/restore-corfu-when-lsp-bridge-off)
 
 ;; 确保已安装 tree-sitter 及 tree-sitter-langs（推荐使用 use-package 来管理它们）
 (use-package tree-sitter

@@ -46,7 +46,6 @@
       (when (not (eobp))    ; 如果不是缓冲区最后一行，则删除行尾的换行符
         (delete-char 1))
     (delete-region (point) (line-end-position))))
-    
 
 (global-set-key (kbd "C-<backspace>") 'my/delete-word-backward)
 (global-set-key (kbd "M-<backspace>") 'my/delete-word-backward)

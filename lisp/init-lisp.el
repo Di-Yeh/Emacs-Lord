@@ -82,8 +82,7 @@
 (use-package racket-mode
   :straight t
   :mode "\\.rkt\\'"
-  :hook ((racket-mode . company-mode)
-         (racket-mode . racket-smart-open-bracket-mode))
+  :hook ((racket-mode . racket-smart-open-bracket-mode))
   :config
   (setq racket-program "racket"))
 

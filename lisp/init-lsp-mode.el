@@ -74,11 +74,11 @@
 
 (use-package kind-icon
   :straight t
-  :after company
+  :after corfu
   :custom
   (kind-icon-default-face 'corfu-default) ;; 跟 corfu 同样的图标样式
   :config
-  (add-to-list 'company-format-margin-function #'kind-icon-margin-formatter))
+  (add-to-list 'corfu-format-margin-function #'kind-icon-margin-formatter))
 
 ;; 让 Emacs completion-at-point 全局不分大小写
 (setq completion-ignore-case               t
@@ -117,8 +117,8 @@
 (setq gc-cons-threshold (* 100 1024 1024)
       read-process-output-max (* 1024 1024)
       treemacs-space-between-root-nodes nil
-      company-idle-delay 0.0
-      company-minimum-prefix-length 1
+      corfu-idle-delay 0.0
+      corfu-minimum-prefix-length 1
       lsp-idle-delay 0.1)
 
 
