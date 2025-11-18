@@ -121,29 +121,8 @@
 	    (indent-bars-mode 1)))
 
 ;; ----------------------------
-;; 只在真实文件缓冲区显示空格/Tab 标记
+;; 文件缓冲区显示空格/Tab 标记
 ;; ----------------------------
-(defun my/show-space-as-dot ()
-  "在当前 buffer 里，把空格显示成一个中点 · 。"
-  (let ((table (make-display-table)))
-    ;; 空格 (32) 显示成字符 · (183)
-    (aset table 32 [183])
-    ;; tab (9) 显示成 4 个中点
-    (aset table 9  [183 183 183 183])
-    (setq buffer-display-table table)))
-
-(defun my/enable-space-dots-maybe ()
-  "只对真实文件 buffer 启用空格显示 dot。"
-  (when (and buffer-file-name
-             (file-exists-p buffer-file-name))
-    (my/show-space-as-dot)))
-
-;; 在打开文件时启用
-(add-hook 'find-file-hook #'my/enable-space-dots-maybe)
-
-;; major-mode 切换后再次检查（保险）
-(add-hook 'after-change-major-mode-hook #'my/enable-space-dots-maybe)
-
 (use-package whitespace
   :hook (prog-mode . whitespace-mode)
   :custom
