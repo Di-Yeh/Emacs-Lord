@@ -120,29 +120,6 @@
 			indent-bars-no-descend-lists nil) ; elisp is mostly continued lists!  allow bars to descend inside
 	    (indent-bars-mode 1)))
 
-;; ----------------------------
-;; 文件缓冲区显示空格/Tab 标记
-;; ----------------------------
-(use-package whitespace
-  :hook (prog-mode . whitespace-mode)
-  :custom
-  (whitespace-style '(face tabs spaces trailing space-mark tab-mark))
-  (whitespace-display-mappings
-   '(
-     (space-mark 32 [183])     ;; 空格 → ·
-     (tab-mark   9  [187 9])   ;; TAB → »
-     ))
-  :config
-  ;; 保留颜色，但取消背景以跟随主题
-  (set-face-attribute 'whitespace-space nil
-                      :foreground "#555555"
-                      :background nil)
-  (set-face-attribute 'whitespace-tab nil
-                      :foreground "#666666"
-                      :background nil)
-  (set-face-attribute 'whitespace-newline nil
-                      :background nil))
-
 (use-package all-the-icons
   :ensure t
   :config
@@ -645,3 +622,4 @@
 
 
 (provide 'init-package)
+
