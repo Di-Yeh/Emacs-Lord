@@ -479,6 +479,7 @@ buffer-encoding)))
 ;; 全局快捷键：使用 C-t 快速切换主题
 (global-set-key (kbd "C-t") 'my/switch-theme)
 
-(load-theme 'modus-vivendi-tinted t)
+(load-theme 'modus-vivendi t)
 
 (provide 'init-ui)
+
