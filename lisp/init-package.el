@@ -467,6 +467,44 @@
 ;; eglot 基础配置（Emacs 28+）
 ;; --------------------------------------------------
 
+(setq straight-vc-git-default-clone-depth 1)
+(use-package markdown-mode
+  :straight t  ; 明确指定用 straight 安装
+  :mode ("README\\.md\\'" . gfm-mode)
+  :init (setq markdown-command "multimarkdown"))
+
+(use-package cmake-mode
+  :straight t
+  :mode ("CMakeLists\\.txt\\'" "\\.cmake\\'"))
+
+;; 自動生成 XML 文件註釋
+(use-package yasnippet
+  :straight t
+  :config
+  (yas-global-mode 1))
+
+(defun my-insert-vs-doc ()
+  "直接插入 VS 風格的 XML 註釋，不依賴名稱查找。"
+  (interactive)
+  (require 'yasnippet nil t)
+  (if (fboundp 'yas-expand-snippet)
+      (let ((vs-tpl "/// <summary>\n/// $1\n/// </summary>\n/// <param name=\"$2\">$3</param>\n/// <returns>$4</returns>$0"))
+        ;; 直接展開字串模板，不需要 yas-lookup-snippet
+        (yas-expand-snippet vs-tpl))
+    (message "錯誤：yasnippet 插件尚未就緒")))
+
+;; 綁定一個「絕對安全」的快捷鍵
+(global-set-key (kbd "C-c s") #'my-insert-vs-doc)
+
+;; Separedit (這是編輯註釋的神器，強烈建議保留)
+(use-package separedit
+  :straight t
+  :bind ("C-c '" . separedit))
+
+(use-package neotree
+  :ensure t
+  :bind ([f8] . neotree-toggle)) ; 设置快捷键 F8 开关
+
 (require 'eglot)
 ;; 不要自动在所有支持的 mode 启动 eglot
 ;; 你需要时再手动 M-x eglot
@@ -478,6 +516,13 @@
 
 (setq completion-styles '(orderless))
 (setq tab-always-indent 'complete)
+
+(use-package flycheck
+  :straight t
+  :hook (prog-mode . flycheck-mode)
+  :config
+  (setq flycheck-check-syntax-automatically '(save idle-change)
+        flycheck-idle-change-delay 1.0))
 
 (use-package pyim
   :straight t
