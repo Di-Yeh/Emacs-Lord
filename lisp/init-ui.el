@@ -10,6 +10,12 @@
 
 (use-package modus-themes
   :ensure t)
+  
+(use-package badwolf-theme
+  :ensure t)
+  
+(use-package ahungry-theme
+  :ensure t)
 
 (setq modus-themes-mode-line 'nil)
 
@@ -479,7 +485,6 @@ buffer-encoding)))
 ;; 全局快捷键：使用 C-t 快速切换主题
 (global-set-key (kbd "C-t") 'my/switch-theme)
 
-(load-theme 'modus-vivendi t)
+(load-theme 'ahungry t)
 
 (provide 'init-ui)
-
