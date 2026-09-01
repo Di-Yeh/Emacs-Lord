@@ -230,8 +230,8 @@
 ;; 全局绑定示例：
 ;; ------------
 
-(global-set-key (kbd "M-n") 'my/scroll-window-down)
-(global-set-key (kbd "M-p") 'my/scroll-window-up)
+(global-set-key (kbd "C-M-}") 'my/scroll-window-down)
+(global-set-key (kbd "C-M-{") 'my/scroll-window-up)
 
 (global-set-key (kbd "TAB") 'self-insert-command)
 

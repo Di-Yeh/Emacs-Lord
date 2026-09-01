@@ -524,41 +524,6 @@
   (setq flycheck-check-syntax-automatically '(save idle-change)
         flycheck-idle-change-delay 1.0))
 
-(use-package pyim
-  :straight t
-  :init
-  ;; 设置 pyim 为默认输入法
-  (setq default-input-method "pyim")
-
-  ;; ✅ 拼音方案：quanpin = 全拼（也可用 'ziranma 表示双拼）
-  (setq pyim-default-scheme 'quanpin) ;; quanpin
-
-  ;; ✅ 增加候选词数量（默认是 5）
-  (setq pyim-page-length 9) ;; 显示更多候选词（例如9个）
-
-  :config
-  ;; 切换中英文输入法快捷键（C-\）
-  (global-set-key (kbd "C-\\") 'toggle-input-method)
-
-  ;; 加载内置拼音词库（基于 pyim-basedict）
-  (use-package pyim-basedict
-    :straight t
-    :config
-    (pyim-basedict-enable))
-
-  ;; ✅ 使用 posframe 漂浮提示窗口
-  (setq pyim-page-tooltip 'posframe)
-
-  ;; 可选：额外美化 posframe 样式
-  (use-package posframe
-    :straight t)
-  (setq pyim-posframe-border-width 2)
-  (setq pyim-posframe-min-width 20)
-  (setq pyim-posframe-min-height 4)
-
-  ;; 建议启用词频记忆（提升输入精度）
-  (setq pyim-dcache-auto-update t))
-
 (use-package undo-tree
   :ensure t
   :init
