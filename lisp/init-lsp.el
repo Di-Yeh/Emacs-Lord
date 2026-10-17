@@ -161,94 +161,6 @@
           (message "✅ 已更新 compile_commands.json 的 command 字段")
           (revert-buffer))))))
 
-;; -----------------------------------------------
-;; Common Lisp
-;; -----------------------------------------------
-(use-package sly
-  :ensure t
-  :init
-  ;; 指定你的 Common Lisp 实现，例如使用 SBCL
-  (setq inferior-lisp-program "sbcl")
-  :config
-  ;; 启用 sly-fancy 增强功能
-  (sly-setup '(sly-fancy)))
-
-(defun my-auto-start-sly-for-common-lisp ()
-  "若当前文件为 Common Lisp（.lisp 或 .lsp），自动启动 SLY，排除 Emacs Lisp。"
-  (when (and buffer-file-name
-             (string-match-p "\\.lisp\\'\\|\\.lsp\\'" buffer-file-name)
-             (not (derived-mode-p 'emacs-lisp-mode)))
-    ;; 如果 SLY 尚未激活，则调用 sly 启动连接
-    (unless (bound-and-true-p sly-mode)
-      (sly))))
-
-;; 在 Lisp 模式下自动检测文件类型并启动 SLY
-(add-hook 'lisp-mode-hook #'my-auto-start-sly-for-common-lisp)
-
-(use-package sly-asdf :after sly)
-(use-package sly-quicklisp :after sly)
-(use-package sly-macrostep :after sly)
-
-(defun my/common-lisp-pair-behavior ()
-  "在 SLY / Common Lisp 下也让光标留在括号内。"
-  (setq-local electric-pair-inhibit-predicate
-              (lambda (char)
-                ;; 保留默认判断，但不要因为是 Lisp 就放到括号外
-                (electric-pair-default-inhibit char))))
-
-(add-hook 'sly-mode-hook #'my/common-lisp-pair-behavior)
-(add-hook 'lisp-mode-hook #'my/common-lisp-pair-behavior)
-
-;; -----------------------------------------------
-;; Clojure Lisp
-;; -----------------------------------------------
-(use-package clojure-mode
-  :straight t
-	:hook ((clojure-mode . lsp)
-         (clojure-mode . flycheck-mode))
-  :config
-  ;; 让 lsp-mode 的诊断都通过 flycheck 抛出
-  (add-hook 'lsp-mode-hook
-            (lambda ()
-              (setq-local lsp-diagnostics-provider :flycheck))))
-
-(use-package cider
-  :straight t
-  :hook ((clojure-mode . cider-mode))
-  :config
-  (setq cider-repl-display-help-banner nil
-        cider-allow-jack-in-without-project t
-        cider-repl-pop-to-buffer-on-connect t))
-
-(global-set-key (kbd "C-c C-j j") 'cider-jack-in)
-
-(defun my/cider-cleanup-nrepl-port ()
-  "在 nREPL 断开后删除项目根目录下的 .nrepl-port 文件（如存在）。"
-  (let ((root (locate-dominating-file default-directory ".nrepl-port")))
-    (when root
-      (let ((port-file (expand-file-name ".nrepl-port" root)))
-        (when (file-exists-p port-file)
-          (ignore-errors
-            (delete-file port-file))
-          (message "☠ Deleted .nrepl-port: %s" port-file))))))
-
-(add-hook 'cider-disconnected-hook #'my/cider-cleanup-nrepl-port)
-
-;; -----------------------------------------------
-;; Racket Lisp
-;; -----------------------------------------------
-(use-package racket-mode
-  :straight t
-  :mode "\\.rkt\\'"
-  :hook ((racket-mode . racket-smart-open-bracket-mode))
-  :config
-  (setq racket-program "racket"))
-
-;; 快捷键：运行、编译、进入 REPL
-(global-set-key (kbd "C-^ r r") 'racket-run)
-(global-set-key (kbd "C-^ r c") 'racket-compile)
-(global-set-key (kbd "C-^ r R") 'racket-repl)
-
 ;; 绑定快捷键
 (global-set-key (kbd "C-c i a") #'my/add-include-path-to-compile-commands)
 
@@ -267,24 +179,47 @@
                 (arglist-close . 0))))
 
 
+(defvar my-auto-format-enabled t
+  "是否开启保存时自动格式化的全局开关。")
+
+(defun toggle-auto-format ()
+  "手动切换保存时自动格式化的功能（包含 clang-format+-mode）。"
+  (interactive)
+  (setq my-auto-format-enabled (not my-auto-format-enabled))
+  
+  ;; 如果当前 buffer 开启了 clang-format+，根据开关进行切换
+  (when (fboundp 'clang-format+-mode)
+    (if my-auto-format-enabled
+        (clang-format+-mode 1)   ; 开启模式
+      (clang-format+-mode -1))) ; 关闭模式
+  
+  (message "代码自动格式化已 %s" (if my-auto-format-enabled "开启" "关闭")))
+
 (defun my-prog-mode-hook ()
-  "统一编程风格：C/C++/Java/C# 等。
-仅在保存时自动格式化。"
+  "统一编程风格：C/C++/Java/C# 等。"
   (c-set-style "my-prog-style")
   (setq indent-tabs-mode nil)
   (setq tab-width 4)
   (setq c-basic-offset 4)
   (setq backward-delete-char-untabify-method nil)
-
-  ;; 禁止输入时的自动缩进
   (electric-indent-local-mode -1)
 
-  ;; 在保存时执行 clang-format-buffer（如果存在）
+  ;; 1. 处理手动执行的快捷键（不依赖自动保存，随时可用）
   (when (fboundp 'clang-format-buffer)
-    (add-hook 'before-save-hook #'clang-format-buffer nil t)))
+    (local-set-key (kbd "C-c f") #'clang-format-buffer))
+
+  ;; 2. 根据全局变量决定是否启动 clang-format+-mode
+  (when (fboundp 'clang-format+-mode)
+    (if my-auto-format-enabled
+        (clang-format+-mode 1)
+      (clang-format+-mode -1))))
+
+;; 绑定快捷键用于“切换开关”
+(global-set-key (kbd "C-c C-f") 'toggle-auto-format)
 
 ;; ———— 各语言挂钩 ————
 (add-hook 'c-mode-common-hook #'my-prog-mode-hook)  ; 统一 C/C++/Java/C# 风格
+(add-hook 'c++-mode-common-hook #'my-prog-mode-hook)
 (add-hook 'java-mode-hook #'my-prog-mode-hook)
 (add-hook 'csharp-mode-hook #'my-prog-mode-hook)
 

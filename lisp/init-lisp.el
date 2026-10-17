@@ -15,17 +15,17 @@
   ;; 启用 sly-fancy 增强功能
   (sly-setup '(sly-fancy)))
 
-(defun my-auto-start-sly-for-common-lisp ()
-  "若当前文件为 Common Lisp（.lisp 或 .lsp），自动启动 SLY，排除 Emacs Lisp。"
-  (when (and buffer-file-name
-             (string-match-p "\\.lisp\\'\\|\\.lsp\\'" buffer-file-name)
-             (not (derived-mode-p 'emacs-lisp-mode)))
-    ;; 如果 SLY 尚未激活，则调用 sly 启动连接
-    (unless (bound-and-true-p sly-mode)
-      (sly))))
+;; (defun my-auto-start-sly-for-common-lisp ()
+;;   "若当前文件为 Common Lisp（.lisp 或 .lsp），自动启动 SLY，排除 Emacs Lisp。"
+;;   (when (and buffer-file-name
+;;              (string-match-p "\\.lisp\\'\\|\\.lsp\\'" buffer-file-name)
+;;              (not (derived-mode-p 'emacs-lisp-mode)))
+;;     ;; 如果 SLY 尚未激活，则调用 sly 启动连接
+;;     (unless (bound-and-true-p sly-mode)
+;;       (sly))))
 
-;; 在 Lisp 模式下自动检测文件类型并启动 SLY
-(add-hook 'lisp-mode-hook #'my-auto-start-sly-for-common-lisp)
+;; ;; 在 Lisp 模式下自动检测文件类型并启动 SLY
+;; (add-hook 'lisp-mode-hook #'my-auto-start-sly-for-common-lisp)
 
 (use-package sly-asdf :after sly)
 (use-package sly-quicklisp :after sly)
