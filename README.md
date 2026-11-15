@@ -1,5 +1,5 @@
 
-# 🌟 我的 Emacs 配置说明书 🌀
+# 🌟 Emacs Lord 配置说明书 🌀
 
 > ⚙️ 本配置适用于 Windows 和 Linux（Debian 系列），含语言支持、图形界面优化、开发工具链等完整说明。
 
